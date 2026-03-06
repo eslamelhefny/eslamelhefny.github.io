@@ -1,0 +1,54 @@
+---
+layout: default
+---
+
+<article class="post-page">
+  <div class="post-hero">
+    <div class="post-hero-content">
+      <div class="post-meta-top">
+        <a href="{{ '/blog' | relative_url }}" class="back-link"><i class="fas fa-arrow-left"></i> All Posts</a>
+        {% if page.category %}
+        <span class="post-category">{{ page.category }}</span>
+        {% endif %}
+      </div>
+      <h1 class="post-title">{{ page.title }}</h1>
+      {% if page.excerpt %}
+      <p class="post-subtitle">{{ page.excerpt | strip_html | truncatewords: 30 }}</p>
+      {% endif %}
+      <div class="post-info">
+        <span><i class="fas fa-calendar-alt"></i> {{ page.date | date: "%B %d, %Y" }}</span>
+        <span><i class="fas fa-clock"></i> {{ content | number_of_words | divided_by: 200 | plus: 1 }} min read</span>
+        {% if page.tags %}
+        <span><i class="fas fa-tags"></i> {{ page.tags | join: ", " }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="post-body">
+    <div class="post-toc" id="toc">
+      <h3><i class="fas fa-list"></i> Contents</h3>
+      <div id="toc-list"></div>
+    </div>
+
+    <div class="post-content markdown-body">
+      {{ content }}
+    </div>
+  </div>
+
+  <div class="post-nav">
+    {% if page.previous.url %}
+    <a href="{{ page.previous.url | relative_url }}" class="post-nav-item prev">
+      <span class="nav-label"><i class="fas fa-arrow-left"></i> Previous</span>
+      <span class="nav-title">{{ page.previous.title }}</span>
+    </a>
+    {% else %}<div></div>{% endif %}
+
+    {% if page.next.url %}
+    <a href="{{ page.next.url | relative_url }}" class="post-nav-item next">
+      <span class="nav-label">Next <i class="fas fa-arrow-right"></i></span>
+      <span class="nav-title">{{ page.next.title }}</span>
+    </a>
+    {% endif %}
+  </div>
+</article>

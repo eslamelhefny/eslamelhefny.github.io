@@ -1,0 +1,128 @@
+---
+layout: default
+title: "Research — Eslam Mohamed"
+description: "Current and past research on autonomous vehicles, federated learning, CNN architectures, and solar energy forecasting."
+permalink: /research/
+---
+
+<div class="about-page">
+  <div class="section-container" style="padding: 0 2rem 5rem;">
+    <div class="section-label">research work</div>
+    <h1 class="section-title">Research & Projects</h1>
+    <p class="section-subtitle">MSc research at Zewail City, spanning autonomous systems, distributed ML, and energy forecasting.</p>
+
+    <div class="research-card fade-up">
+      <div class="research-number">01</div>
+      <div class="research-content">
+        <span class="research-tag">Active · MSc Thesis</span>
+        <h3>Two-Stream CNN for Autonomous Vehicle Steering Angle Prediction</h3>
+        <div class="markdown-body" style="margin-top:0.75rem;">
+          <p>Implementing a dual-stream convolutional network combining a <strong>spatial RGB stream</strong>
+          and a <strong>temporal optical flow stream</strong> for end-to-end steering angle prediction.
+          The architecture processes both appearance and motion features in parallel before fusion.</p>
+          <p>Replicating and extending <em>Zhang et al.</em>'s federated learning automotive paper with full
+          PyTorch implementation. Key challenges addressed include optical flow method selection
+          (Farnebäck vs DIS vs TV-L1), FC layer dimensional alignment, and federated aggregation.</p>
+          <h3>Key contributions</h3>
+          <ul>
+            <li>Full PyTorch implementation of two-stream CNN with fusion layers</li>
+            <li>Comparative study of optical flow methods for temporal stream</li>
+            <li>FedAvg and asynchronous FL variants for multi-client training</li>
+            <li>Benchmark suite measuring inference time, throughput, and network latency</li>
+          </ul>
+        </div>
+        <div class="research-techs">
+          <span class="research-tech">PyTorch</span>
+          <span class="research-tech">OpenCV</span>
+          <span class="research-tech">Optical Flow</span>
+          <span class="research-tech">FedAvg</span>
+          <span class="research-tech">CNN</span>
+          <span class="research-tech">Python</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="research-card fade-up">
+      <div class="research-number">02</div>
+      <div class="research-content">
+        <span class="research-tag">Active</span>
+        <h3>Federated Learning for Privacy-Preserving Autonomous Driving</h3>
+        <div class="markdown-body" style="margin-top:0.75rem;">
+          <p>Designing and evaluating federated learning infrastructure for autonomous driving models.
+          Implemented <strong>FederatedServer</strong> and <strong>FederatedClient</strong> classes
+          supporting both synchronous FedAvg and asynchronous aggregation strategies.</p>
+          <p>Focus areas include communication efficiency (gradient compression, sparse updates),
+          convergence analysis across heterogeneous data distributions, and privacy guarantees
+          through differential privacy mechanisms.</p>
+        </div>
+        <div class="research-techs">
+          <span class="research-tech">Federated Learning</span>
+          <span class="research-tech">Differential Privacy</span>
+          <span class="research-tech">Distributed Systems</span>
+          <span class="research-tech">PyTorch</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="research-card fade-up">
+      <div class="research-number">03</div>
+      <div class="research-content">
+        <span class="research-tag">Literature Review & Implementation</span>
+        <h3>Solar Energy Forecasting: ARIMA & Time Series Methods</h3>
+        <div class="markdown-body" style="margin-top:0.75rem;">
+          <p>Deep literature review and practical implementation of ARIMA, SARIMA, and advanced
+          time series forecasting models for distributed solar storage systems. Part of a broader
+          study on power forecasting for smart grid optimization in Egypt.</p>
+          <p>Produced a comprehensive Jupyter notebook covering data preprocessing, stationarity tests,
+          model selection (AIC/BIC), and evaluation against LSTM baselines.</p>
+        </div>
+        <div class="research-techs">
+          <span class="research-tech">ARIMA</span>
+          <span class="research-tech">Time Series</span>
+          <span class="research-tech">statsmodels</span>
+          <span class="research-tech">Pandas</span>
+          <span class="research-tech">Solar Forecasting</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="research-card fade-up">
+      <div class="research-number">04</div>
+      <div class="research-content">
+        <span class="research-tag">Literature Survey</span>
+        <h3>Model Pruning & Compression for Autonomous Driving CNNs</h3>
+        <div class="markdown-body" style="margin-top:0.75rem;">
+          <p>Systematic literature review identifying the research gap at the intersection of
+          neural network pruning / compression and autonomous driving CNN deployment.
+          Survey covers structured pruning, quantization, knowledge distillation, and
+          NAS for edge inference on embedded automotive platforms.</p>
+        </div>
+        <div class="research-techs">
+          <span class="research-tech">Model Pruning</span>
+          <span class="research-tech">Quantization</span>
+          <span class="research-tech">Knowledge Distillation</span>
+          <span class="research-tech">Edge AI</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="research-card fade-up">
+      <div class="research-number">05</div>
+      <div class="research-content">
+        <span class="research-tag">Engineering Project</span>
+        <h3>IoT Security Research & LoRa Hardware for Egypt</h3>
+        <div class="markdown-body" style="margin-top:0.75rem;">
+          <p>Technical investigation of LoRa modules (SX1276/SX1262, TTGO, Ra-02) and NB-IoT
+          modules with Egyptian operator band compatibility. Produced detailed hardware
+          selection reports and MCP server project for ESP32 device control via Claude AI.</p>
+        </div>
+        <div class="research-techs">
+          <span class="research-tech">LoRa</span>
+          <span class="research-tech">NB-IoT</span>
+          <span class="research-tech">ESP32</span>
+          <span class="research-tech">IoT Security</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

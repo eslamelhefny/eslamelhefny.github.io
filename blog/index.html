@@ -1,0 +1,62 @@
+---
+layout: default
+title: "Blog — Embedded Linux Diploma & Technical Notes"
+description: "Technical notes, lab writeups, and guides from the Embedded Linux Diploma and engineering research."
+permalink: /blog/
+---
+
+<div class="blog-page">
+  <div class="blog-page-header">
+    <div class="section-label">knowledge base</div>
+    <h1 class="section-title">Blog & Technical Notes</h1>
+    <p class="section-subtitle">
+      Lab writeups, deep dives, and guides from the Embedded Linux Diploma, research experiments, and teaching notes.
+    </p>
+  </div>
+
+  <div class="blog-filters">
+    <button class="filter-btn active" data-filter="all">All Posts</button>
+    <button class="filter-btn" data-filter="embedded">Embedded Linux</button>
+    <button class="filter-btn" data-filter="linux">Linux Kernel</button>
+    <button class="filter-btn" data-filter="iot">IoT</button>
+    <button class="filter-btn" data-filter="ml">Machine Learning</button>
+    <button class="filter-btn" data-filter="general">General</button>
+  </div>
+
+  <div class="blog-posts-container">
+    <div class="posts-grid">
+      {% for post in site.posts %}
+      <div class="post-card fade-up" data-category="{{ post.category | downcase | replace: ' ', '-' }}">
+        <div class="post-card-header">
+          <div class="post-card-meta">
+            {% if post.category %}
+            <span class="post-card-category cat-{{ post.category | downcase | replace: ' ', '-' }}">
+              {{ post.category }}
+            </span>
+            {% endif %}
+            <span class="post-card-date">{{ post.date | date: "%b %d, %Y" }}</span>
+          </div>
+          <h3>{{ post.title }}</h3>
+        </div>
+        <p>{{ post.excerpt | strip_html | truncatewords: 25 }}</p>
+        <div class="post-card-footer">
+          <span class="post-read-time">
+            <i class="fas fa-clock"></i>
+            {{ post.content | number_of_words | divided_by: 200 | plus: 1 }} min read
+          </span>
+          <a href="{{ post.url | relative_url }}" class="post-read-link">
+            Read <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if site.posts.size == 0 %}
+    <div style="text-align:center; padding: 4rem 2rem; color: var(--text-3);">
+      <div style="font-family: var(--font-mono); font-size: 3rem; margin-bottom: 1rem;">📝</div>
+      <p style="font-family: var(--font-mono); font-size: 0.85rem;">No posts yet. Add your README files to <code>_posts/</code></p>
+    </div>
+    {% endif %}
+  </div>
+</div>
