@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pipes & Shared Memory · Eslam Mohamed</title>
+  <meta name="description" content="Master Linux IPC mechanisms — anonymous and named pipes, POSIX shared memory (shm_open), message queues (mq_open), and memory-mapped IPC with mmap." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/posix/">POSIX APIs & Concurrency</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Pipes & Shared Memory</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 04</span>
+      </div>
+      <h1 class="guide-title">Pipes & Shared Memory</h1>
+      <p class="guide-subtitle">Master Linux IPC mechanisms — anonymous and named pipes, POSIX shared memory (shm_open), message queues (mq_open), and memory-mapped IPC with mmap.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="ipc-overview">IPC Overview</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p><strong>Inter-Process Communication (IPC)</strong> allows separate processes to exchange data or synchronise. Linux provides multiple IPC mechanisms, each with different performance and usage characteristics.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Mechanism</th>
+      <th>Direction</th>
+      <th>Persistence</th>
+      <th>Kernel buffered</th>
+      <th>Best for</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Pipe (anonymous)</td>
+      <td>Unidirectional</td>
+      <td>Process lifetime</td>
+      <td>Yes</td>
+      <td>Parent↔child</td>
+    </tr>
+    <tr>
+      <td>Named pipe (FIFO)</td>
+      <td>Unidirectional</td>
+      <td>Filesystem</td>
+      <td>Yes</td>
+      <td>Unrelated processes</td>
+    </tr>
+    <tr>
+      <td>POSIX shared memory</td>
+      <td>Bidirectional</td>
+      <td>Until unlinked</td>
+      <td>No (direct)</td>
+      <td>High-speed data sharing</td>
+    </tr>
+    <tr>
+      <td>POSIX message queue</td>
+      <td>Bidirectional</td>
+      <td>Until unlinked</td>
+      <td>Yes</td>
+      <td>Structured messages</td>
+    </tr>
+    <tr>
+      <td>UNIX domain socket</td>
+      <td>Bidirectional</td>
+      <td>Process lifetime</td>
+      <td>Yes</td>
+      <td>General IPC, fd passing</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-basic" id="anonymous-pipes">Anonymous Pipes</h2>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="cp">
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">pipefd</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>   <span class="c1">// pipefd[0] = read end, pipefd[1] = write end</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">pipe</span><span class="p">(</span><span class="n">pipefd</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="n">perror</span><span class="p">(</span><span class="s">"pipe"</span><span class="p">);</span> <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="p">}</span>
+
+    <span class="n">pid_t</span> <span class="n">pid</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">pid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// --- CHILD: write to pipe ---</span>
+        <span class="n">close</span><span class="p">(</span><span class="n">pipefd</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>   <span class="c1">// close unused read end</span>
+
+        <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">msg</span> <span class="o">=</span> <span class="s">"Hello from child"</span><span class="p">;</span>
+        <span class="n">write</span><span class="p">(</span><span class="n">pipefd</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">msg</span><span class="p">,</span> <span class="n">strlen</span><span class="p">(</span><span class="n">msg</span><span class="p">));</span>
+        <span class="n">close</span><span class="p">(</span><span class="n">pipefd</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// --- PARENT: read from pipe ---</span>
+        <span class="n">close</span><span class="p">(</span><span class="n">pipefd</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>   <span class="c1">// close unused write end</span>
+
+        <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">128</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+        <span class="kt">ssize_t</span> <span class="n">n</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">pipefd</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"Parent received: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">buf</span><span class="p">);</span>
+        <span class="n">close</span><span class="p">(</span><span class="n">pipefd</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+
+        <span class="n">waitpid</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="pipe-as-stdinstdout-for-a-child-process">Pipe as stdin/stdout for a Child Process</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Redirect child's stdout to our pipe (like shell pipe)</span>
+<span class="kt">int</span> <span class="n">pipefd</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+<span class="n">pipe</span><span class="p">(</span><span class="n">pipefd</span><span class="p">);</span>
+
+<span class="n">pid_t</span> <span class="n">pid</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">pid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">pipefd</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>                  <span class="c1">// child doesn't read</span>
+    <span class="n">dup2</span><span class="p">(</span><span class="n">pipefd</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">STDOUT_FILENO</span><span class="p">);</span>    <span class="c1">// stdout → write end of pipe</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">pipefd</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+    <span class="n">execlp</span><span class="p">(</span><span class="s">"ls"</span><span class="p">,</span> <span class="s">"ls"</span><span class="p">,</span> <span class="s">"-la"</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>   <span class="c1">// output goes to pipe</span>
+    <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">pipefd</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>                  <span class="c1">// parent doesn't write</span>
+    <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">4096</span><span class="p">];</span>
+    <span class="kt">ssize_t</span> <span class="n">n</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">pipefd</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buf</span><span class="p">));</span>
+    <span class="c1">// process ls output</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">pipefd</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+    <span class="n">waitpid</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="pipe-properties">Pipe Properties</h3>
+
+<ul>
+  <li><strong>Capacity</strong>: typically 64KB (Linux default); write blocks when full</li>
+  <li><strong>Atomic writes</strong>: writes up to <code class="language-plaintext highlighter-rouge">PIPE_BUF</code> (4096+ bytes) are atomic</li>
+  <li><strong>EOF</strong>: read returns 0 when all write ends are closed</li>
+  <li><strong>SIGPIPE</strong>: writing to a pipe with no readers sends <code class="language-plaintext highlighter-rouge">SIGPIPE</code></li>
+</ul>
+
+<hr />
+
+<h2 class="gc-mid" id="named-pipes-fifos">Named Pipes (FIFOs)</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<p>A named pipe (FIFO) appears as a filesystem entry — unrelated processes can use it.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Create from shell</span>
+<span class="nb">mkfifo</span> /tmp/myfifo
+<span class="nb">ls</span> <span class="nt">-la</span> /tmp/myfifo
+<span class="c"># prw-r--r-- 1 user user 0 Mar  7 12:00 /tmp/myfifo</span>
+</code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;sys/stat.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+</span>
+<span class="c1">// Create programmatically</span>
+<span class="n">mkfifo</span><span class="p">(</span><span class="s">"/tmp/sensor_fifo"</span><span class="p">,</span> <span class="mo">0644</span><span class="p">);</span>
+
+<span class="c1">// Writer process</span>
+<span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">"/tmp/sensor_fifo"</span><span class="p">,</span> <span class="n">O_WRONLY</span><span class="p">);</span>  <span class="c1">// blocks until reader opens</span>
+<span class="n">write</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sensor_value</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">));</span>
+<span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+
+<span class="c1">// Reader process</span>
+<span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">"/tmp/sensor_fifo"</span><span class="p">,</span> <span class="n">O_RDONLY</span><span class="p">);</span>  <span class="c1">// blocks until writer opens</span>
+<span class="kt">float</span> <span class="n">val</span><span class="p">;</span>
+<span class="n">read</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">val</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">));</span>
+<span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="posix-shared-memory">POSIX Shared Memory</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p>Shared memory is the <strong>fastest IPC</strong> — processes read/write directly to the same physical memory pages. Requires explicit synchronisation (mutex/semaphore) to prevent races.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;sys/mman.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;semaphore.h&gt;</span><span class="cp">
+</span>
+<span class="cp">#define SHM_NAME  "/sensor_shm"
+#define SEM_NAME  "/sensor_sem"
+</span>
+<span class="c1">// Shared data structure</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="kt">float</span>    <span class="n">temperature</span><span class="p">;</span>
+    <span class="kt">float</span>    <span class="n">humidity</span><span class="p">;</span>
+    <span class="kt">uint32_t</span> <span class="n">sequence</span><span class="p">;</span>
+    <span class="kt">int</span>      <span class="n">updated</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">SensorData</span><span class="p">;</span>
+
+<span class="c1">// --- PRODUCER (writer) ---</span>
+<span class="kt">int</span> <span class="n">shm_fd</span> <span class="o">=</span> <span class="n">shm_open</span><span class="p">(</span><span class="n">SHM_NAME</span><span class="p">,</span> <span class="n">O_CREAT</span> <span class="o">|</span> <span class="n">O_RDWR</span><span class="p">,</span> <span class="mo">0644</span><span class="p">);</span>
+<span class="n">ftruncate</span><span class="p">(</span><span class="n">shm_fd</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">SensorData</span><span class="p">));</span>
+
+<span class="n">SensorData</span><span class="o">*</span> <span class="n">shm</span> <span class="o">=</span> <span class="n">mmap</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">SensorData</span><span class="p">),</span>
+    <span class="n">PROT_READ</span> <span class="o">|</span> <span class="n">PROT_WRITE</span><span class="p">,</span> <span class="n">MAP_SHARED</span><span class="p">,</span> <span class="n">shm_fd</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+
+<span class="n">sem_t</span><span class="o">*</span> <span class="n">sem</span> <span class="o">=</span> <span class="n">sem_open</span><span class="p">(</span><span class="n">SEM_NAME</span><span class="p">,</span> <span class="n">O_CREAT</span><span class="p">,</span> <span class="mo">0644</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+<span class="c1">// Update shared data with semaphore protection</span>
+<span class="n">sem_wait</span><span class="p">(</span><span class="n">sem</span><span class="p">);</span>
+<span class="n">shm</span><span class="o">-&gt;</span><span class="n">temperature</span> <span class="o">=</span> <span class="mi">23</span><span class="p">.</span><span class="mi">5</span><span class="n">f</span><span class="p">;</span>
+<span class="n">shm</span><span class="o">-&gt;</span><span class="n">humidity</span>    <span class="o">=</span> <span class="mi">65</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">;</span>
+<span class="n">shm</span><span class="o">-&gt;</span><span class="n">sequence</span><span class="o">++</span><span class="p">;</span>
+<span class="n">shm</span><span class="o">-&gt;</span><span class="n">updated</span>     <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="n">sem_post</span><span class="p">(</span><span class="n">sem</span><span class="p">);</span>
+
+<span class="n">munmap</span><span class="p">(</span><span class="n">shm</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">SensorData</span><span class="p">));</span>
+<span class="n">close</span><span class="p">(</span><span class="n">shm_fd</span><span class="p">);</span>
+
+<span class="c1">// --- CONSUMER (reader) ---</span>
+<span class="kt">int</span> <span class="n">shm_fd</span> <span class="o">=</span> <span class="n">shm_open</span><span class="p">(</span><span class="n">SHM_NAME</span><span class="p">,</span> <span class="n">O_RDONLY</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="n">SensorData</span><span class="o">*</span> <span class="n">shm</span> <span class="o">=</span> <span class="n">mmap</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">SensorData</span><span class="p">),</span>
+    <span class="n">PROT_READ</span><span class="p">,</span> <span class="n">MAP_SHARED</span><span class="p">,</span> <span class="n">shm_fd</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+
+<span class="n">sem_t</span><span class="o">*</span> <span class="n">sem</span> <span class="o">=</span> <span class="n">sem_open</span><span class="p">(</span><span class="n">SEM_NAME</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+
+<span class="n">sem_wait</span><span class="p">(</span><span class="n">sem</span><span class="p">);</span>
+<span class="kt">float</span> <span class="n">t</span> <span class="o">=</span> <span class="n">shm</span><span class="o">-&gt;</span><span class="n">temperature</span><span class="p">;</span>
+<span class="kt">float</span> <span class="n">h</span> <span class="o">=</span> <span class="n">shm</span><span class="o">-&gt;</span><span class="n">humidity</span><span class="p">;</span>
+<span class="n">sem_post</span><span class="p">(</span><span class="n">sem</span><span class="p">);</span>
+
+<span class="n">printf</span><span class="p">(</span><span class="s">"Temp=%.1f°C  Humidity=%.1f%%</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">h</span><span class="p">);</span>
+
+<span class="c1">// Cleanup (done by one process, usually the producer/creator)</span>
+<span class="n">munmap</span><span class="p">(</span><span class="n">shm</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">SensorData</span><span class="p">));</span>
+<span class="n">close</span><span class="p">(</span><span class="n">shm_fd</span><span class="p">);</span>
+<span class="n">shm_unlink</span><span class="p">(</span><span class="n">SHM_NAME</span><span class="p">);</span>   <span class="c1">// remove from /dev/shm</span>
+<span class="n">sem_close</span><span class="p">(</span><span class="n">sem</span><span class="p">);</span>
+<span class="n">sem_unlink</span><span class="p">(</span><span class="n">SEM_NAME</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p><strong>Link with <code class="language-plaintext highlighter-rouge">-lrt</code> and <code class="language-plaintext highlighter-rouge">-lpthread</code>.</strong></p>
+
+<hr />
+
+<h2 class="gc-mid" id="posix-message-queues">POSIX Message Queues</h2>
+
+<p>Message queues deliver <strong>typed, prioritised messages</strong> between processes. Each message has a priority — higher-priority messages are received first.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;mqueue.h&gt;</span><span class="cp">
+</span>
+<span class="cp">#define MQ_NAME  "/sensor_queue"
+</span>
+<span class="c1">// --- SENDER ---</span>
+<span class="k">struct</span> <span class="n">mq_attr</span> <span class="n">attr</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">mq_maxmsg</span>  <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>    <span class="c1">// max 10 messages in queue</span>
+    <span class="p">.</span><span class="n">mq_msgsize</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>   <span class="c1">// max 128 bytes per message</span>
+<span class="p">};</span>
+<span class="n">mqd_t</span> <span class="n">mq</span> <span class="o">=</span> <span class="n">mq_open</span><span class="p">(</span><span class="n">MQ_NAME</span><span class="p">,</span> <span class="n">O_CREAT</span> <span class="o">|</span> <span class="n">O_WRONLY</span><span class="p">,</span> <span class="mo">0644</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
+
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span> <span class="kt">int</span> <span class="n">id</span><span class="p">;</span> <span class="kt">float</span> <span class="n">value</span><span class="p">;</span> <span class="p">}</span> <span class="n">SensorMsg</span><span class="p">;</span>
+<span class="n">SensorMsg</span> <span class="n">msg</span> <span class="o">=</span> <span class="p">{</span> <span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="p">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">23</span><span class="p">.</span><span class="mi">5</span><span class="n">f</span> <span class="p">};</span>
+
+<span class="n">mq_send</span><span class="p">(</span><span class="n">mq</span><span class="p">,</span> <span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">msg</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">msg</span><span class="p">),</span> <span class="mi">5</span><span class="p">);</span>   <span class="c1">// priority 5</span>
+<span class="n">mq_close</span><span class="p">(</span><span class="n">mq</span><span class="p">);</span>
+
+<span class="c1">// --- RECEIVER ---</span>
+<span class="n">mqd_t</span> <span class="n">mq</span> <span class="o">=</span> <span class="n">mq_open</span><span class="p">(</span><span class="n">MQ_NAME</span><span class="p">,</span> <span class="n">O_RDONLY</span><span class="p">);</span>
+
+<span class="n">SensorMsg</span> <span class="n">msg</span><span class="p">;</span>
+<span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">prio</span><span class="p">;</span>
+<span class="kt">ssize_t</span> <span class="n">n</span> <span class="o">=</span> <span class="n">mq_receive</span><span class="p">(</span><span class="n">mq</span><span class="p">,</span> <span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">msg</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">msg</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">prio</span><span class="p">);</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"ID=%d Val=%.1f prio=%u</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">msg</span><span class="p">.</span><span class="n">id</span><span class="p">,</span> <span class="n">msg</span><span class="p">.</span><span class="n">value</span><span class="p">,</span> <span class="n">prio</span><span class="p">);</span>
+
+<span class="n">mq_close</span><span class="p">(</span><span class="n">mq</span><span class="p">);</span>
+<span class="n">mq_unlink</span><span class="p">(</span><span class="n">MQ_NAME</span><span class="p">);</span>
+
+<span class="c1">// Async notification (signal or thread when message arrives)</span>
+<span class="k">struct</span> <span class="n">sigevent</span> <span class="n">sev</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">sigev_notify</span> <span class="o">=</span> <span class="n">SIGEV_SIGNAL</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">sigev_signo</span>  <span class="o">=</span> <span class="n">SIGUSR1</span><span class="p">,</span>
+<span class="p">};</span>
+<span class="n">mq_notify</span><span class="p">(</span><span class="n">mq</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sev</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="ipc-performance-comparison">IPC Performance Comparison</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Shared memory:  ~1GB/s  (direct memory access, no syscall overhead)
+UNIX socket:    ~300MB/s (syscall, kernel copy)
+POSIX mq:       ~200MB/s (syscall, kernel copy)
+Pipe:           ~200MB/s (syscall, kernel copy)
+TCP loopback:   ~100MB/s (full network stack)
+</code></pre></div></div>
+
+<p>For <strong>high-frequency, large data</strong> (video frames, radar data): shared memory + semaphore.
+For <strong>control messages, commands</strong>: message queue or UNIX socket.</p>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between a pipe and a FIFO?</strong></p>
+
+<blockquote>
+  <p>An anonymous <strong>pipe</strong> is created with <code class="language-plaintext highlighter-rouge">pipe()</code> and exists only in the kernel — it has no filesystem entry and can only be used between related processes (parent and children that inherited the file descriptors). A <strong>FIFO</strong> (named pipe) is created with <code class="language-plaintext highlighter-rouge">mkfifo()</code> and appears as a filesystem entry — any two processes on the same system can open it by name, regardless of process relationship. Both provide unidirectional, kernel-buffered byte streams with the same kernel implementation.</p>
+</blockquote>
+
+<p><strong>Q2 — Intermediate: Why is shared memory the fastest IPC mechanism?</strong></p>
+
+<blockquote>
+  <p>With shared memory, the kernel maps the same physical memory pages into two (or more) processes’ virtual address spaces. Writes by one process are immediately visible to others reading the same memory — there is no data copy and no syscall involved in the actual data transfer. Other IPC mechanisms (pipes, sockets, message queues) require at least one kernel copy: data must be written to a kernel buffer by the sender and copied to the receiver’s buffer. For multi-megabyte payloads (images, sensor buffers), this difference is significant.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: How do you synchronise access to shared memory between processes?</strong></p>
+
+<blockquote>
+  <p>Unlike mutexes (which only work within one process by default), you need inter-process synchronisation. Options: (1) <strong>POSIX named semaphore</strong> (<code class="language-plaintext highlighter-rouge">sem_open</code>) — easy to use; (2) <strong><code class="language-plaintext highlighter-rouge">pthread_mutex</code> with <code class="language-plaintext highlighter-rouge">PTHREAD_PROCESS_SHARED</code></strong> attribute — lower overhead; must be stored in the shared memory itself; (3) <strong><code class="language-plaintext highlighter-rouge">pthread_cond_t</code> with <code class="language-plaintext highlighter-rouge">PTHREAD_PROCESS_SHARED</code></strong> — for condition synchronisation; (4) <strong>Atomic operations</strong> — for simple cases (single producer, single consumer). Always initialise the lock in the shared region before mapping in the consumer.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: What happens when a write end of a pipe is closed while a reader is blocked?</strong></p>
+
+<blockquote>
+  <p>When all write ends of a pipe are closed and the reader calls <code class="language-plaintext highlighter-rouge">read()</code>, it returns 0 (EOF). If the reader is blocked in <code class="language-plaintext highlighter-rouge">read()</code>, it will be unblocked and receive 0. Conversely, when all read ends are closed and a process writes to the pipe, it receives <code class="language-plaintext highlighter-rouge">SIGPIPE</code> (default action: terminate). If <code class="language-plaintext highlighter-rouge">SIGPIPE</code> is ignored or handled, <code class="language-plaintext highlighter-rouge">write()</code> returns -1 with <code class="language-plaintext highlighter-rouge">errno == EPIPE</code>. Always close the unused end of a pipe in each process, and always handle broken pipe conditions in production code.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 2 pipe</code></td>
+      <td>Pipe system call</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 fifo</code></td>
+      <td>Named pipe overview</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 shm_overview</code></td>
+      <td>POSIX shared memory overview</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 mq_overview</code></td>
+      <td>POSIX message queue overview</td>
+    </tr>
+    <tr>
+      <td>TLPI Chapters 44–48</td>
+      <td>IPC mechanisms in depth</td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-network-wired"></i>
+        <span>POSIX &amp; Concurrency</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/posix/file-io/" class="gtn-link ">
+          <i class="fas fa-file-code"></i> POSIX File I/O
+        </a>
+        <a href="/linux-developer/posix/processes-fork/" class="gtn-link ">
+          <i class="fas fa-sitemap"></i> Processes &amp; fork()
+        </a>
+        <a href="/linux-developer/posix/signals/" class="gtn-link ">
+          <i class="fas fa-bolt"></i> Signals
+        </a>
+        <a href="/linux-developer/posix/unix-sockets/" class="gtn-link ">
+          <i class="fas fa-plug"></i> UNIX Sockets
+        </a>
+        <a href="/linux-developer/posix/pthreads/" class="gtn-link ">
+          <i class="fas fa-microchip"></i> Pthreads
+        </a>
+        <a href="/linux-developer/posix/mutexes-semaphores/" class="gtn-link ">
+          <i class="fas fa-lock"></i> Mutexes &amp; Semaphores
+        </a>
+        <a href="/linux-developer/posix/pipes-ipc/" class="gtn-link gts-active">
+          <i class="fas fa-arrows-left-right"></i> Pipes &amp; Shared Memory
+        </a>
+      </nav>
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/posix/mutexes-semaphores/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Mutexes & Semaphores</span>
+      </a>
+      
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

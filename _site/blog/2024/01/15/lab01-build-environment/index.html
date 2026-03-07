@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Embedded Linux Diploma — Lab 01: Setting Up the Build Environment · Eslam Mohamed</title>
+  <meta name="description" content="Research & Teaching Assistant · Embedded Linux Engineer · MSc CS Researcher" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link active">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <article class="post-page">
+  <div class="post-hero">
+    <div class="post-hero-content">
+      <div class="post-meta-top">
+        <a href="/blog" class="back-link"><i class="fas fa-arrow-left"></i> All Posts</a>
+        
+        <span class="post-category">embedded</span>
+        
+      </div>
+      <h1 class="post-title">Embedded Linux Diploma — Lab 01: Setting Up the Build Environment</h1>
+      
+      <p class="post-subtitle">First lab in the Embedded Linux Diploma series. Setting up cross-compilation toolchain, Yocto Project, and Buildroot from scratch on Ubuntu.</p>
+      
+      <div class="post-info">
+        <span><i class="fas fa-calendar-alt"></i> January 15, 2024</span>
+        <span><i class="fas fa-clock"></i> 3 min read</span>
+        
+        <span><i class="fas fa-tags"></i> yocto, buildroot, linux, lab</span>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="post-body">
+    <div class="post-toc" id="toc">
+      <h3><i class="fas fa-list"></i> Contents</h3>
+      <div id="toc-list"></div>
+    </div>
+
+    <div class="post-content markdown-body">
+      <h2 id="overview">Overview</h2>
+
+<p>This is the first lab in the <strong>Embedded Linux Diploma</strong> series. We’ll set up a complete embedded Linux development environment including a cross-compilation toolchain, Yocto Project, and Buildroot.</p>
+
+<p><strong>Prerequisites:</strong> Ubuntu 22.04 LTS, 50GB free disk space, 8GB RAM minimum.</p>
+
+<hr />
+
+<h2 id="1-installing-dependencies">1. Installing Dependencies</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt-get update
+<span class="nb">sudo </span>apt-get <span class="nb">install</span> <span class="nt">-y</span> <span class="se">\</span>
+    gawk wget git diffstat unzip texinfo <span class="se">\</span>
+    gcc build-essential chrpath socat cpio <span class="se">\</span>
+    python3 python3-pip python3-pexpect <span class="se">\</span>
+    xz-utils debianutils iputils-ping python3-git <span class="se">\</span>
+    python3-jinja2 libegl1-mesa libsdl1.2-dev <span class="se">\</span>
+    pylint xterm python3-subunit mesa-common-dev <span class="se">\</span>
+    zstd liblz4-tool
+</code></pre></div></div>
+
+<h2 id="2-cross-compilation-toolchain">2. Cross-Compilation Toolchain</h2>
+
+<p>A cross-compiler generates code for a <strong>target architecture</strong> different from the <strong>host machine</strong>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Download ARM cross-compiler</span>
+wget https://developer.arm.com/-/media/Files/downloads/gnu/12.3.rel1/binrel/<span class="se">\</span>
+arm-gnu-toolchain-12.3.rel1-x86_64-arm-none-linux-gnueabihf.tar.xz
+
+<span class="c"># Extract</span>
+<span class="nb">tar</span> <span class="nt">-xf</span> arm-gnu-toolchain-12.3.rel1-x86_64-arm-none-linux-gnueabihf.tar.xz
+
+<span class="c"># Add to PATH</span>
+<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$HOME</span>/toolchain/bin
+
+<span class="c"># Verify</span>
+arm-none-linux-gnueabihf-gcc <span class="nt">--version</span>
+</code></pre></div></div>
+
+<h2 id="3-buildroot-setup">3. Buildroot Setup</h2>
+
+<p>Buildroot is a simple, efficient build system for generating embedded Linux systems.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Clone Buildroot</span>
+git clone https://github.com/buildroot/buildroot.git
+<span class="nb">cd </span>buildroot
+
+<span class="c"># Configure for Raspberry Pi 4</span>
+make raspberrypi4_64_defconfig
+
+<span class="c"># Launch menuconfig for customization</span>
+make menuconfig
+</code></pre></div></div>
+
+<h3 id="key-buildroot-concepts">Key Buildroot Concepts</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">toolchain/</code></td>
+      <td>Cross-compiler configuration</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">package/</code></td>
+      <td>Software packages</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">board/</code></td>
+      <td>Board-specific files</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">configs/</code></td>
+      <td>Default configurations</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">output/</code></td>
+      <td>Build artifacts</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="4-yocto-project-setup">4. Yocto Project Setup</h2>
+
+<p>Yocto is a more powerful (and complex) build framework used in production embedded Linux.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Clone Yocto Poky</span>
+git clone <span class="nt">-b</span> kirkstone https://git.yoctoproject.org/poky
+<span class="nb">cd </span>poky
+
+<span class="c"># Initialize build environment</span>
+<span class="nb">source </span>oe-init-build-env build
+
+<span class="c"># Edit local.conf</span>
+nano conf/local.conf
+</code></pre></div></div>
+
+<p>Add to <code class="language-plaintext highlighter-rouge">local.conf</code>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>MACHINE = "qemux86-64"
+DISTRO = "poky"
+PACKAGE_CLASSES = "package_rpm"
+BB_NUMBER_THREADS = "4"
+PARALLEL_MAKE = "-j4"
+</code></pre></div></div>
+
+<h3 id="build-your-first-image">Build your first image</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Build minimal image</span>
+bitbake core-image-minimal
+
+<span class="c"># Run in QEMU</span>
+runqemu qemux86-64 nographic
+</code></pre></div></div>
+
+<h2 id="5-hello-world-on-target">5. Hello World on Target</h2>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* hello.c */</span>
+<span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Hello from Embedded Linux!</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Cross-compile:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>arm-none-linux-gnueabihf-gcc <span class="nt">-o</span> hello hello.c
+file hello  <span class="c"># Should show: ELF 32-bit LSB executable, ARM</span>
+</code></pre></div></div>
+
+<h2 id="lab-exercises">Lab Exercises</h2>
+
+<ol>
+  <li>Build a Buildroot image for <code class="language-plaintext highlighter-rouge">qemu_arm_vexpress</code> and boot it with QEMU</li>
+  <li>Add <code class="language-plaintext highlighter-rouge">busybox-extras</code> package to your Buildroot config</li>
+  <li>In Yocto, create a custom layer with a “hello world” recipe</li>
+  <li>Compare the output image sizes between minimal Buildroot and Yocto builds</li>
+</ol>
+
+<hr />
+
+<blockquote>
+  <p>💡 <strong>Tip:</strong> Always use <code class="language-plaintext highlighter-rouge">screen</code> or <code class="language-plaintext highlighter-rouge">tmux</code> for long Yocto builds. A full <code class="language-plaintext highlighter-rouge">core-image-minimal</code> build can take 1-4 hours on first run.</p>
+</blockquote>
+
+<h2 id="next-lab">Next Lab</h2>
+
+<p>In <strong>Lab 02</strong>, we’ll dive into the <strong>Linux boot process</strong> — from power-on to userspace — covering bootloader (U-Boot), kernel initialization, and init systems.</p>
+
+    </div>
+  </div>
+
+  <div class="post-nav">
+    <div></div>
+
+    
+    <a href="/blog/2024/02/01/lab02-uboot-boot-process/" class="post-nav-item next">
+      <span class="nav-label">Next <i class="fas fa-arrow-right"></i></span>
+      <span class="nav-title">Embedded Linux Diploma — Lab 02: Linux Boot Process & U-Boot</span>
+    </a>
+    
+  </div>
+</article>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

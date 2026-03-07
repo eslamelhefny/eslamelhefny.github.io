@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dynamic Allocation · Eslam Mohamed</title>
+  <meta name="description" content="Master malloc, calloc, realloc, and free. Understand the heap, detect memory leaks with Valgrind and ASan, avoid common allocation bugs, and implement pool allocators." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/c-programming/">C Programming</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Dynamic Allocation</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 02</span>
+      </div>
+      <h1 class="guide-title">Dynamic Allocation</h1>
+      <p class="guide-subtitle">Master malloc, calloc, realloc, and free. Understand the heap, detect memory leaks with Valgrind and ASan, avoid common allocation bugs, and implement pool allocators.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="the-four-allocation-functions">The Four Allocation Functions</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span>
+<span class="c1">// malloc: allocate n bytes — contents are UNINITIALIZED (garbage)</span>
+<span class="kt">void</span> <span class="o">*</span><span class="nf">malloc</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">size</span><span class="p">);</span>
+
+<span class="c1">// calloc: allocate n elements of given size — contents ZEROED</span>
+<span class="kt">void</span> <span class="o">*</span><span class="nf">calloc</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">nmemb</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">size</span><span class="p">);</span>
+
+<span class="c1">// realloc: resize an existing allocation</span>
+<span class="kt">void</span> <span class="o">*</span><span class="nf">realloc</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">ptr</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">new_size</span><span class="p">);</span>
+
+<span class="c1">// free: release allocation back to the heap</span>
+<span class="kt">void</span> <span class="nf">free</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">ptr</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="basic-allocation-pattern">Basic Allocation Pattern</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Allocate memory for 10 ints</span>
+<span class="kt">int</span> <span class="o">*</span><span class="n">arr</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="nf">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">arr</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">"malloc failed</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Use it</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">i</span><span class="p">;</span>
+
+<span class="c1">// Always free when done</span>
+<span class="n">free</span><span class="p">(</span><span class="n">arr</span><span class="p">);</span>
+<span class="n">arr</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>   <span class="c1">// good practice: prevents use-after-free bugs</span>
+</code></pre></div></div>
+
+<h3 id="calloc--zeroed-allocation"><code class="language-plaintext highlighter-rouge">calloc</code> — Zeroed Allocation</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Safer for arrays of structs — everything starts at zero</span>
+<span class="n">SensorRecord</span> <span class="o">*</span><span class="n">records</span> <span class="o">=</span> <span class="n">calloc</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">SensorRecord</span><span class="p">));</span>
+<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">records</span><span class="p">)</span> <span class="p">{</span> <span class="n">perror</span><span class="p">(</span><span class="s">"calloc"</span><span class="p">);</span> <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="p">}</span>
+<span class="c1">// records[0].temperature == 0.0f, etc.</span>
+<span class="n">free</span><span class="p">(</span><span class="n">records</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="realloc--dynamic-resizing"><code class="language-plaintext highlighter-rouge">realloc</code> — Dynamic Resizing</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="o">*</span><span class="n">buf</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="nf">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+<span class="kt">int</span>  <span class="n">cap</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">len</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="c1">// Dynamically grow the buffer</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">25</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">==</span> <span class="n">cap</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">cap</span> <span class="o">*=</span> <span class="mi">2</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="o">*</span><span class="n">tmp</span> <span class="o">=</span> <span class="n">realloc</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">cap</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">tmp</span><span class="p">)</span> <span class="p">{</span> <span class="n">free</span><span class="p">(</span><span class="n">buf</span><span class="p">);</span> <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="p">}</span>  <span class="c1">// realloc failure doesn't free old buf!</span>
+        <span class="n">buf</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">buf</span><span class="p">[</span><span class="n">len</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="n">free</span><span class="p">(</span><span class="n">buf</span><span class="p">);</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p><strong>Never do:</strong> <code class="language-plaintext highlighter-rouge">buf = realloc(buf, new_size)</code> — if realloc returns NULL, you lose the original pointer and leak the memory.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-mid" id="intermediate-common-allocation-bugs">Intermediate: Common Allocation Bugs</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="memory-leak">Memory Leak</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">process_file</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">buf</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="mi">1024</span><span class="p">);</span>
+    <span class="kt">FILE</span> <span class="o">*</span><span class="n">fp</span>  <span class="o">=</span> <span class="n">fopen</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">"r"</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">fp</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>           <span class="c1">// BUG: buf is leaked — should free(buf) first</span>
+
+    <span class="n">fread</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="n">fp</span><span class="p">);</span>
+    <span class="n">fclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+    <span class="n">free</span><span class="p">(</span><span class="n">buf</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="use-after-free">Use After Free</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+<span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="mi">42</span><span class="p">;</span>
+<span class="n">free</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="o">*</span><span class="n">p</span><span class="p">);</span>   <span class="c1">// UNDEFINED BEHAVIOUR — p is now a dangling pointer</span>
+<span class="n">p</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>             <span class="c1">// always null the pointer after freeing</span>
+</code></pre></div></div>
+
+<h3 id="double-free">Double Free</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+<span class="n">free</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+<span class="n">free</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>    <span class="c1">// heap corruption — may crash immediately or silently corrupt</span>
+</code></pre></div></div>
+
+<h3 id="buffer-overflow">Buffer Overflow</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="o">*</span><span class="n">arr</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="nf">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="mi">5</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>   <span class="c1">// BUG: writes to arr[5] — out of bounds</span>
+    <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+<span class="n">free</span><span class="p">(</span><span class="n">arr</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="wrong-size">Wrong Size</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="o">**</span><span class="n">matrix</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="n">N</span> <span class="o">*</span> <span class="nf">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>    <span class="c1">// BUG: should be sizeof(int *)</span>
+<span class="c1">// On 64-bit systems, sizeof(int)=4 but sizeof(int *)=8 — only half the memory allocated</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="detecting-problems-with-tools">Detecting Problems with Tools</h2>
+
+<h3 id="valgrind">Valgrind</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gcc <span class="nt">-g</span> <span class="nt">-o</span> program program.c
+valgrind <span class="nt">--leak-check</span><span class="o">=</span>full <span class="nt">--show-leak-kinds</span><span class="o">=</span>all <span class="nt">--track-origins</span><span class="o">=</span><span class="nb">yes</span> ./program
+</code></pre></div></div>
+
+<p><strong>Sample output:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>==12345== 40 bytes in 1 blocks are definitely lost in loss record 1 of 1
+==12345==    at 0x4C2FB0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck.so)
+==12345==    at 0x10869F: process_file (program.c:5)
+==12345==    at 0x1086B5: main (program.c:15)
+==12345== Invalid read of size 4
+==12345==    at 0x108650: main (program.c:9)
+</code></pre></div></div>
+
+<h3 id="addresssanitizer-asan">AddressSanitizer (ASan)</h3>
+
+<p>Faster than Valgrind (2x overhead vs 20x), catches: heap/stack/global buffer overflow, use-after-free, double-free.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gcc <span class="nt">-fsanitize</span><span class="o">=</span>address <span class="nt">-fsanitize</span><span class="o">=</span>undefined <span class="nt">-g</span> <span class="nt">-o</span> program program.c
+./program
+</code></pre></div></div>
+
+<p><strong>Sample ASan output:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>==12345==ERROR: AddressSanitizer: heap-use-after-free on address 0x602000000010
+READ of size 4 at 0x602000000010 thread T0
+    #0 0x401234 in main program.c:9
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-pool-allocator">Advanced: Pool Allocator</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p>General-purpose <code class="language-plaintext highlighter-rouge">malloc</code> is too slow and non-deterministic for real-time embedded systems. A <strong>pool allocator</strong> pre-allocates a fixed block of memory and serves allocations in O(1) with no fragmentation.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#define POOL_SIZE   64
+#define BLOCK_SIZE  sizeof(SensorRecord)
+</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">Block</span> <span class="p">{</span>
+    <span class="k">struct</span> <span class="n">Block</span> <span class="o">*</span><span class="n">next</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">Block</span><span class="p">;</span>
+
+<span class="k">static</span> <span class="kt">char</span>   <span class="n">pool_mem</span><span class="p">[</span><span class="n">POOL_SIZE</span> <span class="o">*</span> <span class="n">BLOCK_SIZE</span><span class="p">];</span>
+<span class="k">static</span> <span class="n">Block</span> <span class="o">*</span><span class="n">pool_free</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">pool_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">pool_free</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">POOL_SIZE</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">Block</span> <span class="o">*</span><span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="n">Block</span> <span class="o">*</span><span class="p">)(</span><span class="n">pool_mem</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">BLOCK_SIZE</span><span class="p">);</span>
+        <span class="n">b</span><span class="o">-&gt;</span><span class="n">next</span>   <span class="o">=</span> <span class="n">pool_free</span><span class="p">;</span>
+        <span class="n">pool_free</span> <span class="o">=</span> <span class="n">b</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="o">*</span><span class="nf">pool_alloc</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">pool_free</span><span class="p">)</span> <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>   <span class="c1">// pool exhausted</span>
+    <span class="n">Block</span> <span class="o">*</span><span class="n">b</span>  <span class="o">=</span> <span class="n">pool_free</span><span class="p">;</span>
+    <span class="n">pool_free</span> <span class="o">=</span> <span class="n">b</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">b</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">pool_free_block</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">ptr</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Block</span> <span class="o">*</span><span class="n">b</span>  <span class="o">=</span> <span class="p">(</span><span class="n">Block</span> <span class="o">*</span><span class="p">)</span><span class="n">ptr</span><span class="p">;</span>
+    <span class="n">b</span><span class="o">-&gt;</span><span class="n">next</span>   <span class="o">=</span> <span class="n">pool_free</span><span class="p">;</span>
+    <span class="n">pool_free</span> <span class="o">=</span> <span class="n">b</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Usage:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pool_init</span><span class="p">();</span>
+<span class="n">SensorRecord</span> <span class="o">*</span><span class="n">r</span> <span class="o">=</span> <span class="n">pool_alloc</span><span class="p">();</span>
+<span class="n">r</span><span class="o">-&gt;</span><span class="n">temperature</span> <span class="o">=</span> <span class="mi">25</span><span class="p">.</span><span class="mi">3</span><span class="n">f</span><span class="p">;</span>
+<span class="n">pool_free_block</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="heap-internals">Heap Internals</h3>
+
+<p>Understanding how <code class="language-plaintext highlighter-rouge">malloc</code> works helps you debug fragmentation:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Heap (managed by libc malloc):
+┌────────────────────────────────────────┐
+│  [used: 40B] [used: 16B] [free: 200B] │ → sbrk()/mmap() extends this
+└────────────────────────────────────────┘
+
+- Small allocs (&lt; 128 KB): served from the heap via brk()
+- Large allocs (≥ 128 KB): get their own mmap() region
+- free() coalesces adjacent free blocks to fight fragmentation
+</code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Check heap statistics</span>
+<span class="cp">#include</span> <span class="cpf">&lt;malloc.h&gt;</span><span class="cp">
+</span><span class="k">struct</span> <span class="n">mallinfo2</span> <span class="n">info</span> <span class="o">=</span> <span class="n">mallinfo2</span><span class="p">();</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"Arena:  %zu bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">info</span><span class="p">.</span><span class="n">arena</span><span class="p">);</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"In use: %zu bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">info</span><span class="p">.</span><span class="n">uordblks</span><span class="p">);</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"Free:   %zu bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">info</span><span class="p">.</span><span class="n">fordblks</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">malloc</code> and <code class="language-plaintext highlighter-rouge">calloc</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">malloc(n)</code> allocates <code class="language-plaintext highlighter-rouge">n</code> bytes with <strong>uninitialized</strong> contents (garbage from previous allocations or OS). <code class="language-plaintext highlighter-rouge">calloc(count, size)</code> allocates <code class="language-plaintext highlighter-rouge">count * size</code> bytes and <strong>zeros</strong> the memory. <code class="language-plaintext highlighter-rouge">calloc</code> is safer for arrays of structs (no accidental reads of garbage) and is often implemented via the OS’s <code class="language-plaintext highlighter-rouge">mmap</code> which already returns zeroed pages, making it not necessarily slower than <code class="language-plaintext highlighter-rouge">malloc + memset</code>.</p>
+</blockquote>
+
+<p><strong>Q2 — Intermediate: Why should you use a temporary pointer with <code class="language-plaintext highlighter-rouge">realloc</code>?</strong></p>
+
+<blockquote>
+  <p>If <code class="language-plaintext highlighter-rouge">realloc</code> fails, it returns <code class="language-plaintext highlighter-rouge">NULL</code> and <strong>leaves the original allocation untouched</strong>. If you write <code class="language-plaintext highlighter-rouge">buf = realloc(buf, new_size)</code> and it returns <code class="language-plaintext highlighter-rouge">NULL</code>, you’ve overwritten your only pointer to the old buffer, causing a leak. Always use: <code class="language-plaintext highlighter-rouge">tmp = realloc(buf, new_size); if (tmp) buf = tmp; else { /* handle error */ }</code>.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: What is heap fragmentation and why does it matter for embedded systems?</strong></p>
+
+<blockquote>
+  <p>Fragmentation occurs when repeated alloc/free cycles leave many small unusable gaps between allocated blocks. Even if the total free bytes are sufficient, a large contiguous allocation may fail. In embedded systems with limited RAM, fragmentation can cause sudden <code class="language-plaintext highlighter-rouge">malloc</code> failures hours or days into operation. Solutions: pool allocators, slab allocators, or avoiding dynamic allocation entirely after initialization.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: How does a pool allocator differ from a general-purpose allocator, and when would you choose it?</strong></p>
+
+<blockquote>
+  <p>A pool allocator pre-allocates a fixed array of equal-size blocks and maintains a free list. Allocation and deallocation are O(1) with no fragmentation (all blocks are the same size). Choose it when: (1) you allocate/free objects of a single known size at high frequency, (2) you need deterministic real-time performance (no <code class="language-plaintext highlighter-rouge">malloc</code> jitter), (3) you want to bound memory usage at compile time. Downside: wastes memory if pool is rarely fully used.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 3 malloc</code></td>
+      <td>malloc, calloc, realloc, free</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 3 mallinfo2</code></td>
+      <td>Heap statistics</td>
+    </tr>
+    <tr>
+      <td>Valgrind documentation</td>
+      <td><a href="https://valgrind.org">valgrind.org</a></td>
+    </tr>
+    <tr>
+      <td>AddressSanitizer</td>
+      <td><a href="https://github.com/google/sanitizers/wiki/AddressSanitizer">github.com/google/sanitizers</a></td>
+    </tr>
+    <tr>
+      <td>Doug Lea’s malloc (dlmalloc)</td>
+      <td>Reference implementation of malloc</td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-file-code"></i>
+        <span>C Programming Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/c-programming/pointers-memory/" class="gtn-link ">
+          <i class="fas fa-memory"></i> Pointers &amp; Memory
+        </a>
+        <a href="/linux-developer/c-programming/structs-unions/" class="gtn-link ">
+          <i class="fas fa-cube"></i> Structs &amp; Unions
+        </a>
+        <a href="/linux-developer/c-programming/file-io/" class="gtn-link ">
+          <i class="fas fa-file-code"></i> File I/O
+        </a>
+        <a href="/linux-developer/c-programming/dynamic-allocation/" class="gtn-link gts-active">
+          <i class="fas fa-layer-group"></i> Dynamic Allocation
+        </a>
+        <a href="/linux-developer/c-programming/makefiles/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> Makefiles
+        </a>
+        <a href="/linux-developer/c-programming/gcc-optimization/" class="gtn-link ">
+          <i class="fas fa-gears"></i> GCC Flags &amp; Optimization
+        </a>
+        <a href="/linux-developer/c-programming/gdb/" class="gtn-link ">
+          <i class="fas fa-bug"></i> GDB Debugging
+        </a>
+      </nav>
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/c-programming/file-io/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">File I/O</span>
+      </a>
+      
+      
+      <a href="/linux-developer/c-programming/makefiles/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Makefiles</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

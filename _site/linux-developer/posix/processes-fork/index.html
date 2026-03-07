@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Processes & fork() · Eslam Mohamed</title>
+  <meta name="description" content="Master Linux process creation — fork/exec/wait, copy-on-write semantics, process groups, sessions, daemon creation, and zombie process reaping." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/posix/">POSIX APIs & Concurrency</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Processes & fork()</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 04</span>
+      </div>
+      <h1 class="guide-title">Processes & fork()</h1>
+      <p class="guide-subtitle">Master Linux process creation — fork/exec/wait, copy-on-write semantics, process groups, sessions, daemon creation, and zombie process reaping.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="fork--creating-processes"><code class="language-plaintext highlighter-rouge">fork()</code> — Creating Processes</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p><code class="language-plaintext highlighter-rouge">fork()</code> creates an <strong>exact copy</strong> of the calling process. Both parent and child continue execution from the point of the <code class="language-plaintext highlighter-rouge">fork()</code> call. The return value distinguishes them.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Before fork: PID=%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">getpid</span><span class="p">());</span>
+
+    <span class="n">pid_t</span> <span class="n">pid</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">pid</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">perror</span><span class="p">(</span><span class="s">"fork"</span><span class="p">);</span>
+        <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">pid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// --- CHILD process ---</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"Child:  PID=%d, PPID=%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">getpid</span><span class="p">(),</span> <span class="n">getppid</span><span class="p">());</span>
+        <span class="c1">// do child work...</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="c1">// always exit, don't return from main!</span>
+
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// --- PARENT process ---</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"Parent: PID=%d, child PID=%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">getpid</span><span class="p">(),</span> <span class="n">pid</span><span class="p">);</span>
+
+        <span class="c1">// Wait for child to prevent zombie</span>
+        <span class="kt">int</span> <span class="n">status</span><span class="p">;</span>
+        <span class="n">waitpid</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">status</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">WIFEXITED</span><span class="p">(</span><span class="n">status</span><span class="p">))</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">"Child exited with status %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">WEXITSTATUS</span><span class="p">(</span><span class="n">status</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Before fork: PID=1234
+Parent: PID=1234, child PID=1235
+Child:  PID=1235, PPID=1234
+Child exited with status 0
+</code></pre></div></div>
+
+<h3 id="what-is-inherited-vs-what-differs-after-fork">What is Inherited vs. What Differs After <code class="language-plaintext highlighter-rouge">fork()</code></h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Inherited by child</th>
+      <th>Different in child</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Open file descriptors</td>
+      <td>New PID</td>
+    </tr>
+    <tr>
+      <td>Signal handlers</td>
+      <td>PPID (= parent’s PID)</td>
+    </tr>
+    <tr>
+      <td>Memory mappings (CoW)</td>
+      <td>Memory writes become private copies</td>
+    </tr>
+    <tr>
+      <td>Environment variables</td>
+      <td><code class="language-plaintext highlighter-rouge">fork()</code> returns 0 (not parent’s PID)</td>
+    </tr>
+    <tr>
+      <td>User/group IDs</td>
+      <td>Pending signals cleared</td>
+    </tr>
+    <tr>
+      <td>Working directory</td>
+      <td>File lock ownership</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="copy-on-write-cow">Copy-on-Write (CoW)</h3>
+
+<p><code class="language-plaintext highlighter-rouge">fork()</code> does <strong>not</strong> physically copy all memory. The child’s pages are mapped to the same physical memory as the parent, marked read-only. Only when either process <strong>writes</strong> to a page does the kernel make a private copy — lazy duplication. This makes <code class="language-plaintext highlighter-rouge">fork()</code> fast even for large processes.</p>
+
+<hr />
+
+<h2 class="gc-basic" id="exec--replacing-the-process-image"><code class="language-plaintext highlighter-rouge">exec()</code> — Replacing the Process Image</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>The <code class="language-plaintext highlighter-rouge">exec</code> family of functions <strong>replaces the current process image</strong> with a new program. The PID stays the same; memory is replaced.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span>
+<span class="c1">// execv — array of arguments</span>
+<span class="kt">char</span><span class="o">*</span> <span class="k">const</span> <span class="n">args</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="s">"/bin/ls"</span><span class="p">,</span> <span class="s">"-la"</span><span class="p">,</span> <span class="s">"/tmp"</span><span class="p">,</span> <span class="nb">NULL</span> <span class="p">};</span>
+<span class="n">execv</span><span class="p">(</span><span class="s">"/bin/ls"</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>
+<span class="c1">// If execv returns, it failed:</span>
+<span class="n">perror</span><span class="p">(</span><span class="s">"execv"</span><span class="p">);</span>
+<span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+
+<span class="c1">// execvp — searches PATH</span>
+<span class="n">execvp</span><span class="p">(</span><span class="s">"ls"</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>   <span class="c1">// finds ls in PATH automatically</span>
+
+<span class="c1">// execle — explicit environment</span>
+<span class="k">extern</span> <span class="kt">char</span><span class="o">**</span> <span class="n">environ</span><span class="p">;</span>
+<span class="n">execle</span><span class="p">(</span><span class="s">"/bin/ls"</span><span class="p">,</span> <span class="s">"ls"</span><span class="p">,</span> <span class="s">"-la"</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">environ</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="fork--exec--the-standard-pattern"><code class="language-plaintext highlighter-rouge">fork()</code> + <code class="language-plaintext highlighter-rouge">exec()</code> — The Standard Pattern</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pid_t</span> <span class="n">pid</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">pid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Child: replace with new program</span>
+    <span class="kt">char</span><span class="o">*</span> <span class="k">const</span> <span class="n">args</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="s">"gcc"</span><span class="p">,</span> <span class="s">"-O2"</span><span class="p">,</span> <span class="s">"main.c"</span><span class="p">,</span> <span class="s">"-o"</span><span class="p">,</span> <span class="s">"main"</span><span class="p">,</span> <span class="nb">NULL</span> <span class="p">};</span>
+    <span class="n">execvp</span><span class="p">(</span><span class="s">"gcc"</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>
+    <span class="n">perror</span><span class="p">(</span><span class="s">"execvp"</span><span class="p">);</span>   <span class="c1">// only reached on failure</span>
+    <span class="n">exit</span><span class="p">(</span><span class="mi">127</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Parent: wait for compiler to finish</span>
+<span class="kt">int</span> <span class="n">status</span><span class="p">;</span>
+<span class="n">waitpid</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">status</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"gcc exited: %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">WEXITSTATUS</span><span class="p">(</span><span class="n">status</span><span class="p">));</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="wait-and-waitpid--reaping-children"><code class="language-plaintext highlighter-rouge">wait()</code> and <code class="language-plaintext highlighter-rouge">waitpid()</code> — Reaping Children</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<p>When a child exits, it becomes a <strong>zombie</strong> — its PID and exit status are kept in the kernel until the parent calls <code class="language-plaintext highlighter-rouge">wait()</code>. Long-lived zombies waste PID table entries.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="cp">
+</span>
+<span class="c1">// Wait for any child</span>
+<span class="n">pid_t</span> <span class="n">pid</span> <span class="o">=</span> <span class="n">wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">status</span><span class="p">);</span>
+
+<span class="c1">// Wait for a specific child</span>
+<span class="n">pid_t</span> <span class="n">pid</span> <span class="o">=</span> <span class="n">waitpid</span><span class="p">(</span><span class="n">child_pid</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">status</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>       <span class="c1">// blocking</span>
+<span class="n">pid_t</span> <span class="n">pid</span> <span class="o">=</span> <span class="n">waitpid</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">status</span><span class="p">,</span> <span class="n">WNOHANG</span><span class="p">);</span>        <span class="c1">// non-blocking</span>
+
+<span class="c1">// Status macros</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">WIFEXITED</span><span class="p">(</span><span class="n">status</span><span class="p">))</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Normal exit: %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>  <span class="n">WEXITSTATUS</span><span class="p">(</span><span class="n">status</span><span class="p">));</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">WIFSIGNALED</span><span class="p">(</span><span class="n">status</span><span class="p">))</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Killed by signal: %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">WTERMSIG</span><span class="p">(</span><span class="n">status</span><span class="p">));</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">WIFSTOPPED</span><span class="p">(</span><span class="n">status</span><span class="p">))</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Stopped by signal: %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">WSTOPSIG</span><span class="p">(</span><span class="n">status</span><span class="p">));</span>
+</code></pre></div></div>
+
+<h3 id="reaping-multiple-children-with-sigchld">Reaping Multiple Children with SIGCHLD</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;signal.h&gt;</span><span class="cp">
+</span>
+<span class="c1">// Install SIGCHLD handler to reap children asynchronously</span>
+<span class="kt">void</span> <span class="nf">sigchld_handler</span><span class="p">(</span><span class="kt">int</span> <span class="n">sig</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">saved_errno</span> <span class="o">=</span> <span class="n">errno</span><span class="p">;</span>
+    <span class="c1">// Loop to catch all terminated children (may have multiple)</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">waitpid</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">WNOHANG</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">;</span>
+    <span class="n">errno</span> <span class="o">=</span> <span class="n">saved_errno</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">struct</span> <span class="n">sigaction</span> <span class="n">sa</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">sa_handler</span> <span class="o">=</span> <span class="n">sigchld_handler</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">sa_flags</span>   <span class="o">=</span> <span class="n">SA_RESTART</span> <span class="o">|</span> <span class="n">SA_NOCLDSTOP</span><span class="p">,</span>
+<span class="p">};</span>
+<span class="n">sigemptyset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sa</span><span class="p">.</span><span class="n">sa_mask</span><span class="p">);</span>
+<span class="n">sigaction</span><span class="p">(</span><span class="n">SIGCHLD</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sa</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="process-groups-sessions-and-daemons">Process Groups, Sessions, and Daemons</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="process-groups-and-sessions">Process Groups and Sessions</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Session (SID)
+ └── Process Group (PGID)
+      └── Process (PID)
+      └── Process (PID)
+ └── Process Group (PGID)
+      └── Process (PID)  ← foreground process group
+</code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Get/set process group</span>
+<span class="n">pid_t</span> <span class="n">pgid</span> <span class="o">=</span> <span class="n">getpgrp</span><span class="p">();</span>
+<span class="n">setpgid</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>          <span class="c1">// make this process a new process group leader</span>
+
+<span class="c1">// Get session ID</span>
+<span class="n">pid_t</span> <span class="n">sid</span> <span class="o">=</span> <span class="n">getsid</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+<span class="c1">// Create a new session (used in daemon creation)</span>
+<span class="n">pid_t</span> <span class="n">new_sid</span> <span class="o">=</span> <span class="n">setsid</span><span class="p">();</span>  <span class="c1">// process becomes session leader and process group leader</span>
+</code></pre></div></div>
+
+<h3 id="creating-a-daemon-process">Creating a Daemon Process</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;sys/stat.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+</span>
+<span class="kt">void</span> <span class="nf">daemonise</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Step 1: Fork and let parent exit (detaches from shell)</span>
+    <span class="n">pid_t</span> <span class="n">pid</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">pid</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">pid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>  <span class="c1">// parent exits</span>
+
+    <span class="c1">// Step 2: Create new session (detach from controlling terminal)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">setsid</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+
+    <span class="c1">// Step 3: Fork again (prevents re-acquiring controlling terminal)</span>
+    <span class="n">pid</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">pid</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">pid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
+
+    <span class="c1">// Step 4: Set file mode mask</span>
+    <span class="n">umask</span><span class="p">(</span><span class="mo">027</span><span class="p">);</span>
+
+    <span class="c1">// Step 5: Change working directory to /</span>
+    <span class="n">chdir</span><span class="p">(</span><span class="s">"/"</span><span class="p">);</span>
+
+    <span class="c1">// Step 6: Close all open file descriptors</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">sysconf</span><span class="p">(</span><span class="n">_SC_OPEN_MAX</span><span class="p">);</span> <span class="n">fd</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">fd</span><span class="o">--</span><span class="p">)</span>
+        <span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+
+    <span class="c1">// Step 7: Redirect stdin/stdout/stderr to /dev/null</span>
+    <span class="kt">int</span> <span class="n">devnull</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">"/dev/null"</span><span class="p">,</span> <span class="n">O_RDWR</span><span class="p">);</span>
+    <span class="n">dup2</span><span class="p">(</span><span class="n">devnull</span><span class="p">,</span> <span class="n">STDIN_FILENO</span><span class="p">);</span>
+    <span class="n">dup2</span><span class="p">(</span><span class="n">devnull</span><span class="p">,</span> <span class="n">STDOUT_FILENO</span><span class="p">);</span>
+    <span class="n">dup2</span><span class="p">(</span><span class="n">devnull</span><span class="p">,</span> <span class="n">STDERR_FILENO</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">devnull</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span> <span class="n">close</span><span class="p">(</span><span class="n">devnull</span><span class="p">);</span>
+
+    <span class="c1">// Daemon is now running detached from terminal</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>Modern alternative:</strong> Let systemd manage the process. Set <code class="language-plaintext highlighter-rouge">Type=forking</code> or use <code class="language-plaintext highlighter-rouge">sd_notify</code> with <code class="language-plaintext highlighter-rouge">Type=notify</code>.</p>
+
+<hr />
+
+<h2 id="posix_spawn--lighter-alternative"><code class="language-plaintext highlighter-rouge">posix_spawn()</code> — Lighter Alternative</h2>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;spawn.h&gt;</span><span class="cp">
+</span>
+<span class="c1">// posix_spawn: fork+exec in one step (more efficient on some platforms)</span>
+<span class="n">pid_t</span> <span class="n">pid</span><span class="p">;</span>
+<span class="kt">char</span><span class="o">*</span> <span class="k">const</span> <span class="n">argv</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="s">"ls"</span><span class="p">,</span> <span class="s">"-la"</span><span class="p">,</span> <span class="nb">NULL</span> <span class="p">};</span>
+<span class="kt">char</span><span class="o">*</span> <span class="k">const</span> <span class="n">envp</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="nb">NULL</span> <span class="p">};</span>
+
+<span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">posix_spawn</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pid</span><span class="p">,</span> <span class="s">"/bin/ls"</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">argv</span><span class="p">,</span> <span class="n">envp</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">ret</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span> <span class="n">errno</span> <span class="o">=</span> <span class="n">ret</span><span class="p">;</span> <span class="n">perror</span><span class="p">(</span><span class="s">"posix_spawn"</span><span class="p">);</span> <span class="p">}</span>
+
+<span class="n">waitpid</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">fork()</code> and <code class="language-plaintext highlighter-rouge">exec()</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">fork()</code> creates a <strong>copy</strong> of the current process — both parent and child continue running the same code. <code class="language-plaintext highlighter-rouge">exec()</code> <strong>replaces</strong> the current process image with a new program — the calling process ceases to run its old code. They are almost always used together: <code class="language-plaintext highlighter-rouge">fork()</code> creates a child, then the child calls <code class="language-plaintext highlighter-rouge">exec()</code> to run a different program, while the parent <code class="language-plaintext highlighter-rouge">wait()</code>s for it. PID does not change across <code class="language-plaintext highlighter-rouge">exec()</code>.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: What is a zombie process and how do you prevent it?</strong></p>
+
+<blockquote>
+  <p>When a process exits, it becomes a zombie until its parent calls <code class="language-plaintext highlighter-rouge">wait()</code> or <code class="language-plaintext highlighter-rouge">waitpid()</code> to collect its exit status. The kernel retains the process table entry (PID, exit code) until the parent reaps it. Zombies are prevented by: (1) calling <code class="language-plaintext highlighter-rouge">waitpid()</code> explicitly after spawning children, (2) installing a <code class="language-plaintext highlighter-rouge">SIGCHLD</code> handler that calls <code class="language-plaintext highlighter-rouge">waitpid(-1, NULL, WNOHANG)</code> in a loop, or (3) setting <code class="language-plaintext highlighter-rouge">SA_NOCLDWAIT</code> or <code class="language-plaintext highlighter-rouge">SIG_IGN</code> for <code class="language-plaintext highlighter-rouge">SIGCHLD</code> to tell the kernel to auto-reap children.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: Explain copy-on-write in <code class="language-plaintext highlighter-rouge">fork()</code>.</strong></p>
+
+<blockquote>
+  <p>After <code class="language-plaintext highlighter-rouge">fork()</code>, parent and child share the same physical memory pages, all marked read-only. When either process writes to a page, the MMU triggers a page fault. The kernel then allocates a new physical page, copies the content, and maps it into the writing process’s address space — only that page is duplicated. This makes <code class="language-plaintext highlighter-rouge">fork()</code> O(1) in cost regardless of process size, as long as no pages are written. It’s especially efficient for <code class="language-plaintext highlighter-rouge">fork()</code> + <code class="language-plaintext highlighter-rouge">exec()</code> patterns where the child immediately replaces its memory with a new program.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: What are the steps to create a proper POSIX daemon?</strong></p>
+
+<blockquote>
+  <p>(1) <code class="language-plaintext highlighter-rouge">fork()</code> and exit the parent — detaches from the shell’s process group. (2) <code class="language-plaintext highlighter-rouge">setsid()</code> to create a new session and detach from the controlling terminal. (3) <code class="language-plaintext highlighter-rouge">fork()</code> again to prevent the daemon from re-acquiring a controlling terminal. (4) <code class="language-plaintext highlighter-rouge">umask(0)</code> or <code class="language-plaintext highlighter-rouge">umask(027)</code> to set safe file creation permissions. (5) <code class="language-plaintext highlighter-rouge">chdir("/")</code> to avoid blocking unmounts. (6) Close all inherited file descriptors. (7) Redirect <code class="language-plaintext highlighter-rouge">stdin</code>/<code class="language-plaintext highlighter-rouge">stdout</code>/<code class="language-plaintext highlighter-rouge">stderr</code> to <code class="language-plaintext highlighter-rouge">/dev/null</code>. Modern practice is to use systemd with <code class="language-plaintext highlighter-rouge">Type=notify</code> and <code class="language-plaintext highlighter-rouge">sd_notify()</code> instead, which simplifies this considerably.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 2 fork</code></td>
+      <td>fork() manual</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 2 execve</code></td>
+      <td>exec family manual</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 2 waitpid</code></td>
+      <td>waitpid manual</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 daemon</code></td>
+      <td>Daemon creation guidelines</td>
+    </tr>
+    <tr>
+      <td>TLPI — The Linux Programming Interface</td>
+      <td>Chapters 24–27 (process creation)</td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-network-wired"></i>
+        <span>POSIX &amp; Concurrency</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/posix/file-io/" class="gtn-link ">
+          <i class="fas fa-file-code"></i> POSIX File I/O
+        </a>
+        <a href="/linux-developer/posix/processes-fork/" class="gtn-link gts-active">
+          <i class="fas fa-sitemap"></i> Processes &amp; fork()
+        </a>
+        <a href="/linux-developer/posix/signals/" class="gtn-link ">
+          <i class="fas fa-bolt"></i> Signals
+        </a>
+        <a href="/linux-developer/posix/unix-sockets/" class="gtn-link ">
+          <i class="fas fa-plug"></i> UNIX Sockets
+        </a>
+        <a href="/linux-developer/posix/pthreads/" class="gtn-link ">
+          <i class="fas fa-microchip"></i> Pthreads
+        </a>
+        <a href="/linux-developer/posix/mutexes-semaphores/" class="gtn-link ">
+          <i class="fas fa-lock"></i> Mutexes &amp; Semaphores
+        </a>
+        <a href="/linux-developer/posix/pipes-ipc/" class="gtn-link ">
+          <i class="fas fa-arrows-left-right"></i> Pipes &amp; Shared Memory
+        </a>
+      </nav>
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/posix/file-io/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">POSIX File I/O</span>
+      </a>
+      
+      
+      <a href="/linux-developer/posix/signals/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Signals</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

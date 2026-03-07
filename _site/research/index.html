@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Research — Eslam Mohamed · Eslam Mohamed</title>
+  <meta name="description" content="Current and past research on autonomous vehicles, federated learning, CNN architectures, and solar energy forecasting." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link active">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="about-page">
+  <div class="section-container" style="padding: 0 2rem 5rem;">
+    <div class="section-label">research work</div>
+    <h1 class="section-title">Research & Projects</h1>
+    <p class="section-subtitle">MSc research at Zewail City, spanning autonomous systems, distributed ML, and energy forecasting.</p>
+
+    <div class="research-card fade-up">
+      <div class="research-number">01</div>
+      <div class="research-content">
+        <span class="research-tag">Active · MSc Thesis</span>
+        <h3>Two-Stream CNN for Autonomous Vehicle Steering Angle Prediction</h3>
+        <div class="markdown-body" style="margin-top:0.75rem;">
+          <p>Implementing a dual-stream convolutional network combining a <strong>spatial RGB stream</strong>
+          and a <strong>temporal optical flow stream</strong> for end-to-end steering angle prediction.
+          The architecture processes both appearance and motion features in parallel before fusion.</p>
+          <p>Replicating and extending <em>Zhang et al.</em>'s federated learning automotive paper with full
+          PyTorch implementation. Key challenges addressed include optical flow method selection
+          (Farnebäck vs DIS vs TV-L1), FC layer dimensional alignment, and federated aggregation.</p>
+          <h3>Key contributions</h3>
+          <ul>
+            <li>Full PyTorch implementation of two-stream CNN with fusion layers</li>
+            <li>Comparative study of optical flow methods for temporal stream</li>
+            <li>FedAvg and asynchronous FL variants for multi-client training</li>
+            <li>Benchmark suite measuring inference time, throughput, and network latency</li>
+          </ul>
+        </div>
+        <div class="research-techs">
+          <span class="research-tech">PyTorch</span>
+          <span class="research-tech">OpenCV</span>
+          <span class="research-tech">Optical Flow</span>
+          <span class="research-tech">FedAvg</span>
+          <span class="research-tech">CNN</span>
+          <span class="research-tech">Python</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="research-card fade-up">
+      <div class="research-number">02</div>
+      <div class="research-content">
+        <span class="research-tag">Active</span>
+        <h3>Federated Learning for Privacy-Preserving Autonomous Driving</h3>
+        <div class="markdown-body" style="margin-top:0.75rem;">
+          <p>Designing and evaluating federated learning infrastructure for autonomous driving models.
+          Implemented <strong>FederatedServer</strong> and <strong>FederatedClient</strong> classes
+          supporting both synchronous FedAvg and asynchronous aggregation strategies.</p>
+          <p>Focus areas include communication efficiency (gradient compression, sparse updates),
+          convergence analysis across heterogeneous data distributions, and privacy guarantees
+          through differential privacy mechanisms.</p>
+        </div>
+        <div class="research-techs">
+          <span class="research-tech">Federated Learning</span>
+          <span class="research-tech">Differential Privacy</span>
+          <span class="research-tech">Distributed Systems</span>
+          <span class="research-tech">PyTorch</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="research-card fade-up">
+      <div class="research-number">03</div>
+      <div class="research-content">
+        <span class="research-tag">Literature Review & Implementation</span>
+        <h3>Solar Energy Forecasting: ARIMA & Time Series Methods</h3>
+        <div class="markdown-body" style="margin-top:0.75rem;">
+          <p>Deep literature review and practical implementation of ARIMA, SARIMA, and advanced
+          time series forecasting models for distributed solar storage systems. Part of a broader
+          study on power forecasting for smart grid optimization in Egypt.</p>
+          <p>Produced a comprehensive Jupyter notebook covering data preprocessing, stationarity tests,
+          model selection (AIC/BIC), and evaluation against LSTM baselines.</p>
+        </div>
+        <div class="research-techs">
+          <span class="research-tech">ARIMA</span>
+          <span class="research-tech">Time Series</span>
+          <span class="research-tech">statsmodels</span>
+          <span class="research-tech">Pandas</span>
+          <span class="research-tech">Solar Forecasting</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="research-card fade-up">
+      <div class="research-number">04</div>
+      <div class="research-content">
+        <span class="research-tag">Literature Survey</span>
+        <h3>Model Pruning & Compression for Autonomous Driving CNNs</h3>
+        <div class="markdown-body" style="margin-top:0.75rem;">
+          <p>Systematic literature review identifying the research gap at the intersection of
+          neural network pruning / compression and autonomous driving CNN deployment.
+          Survey covers structured pruning, quantization, knowledge distillation, and
+          NAS for edge inference on embedded automotive platforms.</p>
+        </div>
+        <div class="research-techs">
+          <span class="research-tech">Model Pruning</span>
+          <span class="research-tech">Quantization</span>
+          <span class="research-tech">Knowledge Distillation</span>
+          <span class="research-tech">Edge AI</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="research-card fade-up">
+      <div class="research-number">05</div>
+      <div class="research-content">
+        <span class="research-tag">Engineering Project</span>
+        <h3>IoT Security Research & LoRa Hardware for Egypt</h3>
+        <div class="markdown-body" style="margin-top:0.75rem;">
+          <p>Technical investigation of LoRa modules (SX1276/SX1262, TTGO, Ra-02) and NB-IoT
+          modules with Egyptian operator band compatibility. Produced detailed hardware
+          selection reports and MCP server project for ESP32 device control via Claude AI.</p>
+        </div>
+        <div class="research-techs">
+          <span class="research-tech">LoRa</span>
+          <span class="research-tech">NB-IoT</span>
+          <span class="research-tech">ESP32</span>
+          <span class="research-tech">IoT Security</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

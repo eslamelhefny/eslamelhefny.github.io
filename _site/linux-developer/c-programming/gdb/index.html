@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GDB Debugging · Eslam Mohamed</title>
+  <meta name="description" content="Master GDB — set breakpoints and watchpoints, inspect the call stack, analyse core dumps, debug remote embedded targets, and automate sessions with GDB scripts." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/c-programming/">C Programming</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>GDB Debugging</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 02</span>
+      </div>
+      <h1 class="guide-title">GDB Debugging</h1>
+      <p class="guide-subtitle">Master GDB — set breakpoints and watchpoints, inspect the call stack, analyse core dumps, debug remote embedded targets, and automate sessions with GDB scripts.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="starting-gdb">Starting GDB</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>Always compile with <code class="language-plaintext highlighter-rouge">-g</code> (debug info) and, if possible, <code class="language-plaintext highlighter-rouge">-O0</code> for easiest debugging:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gcc <span class="nt">-g</span> <span class="nt">-O0</span> <span class="nt">-o</span> program program.c
+gdb ./program
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Run with arguments</span>
+gdb <span class="nt">--args</span> ./program arg1 arg2
+
+<span class="c"># Attach to a running process</span>
+gdb <span class="nt">-p</span> 1234
+
+<span class="c"># Load a core dump</span>
+gdb ./program core
+
+<span class="c"># Batch mode (non-interactive)</span>
+gdb <span class="nt">-batch</span> <span class="nt">-ex</span> <span class="s2">"run"</span> <span class="nt">-ex</span> <span class="s2">"bt"</span> ./program
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="essential-commands">Essential Commands</h2>
+
+<h3 id="running-and-stepping">Running and Stepping</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Command</th>
+      <th>Short</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">run [args]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">r</code></td>
+      <td>Start/restart the program</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">continue</code></td>
+      <td><code class="language-plaintext highlighter-rouge">c</code></td>
+      <td>Resume after a breakpoint</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">next</code></td>
+      <td><code class="language-plaintext highlighter-rouge">n</code></td>
+      <td>Step over (don’t enter functions)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">step</code></td>
+      <td><code class="language-plaintext highlighter-rouge">s</code></td>
+      <td>Step into function calls</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">finish</code></td>
+      <td><code class="language-plaintext highlighter-rouge">fin</code></td>
+      <td>Run until current function returns</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">until 42</code></td>
+      <td><code class="language-plaintext highlighter-rouge">u 42</code></td>
+      <td>Run until line 42</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">quit</code></td>
+      <td><code class="language-plaintext highlighter-rouge">q</code></td>
+      <td>Exit GDB</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="breakpoints">Breakpoints</h3>
+
+<pre><code class="language-gdb">break main              # break at function entry
+break program.c:42      # break at specific line
+break sensor_read if temp &gt; 100  # conditional breakpoint
+info breakpoints        # list all breakpoints
+disable 2               # disable breakpoint #2
+enable 2                # re-enable
+delete 2                # delete breakpoint #2
+clear main              # remove all breakpoints at 'main'
+</code></pre>
+
+<h3 id="inspecting-state">Inspecting State</h3>
+
+<pre><code class="language-gdb">print x                 # print variable x
+print *ptr              # dereference pointer
+print arr[0]@10         # print 10 elements of array
+print/x value           # print in hexadecimal
+print/d value           # print in decimal
+print/t value           # print in binary
+display x               # print x automatically after every step
+undisplay 1             # stop auto-displaying item #1
+
+info locals             # all local variables in current frame
+info args               # function arguments
+whatis x                # show type of x
+ptype SensorRecord      # pretty-print struct type
+</code></pre>
+
+<hr />
+
+<h2 class="gc-mid" id="stack-and-memory">Stack and Memory</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="call-stack">Call Stack</h3>
+
+<pre><code class="language-gdb">backtrace               # (bt) show full call stack
+backtrace full          # show locals in each frame
+frame 3                 # switch to frame 3
+up                      # move up one frame
+down                    # move down one frame
+info frame              # details of current frame
+</code></pre>
+
+<p><strong>Sample backtrace:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(gdb) bt
+#0  0x00007f8b12345678 in __memcpy_sse2 ()
+#1  0x00000000004011a3 in parse_packet (buf=0x603000000010 "", len=128) at parser.c:45
+#2  0x00000000004012bb in process_input (fd=3) at main.c:87
+#3  0x0000000000401380 in main (argc=1, argv=0x7fffffffe548) at main.c:120
+</code></pre></div></div>
+
+<h3 id="watchpoints">Watchpoints</h3>
+
+<p>A watchpoint stops execution when a variable’s <strong>value changes</strong> — invaluable for “who changed this?”:</p>
+
+<pre><code class="language-gdb">watch global_counter        # break when global_counter is written
+rwatch data_ptr             # break when data_ptr is READ
+awatch data_ptr             # break when read OR written
+info watchpoints
+</code></pre>
+
+<h3 id="memory-inspection">Memory Inspection</h3>
+
+<pre><code class="language-gdb">x/10dw 0x7fffffffe550      # examine 10 decimal words at address
+x/20xb &amp;buf                # 20 hex bytes starting at buf
+x/s string_ptr             # print as null-terminated string
+x/i $pc                    # disassemble one instruction at PC
+disassemble main            # disassemble entire function
+</code></pre>
+
+<hr />
+
+<h2 class="gc-mid" id="core-dumps">Core Dumps</h2>
+
+<p>A core dump is a snapshot of the process’s memory and registers captured when it crashes (SIGSEGV, SIGABRT, etc.).</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Enable core dumps (disabled by default)</span>
+<span class="nb">ulimit</span> <span class="nt">-c</span> unlimited
+
+<span class="c"># Run the crashing program</span>
+./buggy_program
+<span class="c"># Segmentation fault (core dumped)</span>
+<span class="nb">ls</span> <span class="nt">-la</span> core<span class="k">*</span>
+
+<span class="c"># Analyse the core dump</span>
+gdb ./buggy_program core
+<span class="o">(</span>gdb<span class="o">)</span> bt           <span class="c"># see where it crashed</span>
+<span class="o">(</span>gdb<span class="o">)</span> info locals
+<span class="o">(</span>gdb<span class="o">)</span> print <span class="k">*</span>ptr
+</code></pre></div></div>
+
+<p><strong>Make core dump path configurable:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">echo</span> <span class="s1">'/tmp/core_%e_%p'</span> | <span class="nb">sudo tee</span> /proc/sys/kernel/core_pattern
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-remote-debugging-embedded-targets">Advanced: Remote Debugging Embedded Targets</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p>For embedded boards without a native GDB, use <code class="language-plaintext highlighter-rouge">gdbserver</code> on the target and connect from your host.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># On the TARGET board</span>
+gdbserver :3333 ./firmware
+<span class="c"># or attach to a running process:</span>
+gdbserver :3333 <span class="nt">--attach</span> 1234
+
+<span class="c"># On the HOST (development machine)</span>
+gdb-multiarch ./firmware
+<span class="o">(</span>gdb<span class="o">)</span> target remote 192.168.1.100:3333
+<span class="o">(</span>gdb<span class="o">)</span> <span class="nb">break </span>main
+<span class="o">(</span>gdb<span class="o">)</span> <span class="k">continue</span>
+</code></pre></div></div>
+
+<p><strong>Via SSH tunnel (secure):</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Tunnel the port</span>
+ssh <span class="nt">-N</span> <span class="nt">-f</span> <span class="nt">-L</span> 3333:localhost:3333 root@board
+
+<span class="c"># Then on host</span>
+gdb-multiarch ./firmware
+<span class="o">(</span>gdb<span class="o">)</span> target remote localhost:3333
+</code></pre></div></div>
+
+<h3 id="gdb-scripting-gdbinit-and-scripts">GDB Scripting (<code class="language-plaintext highlighter-rouge">.gdbinit</code> and scripts)</h3>
+
+<p>Automate repetitive debugging sessions:</p>
+
+<pre><code class="language-gdb"># ~/.gdbinit or project .gdbinit
+set pagination off
+set print pretty on
+set print array on
+set print array-indexes on
+
+define print_list
+    set $node = $arg0
+    while $node != 0
+        print *$node
+        set $node = $node-&gt;next
+    end
+end
+</code></pre>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Run a GDB script from the command line</span>
+gdb <span class="nt">-batch</span> <span class="nt">-x</span> debug_script.gdb ./program
+</code></pre></div></div>
+
+<pre><code class="language-gdb"># debug_script.gdb — automatically run and get a backtrace
+file ./program
+run
+backtrace
+quit
+</code></pre>
+
+<h3 id="tui-mode-text-user-interface">TUI Mode (Text User Interface)</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gdb <span class="nt">-tui</span> ./program      <span class="c"># or press Ctrl+X A inside GDB</span>
+</code></pre></div></div>
+
+<p>Shows source code, assembly, and registers in split panes inside the terminal.</p>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">next</code> and <code class="language-plaintext highlighter-rouge">step</code> in GDB?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">next</code> (n) executes the current line and stops at the <strong>next line in the same function</strong> — it does not descend into called functions. <code class="language-plaintext highlighter-rouge">step</code> (s) also executes one line, but <strong>follows function calls</strong> into their body. Use <code class="language-plaintext highlighter-rouge">next</code> to stay at the current level; use <code class="language-plaintext highlighter-rouge">step</code> to trace into a function’s implementation.</p>
+</blockquote>
+
+<p><strong>Q2 — Intermediate: How do watchpoints work and what is their performance cost?</strong></p>
+
+<blockquote>
+  <p>GDB implements watchpoints using either <strong>hardware breakpoints</strong> (x86 has 4 debug registers — DR0–DR3) or <strong>software watchpoints</strong> (single-stepping the entire program and checking the value after every instruction). Hardware watchpoints are fast; software watchpoints make the program run 1000× slower. For local variables, GDB usually manages to use hardware watchpoints. Global or heap variables that are far from the current instruction may fall back to software watchpoints.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: How do you load and analyse a core dump?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">gdb ./binary corefile</code>. GDB restores the register state and memory map from the core. Use <code class="language-plaintext highlighter-rouge">bt</code> to see the crash point, <code class="language-plaintext highlighter-rouge">frame N</code> to navigate the call stack, <code class="language-plaintext highlighter-rouge">print var</code> to inspect values at crash time. For stripped binaries, use <code class="language-plaintext highlighter-rouge">set solib-search-path</code> to point GDB to unstripped versions.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: How do you debug a program that crashes only in production (stripped, no debug symbols)?</strong></p>
+
+<blockquote>
+  <ol>
+    <li>Build with <code class="language-plaintext highlighter-rouge">-g</code> and store the unstripped binary separately (or use a separate debug package).</li>
+    <li>Enable core dumps in production (<code class="language-plaintext highlighter-rouge">/proc/sys/kernel/core_pattern</code>).</li>
+    <li>Use <code class="language-plaintext highlighter-rouge">gdb ./unstripped_binary corefile</code> — GDB uses the symbol information from the unstripped binary with the memory state from the core.</li>
+    <li>Alternatively, use <code class="language-plaintext highlighter-rouge">addr2line -e ./binary 0xADDRESS</code> to resolve crash addresses from logs to source lines.</li>
+    <li>For live production: <code class="language-plaintext highlighter-rouge">gdb -p PID</code> for a quick look, or use <code class="language-plaintext highlighter-rouge">strace</code>/<code class="language-plaintext highlighter-rouge">perf</code> for non-intrusive profiling.</li>
+  </ol>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GDB manual</td>
+      <td><a href="https://sourceware.org/gdb/documentation/">sourceware.org/gdb/documentation</a></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 1 gdb</code></td>
+      <td>GDB man page</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 1 gdbserver</code></td>
+      <td>Remote debugging server</td>
+    </tr>
+    <tr>
+      <td>Beej’s GDB tutorial</td>
+      <td><a href="https://beej.us/guide/bggdb/">beej.us/guide/bggdb</a></td>
+    </tr>
+    <tr>
+      <td>GDB cheat sheet</td>
+      <td><a href="https://darkdust.net/files/GDB%20Cheat%20Sheet.pdf">darkdust.net/files/GDB%20Cheat%20Sheet.pdf</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-file-code"></i>
+        <span>C Programming Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/c-programming/pointers-memory/" class="gtn-link ">
+          <i class="fas fa-memory"></i> Pointers &amp; Memory
+        </a>
+        <a href="/linux-developer/c-programming/structs-unions/" class="gtn-link ">
+          <i class="fas fa-cube"></i> Structs &amp; Unions
+        </a>
+        <a href="/linux-developer/c-programming/file-io/" class="gtn-link ">
+          <i class="fas fa-file-code"></i> File I/O
+        </a>
+        <a href="/linux-developer/c-programming/dynamic-allocation/" class="gtn-link ">
+          <i class="fas fa-layer-group"></i> Dynamic Allocation
+        </a>
+        <a href="/linux-developer/c-programming/makefiles/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> Makefiles
+        </a>
+        <a href="/linux-developer/c-programming/gcc-optimization/" class="gtn-link ">
+          <i class="fas fa-gears"></i> GCC Flags &amp; Optimization
+        </a>
+        <a href="/linux-developer/c-programming/gdb/" class="gtn-link gts-active">
+          <i class="fas fa-bug"></i> GDB Debugging
+        </a>
+      </nav>
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/c-programming/gcc-optimization/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">GCC Flags & Optimization</span>
+      </a>
+      
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

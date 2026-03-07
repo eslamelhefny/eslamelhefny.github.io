@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Boot Parameters · Eslam Mohamed</title>
+  <meta name="description" content="Understand and configure the Linux kernel command line — from essential root and console parameters to NFS boot, Device Tree integration, and custom parameter registration." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/embedded-linux/">Embedded Linux Developer</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Boot Parameters</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 03 — Embedded Linux</span>
+        <span class="guide-stage-pill">Stage 07</span>
+      </div>
+      <h1 class="guide-title">Boot Parameters</h1>
+      <p class="guide-subtitle">Understand and configure the Linux kernel command line — from essential root and console parameters to NFS boot, Device Tree integration, and custom parameter registration.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="what-is-the-kernel-command-line">What Is the Kernel Command Line?</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>The kernel command line is a string of parameters passed to the Linux kernel at boot time. It controls fundamental boot behavior: which device contains the root filesystem, which serial port to use for console output, what init process to launch, and hundreds of other options.</p>
+
+<p>The command line is passed by the bootloader. In U-Boot, it is stored in the <code class="language-plaintext highlighter-rouge">bootargs</code> environment variable. The kernel reads it very early in the boot process, before most subsystems are initialized.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># View the kernel command line on a running system</span>
+<span class="nv">$ </span><span class="nb">cat</span> /proc/cmdline
+<span class="nv">root</span><span class="o">=</span>/dev/mmcblk0p2 rootwait <span class="nv">rootfstype</span><span class="o">=</span>ext4 <span class="nv">console</span><span class="o">=</span>ttyS0,115200 rw quiet
+
+<span class="c"># The bootloader passed this string to the kernel</span>
+<span class="c"># Each space-separated token is one parameter</span>
+</code></pre></div></div>
+
+<p>The kernel passes the command line through the entire boot process. Any parameter that is not recognized by the kernel core is either passed to specific subsystems or saved for later processing by init.</p>
+
+<hr />
+
+<h3 id="essential-parameters">Essential Parameters</h3>
+
+<h4 id="root--specifying-the-root-filesystem-device">root= — Specifying the Root Filesystem Device</h4>
+
+<p>The <code class="language-plaintext highlighter-rouge">root=</code> parameter tells the kernel where to find the root filesystem to mount after the initial boot sequence:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Common root= values:
+
+# MMC/SD card partition (eMMC)
+root=/dev/mmcblk0p2      # Second partition of first MMC device
+root=/dev/mmcblk1p1      # First partition of second MMC device
+
+# SATA/USB disk
+root=/dev/sda2            # Second partition of first SATA/USB disk
+
+# NFS root (network boot)
+root=/dev/nfs
+
+# initramfs (built into kernel)
+root=/dev/ram0
+
+# NAND flash with UBI
+root=ubi0:rootfs          # UBI volume named "rootfs"
+</code></pre></div></div>
+
+<h4 id="rootfstype--filesystem-type">rootfstype= — Filesystem Type</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rootfstype=ext4           # ext4 (most common on SD cards and eMMC)
+rootfstype=squashfs       # read-only compressed (good for embedded ROM)
+rootfstype=ubifs          # UBI filesystem for raw NAND flash
+rootfstype=jffs2          # older NAND filesystem
+rootfstype=nfs            # for network root
+</code></pre></div></div>
+
+<h4 id="console--serial-console">console= — Serial Console</h4>
+
+<p>The <code class="language-plaintext highlighter-rouge">console=</code> parameter connects kernel messages and the kernel’s console to a specific device:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>console=ttyS0,115200      # Standard UART (8250), 115200 baud
+console=ttyS0,115200n8    # Explicit: 115200 baud, No parity, 8 bits
+console=ttyAMA0,115200    # ARM PL011 UART (Raspberry Pi, Versatile)
+console=ttymxc0,115200    # i.MX6 UART
+console=ttyO0,115200      # OMAP UART
+console=tty0              # VGA console (if you have a display)
+console=tty1              # Second VGA console
+</code></pre></div></div>
+
+<p>You can specify multiple <code class="language-plaintext highlighter-rouge">console=</code> parameters to send output to multiple destinations:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>console=ttyS0,115200 console=tty0
+</code></pre></div></div>
+
+<h4 id="init--init-process">init= — Init Process</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>init=/sbin/init           # Default (SysV init or systemd via symlink)
+init=/bin/sh              # Boot directly to a shell (emergency/debug mode)
+init=/sbin/busybox sh     # BusyBox shell (common in minimal embedded systems)
+</code></pre></div></div>
+
+<h4 id="rw--ro--root-mount-mode">rw / ro — Root Mount Mode</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rw    # Mount root filesystem read-write (normal operation)
+ro    # Mount root filesystem read-only (safer for power-fail scenarios)
+      # Useful for flash-based systems to prevent filesystem corruption
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="a-complete-minimal-command-line">A Complete Minimal Command Line</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Typical embedded system boot command line</span>
+<span class="nv">root</span><span class="o">=</span>/dev/mmcblk0p2 rootwait <span class="nv">rootfstype</span><span class="o">=</span>ext4 <span class="nv">console</span><span class="o">=</span>ttyS0,115200 rw
+
+<span class="c"># What each parameter does:</span>
+<span class="c"># root=/dev/mmcblk0p2   - root is the 2nd partition of the eMMC</span>
+<span class="c"># rootwait              - wait indefinitely for the root device to appear</span>
+<span class="c"># rootfstype=ext4       - mount as ext4 (skip auto-detection for speed)</span>
+<span class="c"># console=ttyS0,115200  - serial console on UART0 at 115200 baud</span>
+<span class="c"># rw                    - mount root read-write</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="setting-bootargs-in-u-boot">Setting bootargs in U-Boot</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># In U-Boot interactive console:</span>
+
+<span class="c"># Set bootargs environment variable</span>
+<span class="o">=&gt;</span> setenv bootargs <span class="s1">'root=/dev/mmcblk0p2 rootwait console=ttyAMA0,115200 rw'</span>
+
+<span class="c"># Verify it was set</span>
+<span class="o">=&gt;</span> <span class="nb">printenv </span>bootargs
+<span class="nv">bootargs</span><span class="o">=</span><span class="nv">root</span><span class="o">=</span>/dev/mmcblk0p2 rootwait <span class="nv">console</span><span class="o">=</span>ttyAMA0,115200 rw
+
+<span class="c"># Save to persistent storage (NAND/eMMC/SPI flash)</span>
+<span class="o">=&gt;</span> saveenv
+Saving Environment to MMC... Writing to MMC<span class="o">(</span>0<span class="o">)</span>... OK
+
+<span class="c"># Boot the kernel (the bootloader passes bootargs to the kernel automatically)</span>
+<span class="o">=&gt;</span> bootz <span class="k">${</span><span class="nv">loadaddr</span><span class="k">}</span> - <span class="k">${</span><span class="nv">fdtaddr</span><span class="k">}</span>
+
+<span class="c"># Or set bootargs and boot in one command</span>
+<span class="o">=&gt;</span> setenv bootargs <span class="s1">'root=/dev/mmcblk0p2 rootwait console=ttyAMA0,115200 rw quiet'</span> <span class="o">&amp;&amp;</span> bootz <span class="k">${</span><span class="nv">loadaddr</span><span class="k">}</span> - <span class="k">${</span><span class="nv">fdtaddr</span><span class="k">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="console-and-debug-parameters">Console and Debug Parameters</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="console-syntax-in-detail">console= Syntax in Detail</h3>
+
+<p>The full syntax for <code class="language-plaintext highlighter-rouge">console=</code> is:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>console=&lt;device&gt;,&lt;options&gt;
+
+# &lt;options&gt; format: &lt;baud&gt;&lt;parity&gt;&lt;bits&gt;&lt;flowcontrol&gt;
+# parity: n (none), e (even), o (odd)
+# bits: 5, 6, 7, 8
+# flowcontrol: r (RTS), omit for none
+
+console=ttyS0,115200n8    # 115200 baud, no parity, 8 bits (most common)
+console=ttyS1,9600o7      # 9600 baud, odd parity, 7 bits (rare legacy)
+</code></pre></div></div>
+
+<p>Common UART device names by platform:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Driver</th>
+      <th>Device</th>
+      <th>Platform</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>8250/16550</td>
+      <td><code class="language-plaintext highlighter-rouge">ttyS0</code>, <code class="language-plaintext highlighter-rouge">ttyS1</code></td>
+      <td>x86, many embedded</td>
+    </tr>
+    <tr>
+      <td>PL011</td>
+      <td><code class="language-plaintext highlighter-rouge">ttyAMA0</code>, <code class="language-plaintext highlighter-rouge">ttyAMA1</code></td>
+      <td>ARM Versatile, RPi, STM32MP1</td>
+    </tr>
+    <tr>
+      <td>i.MX</td>
+      <td><code class="language-plaintext highlighter-rouge">ttymxc0</code>, <code class="language-plaintext highlighter-rouge">ttymxc1</code></td>
+      <td>NXP i.MX6/8</td>
+    </tr>
+    <tr>
+      <td>OMAP</td>
+      <td><code class="language-plaintext highlighter-rouge">ttyO0</code>, <code class="language-plaintext highlighter-rouge">ttyO1</code></td>
+      <td>TI AM335x, AM57xx</td>
+    </tr>
+    <tr>
+      <td>Exynos</td>
+      <td><code class="language-plaintext highlighter-rouge">ttySAC0</code></td>
+      <td>Samsung Exynos</td>
+    </tr>
+    <tr>
+      <td>DW UART</td>
+      <td><code class="language-plaintext highlighter-rouge">ttyS0</code> (via 8250-dw)</td>
+      <td>Allwinner, Rockchip</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h3 id="earlycon--console-before-full-driver-init">earlycon — Console Before Full Driver Init</h3>
+
+<p>The regular <code class="language-plaintext highlighter-rouge">console=</code> only works after the kernel has initialized the UART driver, which happens relatively late in boot. <code class="language-plaintext highlighter-rouge">earlycon</code> gives you console output from the very beginning of the kernel boot, using hardcoded register addresses:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># earlycon with explicit base address (most reliable)
+earlycon=pl011,0x10009000           # PL011 at a specific address
+earlycon=uart8250,mmio32,0x1c090000 # 8250 MMIO at address
+
+# earlycon from Device Tree (kernel reads UART address from DT)
+earlycon
+
+# Combined: earlycon for early messages + regular console after init
+earlycon=pl011,0x10009000 console=ttyAMA0,115200
+
+# On ARM, earlycon often uses the chosen node in Device Tree
+# if the DT specifies stdout-path = "uart0:115200n8";
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># With earlycon, you see output immediately after the kernel decompresses:</span>
+<span class="o">[</span>    0.000000] Booting Linux on physical CPU 0x0
+<span class="o">[</span>    0.000000] Linux version 6.1.55 <span class="o">(</span>user@build<span class="o">)</span> <span class="o">(</span>arm-linux-gnueabihf-gcc<span class="o">)</span>
+<span class="o">[</span>    0.000000] CPU: ARMv7 Processor <span class="o">[</span>410fc090] revision 0 <span class="o">(</span>ARMv7<span class="o">)</span>, <span class="nv">cr</span><span class="o">=</span>10c5387d
+<span class="o">[</span>    0.000000] CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instr cache
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="log-level-parameters">Log Level Parameters</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># quiet: suppress most kernel messages (only KERN_WARNING and above)
+quiet
+
+# loglevel=N: set console log level (0-7)
+# Messages with level &lt; N are printed to console
+loglevel=0    # Only KERN_EMERG (critical failures only)
+loglevel=4    # KERN_WARNING and more severe (common for production)
+loglevel=7    # All messages including KERN_DEBUG (development)
+loglevel=8    # All messages
+
+# debug: equivalent to loglevel=8, enables all kernel debug messages
+# WARNING: produces enormous output, use only when debugging
+debug
+
+# ignore_loglevel: print ALL messages regardless of log level setting
+# Use for debugging early boot issues where normal loglevel suppresses output
+ignore_loglevel
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="rootdelay-and-rootwait">rootdelay= and rootwait</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># rootdelay=N: wait N seconds before trying to mount root
+# Deprecated, use rootwait instead
+rootdelay=5
+
+# rootwait: wait indefinitely for the root device to appear
+# Essential for USB, SD card, and network devices that take time to enumerate
+# Without rootwait, the kernel may give up before the device is ready:
+# [    2.847382] VFS: Cannot open root device "sda2" or unknown-block(8,2)
+# [    2.847390] Please append a correct "root=" boot option
+rootwait
+
+# rootwait with a timeout (kernel 5.15+)
+rootwait=10   # Wait up to 10 seconds
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="nand-flash-boot-parameters">NAND Flash Boot Parameters</h3>
+
+<p>Raw NAND flash uses MTD (Memory Technology Device) subsystem with UBI (Unsorted Block Images):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># NAND root with UBI + UBIFS
+ubi.mtd=2 ubi.volume=rootfs root=ubi0:rootfs rootfstype=ubifs
+
+# Breaking it down:
+# ubi.mtd=2        - attach MTD device 2 as UBI
+# ubi.volume=rootfs - the UBI volume name for root
+# root=ubi0:rootfs  - root from UBI device 0, volume "rootfs"
+# rootfstype=ubifs  - mount as UBIFS
+
+# Check MTD devices on a running system
+$ cat /proc/mtd
+dev:    size   erasesize  name
+mtd0: 00200000 00020000 "u-boot"
+mtd1: 00100000 00020000 "u-boot-env"
+mtd2: 00600000 00020000 "kernel"
+mtd3: 1f100000 00020000 "rootfs"
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="kernel-panic-behavior">Kernel Panic Behavior</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># panic=N: reboot N seconds after a kernel panic (0 = don't reboot)
+panic=5         # Reboot after 5 seconds (good for production systems)
+panic=0         # Don't reboot, freeze (good for debugging)
+panic=-1        # Reboot immediately
+
+# oops=panic: treat oops (non-fatal errors) as panics (strict mode)
+oops=panic
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="network-boot-parameters">Network Boot Parameters</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># ip= parameter: configure networking for NFS root or network-only use
+ip=dhcp                              # DHCP (most common)
+ip=autoconf                          # RARP/BOOTP/DHCP
+ip=192.168.1.100::192.168.1.1:255.255.255.0:myboard:eth0:off
+# Format: ip=&lt;client-IP&gt;:&lt;server-IP&gt;:&lt;gateway-IP&gt;:&lt;netmask&gt;:&lt;hostname&gt;:&lt;device&gt;:&lt;autoconf&gt;
+
+# nfsroot: root filesystem over NFS
+nfsroot=192.168.1.1:/srv/nfs/rootfs
+nfsroot=192.168.1.1:/srv/nfs/rootfs,v3,tcp
+
+# Full NFS root command line example:
+root=/dev/nfs nfsroot=192.168.1.1:/srv/nfs/myboard ip=dhcp console=ttyS0,115200 rw
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-parameters">Advanced Parameters</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="device-tree-chosen-node-and-bootargs">Device Tree chosen Node and bootargs</h3>
+
+<p>In Device Tree-based systems, the bootloader can also set the kernel command line through the <code class="language-plaintext highlighter-rouge">chosen</code> node. The kernel merges the DT <code class="language-plaintext highlighter-rouge">bootargs</code> property with any command line passed directly:</p>
+
+<pre><code class="language-dts">/* Device Tree Source — board.dts */
+/ {
+    chosen {
+        /* Kernel command line embedded in DT */
+        bootargs = "console=ttyAMA0,115200 rootfstype=ext4 rw";
+
+        /* stdout-path tells earlycon which UART to use */
+        stdout-path = "uart0:115200n8";
+
+        /* The kernel can load initramfs from DT */
+        linux,initrd-start = &lt;0x82000000&gt;;
+        linux,initrd-end   = &lt;0x82800000&gt;;
+    };
+};
+</code></pre>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># U-Boot can update the chosen/bootargs property at runtime</span>
+<span class="c"># using the fdt command:</span>
+<span class="o">=&gt;</span> fdt addr <span class="k">${</span><span class="nv">fdtaddr</span><span class="k">}</span>
+<span class="o">=&gt;</span> fdt <span class="nb">set</span> /chosen bootargs <span class="s2">"root=/dev/mmcblk0p2 rootwait console=ttyAMA0,115200 rw"</span>
+<span class="o">=&gt;</span> bootz <span class="k">${</span><span class="nv">loadaddr</span><span class="k">}</span> - <span class="k">${</span><span class="nv">fdtaddr</span><span class="k">}</span>
+
+<span class="c"># The kernel reads bootargs from the chosen node during early boot</span>
+<span class="c"># If both DT bootargs and U-Boot bootargs exist, U-Boot's value takes precedence</span>
+<span class="c"># (U-Boot writes its bootargs env variable into the DT before booting)</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="memory-layout-parameters">Memory Layout Parameters</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># mem=: limit how much memory the kernel uses
+# Useful for testing with less RAM or reserving memory for hardware
+mem=256M         # Pretend only 256MB RAM exists
+
+# memmap=: reserve or map specific memory ranges
+memmap=64M$512M  # Reserve 64MB starting at physical address 512MB
+                 # Format: size$start
+
+# cma=: size of Contiguous Memory Allocator pool (for DMA)
+# Graphics, video codecs, and camera ISPs often need large contiguous buffers
+cma=128M
+
+# hugepages: pre-allocate huge pages for applications that need them
+hugepages=32     # 32 x 2MB = 64MB of huge pages
+hugepagesz=2M
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="cpu-and-smp-parameters">CPU and SMP Parameters</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># maxcpus=N: limit number of CPUs used at boot
+# (remaining CPUs can be hot-plugged later)
+maxcpus=1        # Boot with only one CPU (debugging SMP issues)
+maxcpus=2
+
+# nr_cpus=N: hard limit — CPUs above this are never used even if hotplugged
+nr_cpus=4
+
+# Disable SMP entirely (single CPU mode)
+nosmp
+
+# isolcpus: isolate CPUs from normal scheduling (for real-time tasks)
+isolcpus=2,3     # CPUs 2 and 3 are reserved for RT tasks only
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="security-and-hardening-parameters">Security and Hardening Parameters</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># KASLR (Kernel Address Space Layout Randomization)
+# Randomizes kernel memory layout to make exploits harder
+# Enabled by default in modern kernels; disable for debugging
+nokaslr          # Disable KASLR (makes kernel addresses predictable for debugging)
+
+# SELinux
+selinux=0        # Disable SELinux enforcement
+selinux=1        # Enable SELinux (requires policy in rootfs)
+
+# AppArmor
+apparmor=0       # Disable AppArmor
+apparmor=1       # Enable AppArmor
+
+# Kernel audit subsystem
+audit=0          # Disable kernel audit (saves overhead on embedded)
+audit=1          # Enable kernel audit
+
+# Stack protector (if compiled in with CONFIG_STACKPROTECTOR)
+# Cannot be disabled at runtime — must be controlled at compile time
+
+# Disable speculative execution mitigations (for performance testing only)
+nospectre_v2
+nopti            # Disable page table isolation (Meltdown mitigation)
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="complete-documentation-reference">Complete Documentation Reference</h3>
+
+<p>The authoritative reference for all kernel parameters is:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># In the kernel source tree</span>
+<span class="nv">$ </span><span class="nb">wc</span> <span class="nt">-l</span> Documentation/admin-guide/kernel-parameters.txt
+2847 Documentation/admin-guide/kernel-parameters.txt
+
+<span class="c"># Search for a specific parameter</span>
+<span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-A5</span> <span class="s2">"^	rootwait"</span> Documentation/admin-guide/kernel-parameters.txt
+	rootwait	<span class="o">[</span>KNL] Wait <span class="o">(</span>indefinitely<span class="o">)</span> <span class="k">for </span>root device to show up.
+			Useful <span class="k">for </span>devices that are detected asynchronously
+			<span class="o">(</span>e.g. USB and MMC devices<span class="o">)</span><span class="nb">.</span> Parameter value is
+			optional, and <span class="k">if </span>omitted, kernel will <span class="nb">wait
+			</span>indefinitely. If a value is given, it will be used
+			as the <span class="nb">wait timeout</span> <span class="o">(</span><span class="k">in </span>seconds<span class="o">)</span><span class="nb">.</span>
+
+<span class="c"># On a running system, see what parameters are recognized</span>
+<span class="nv">$ </span><span class="nb">cat</span> /sys/module/<span class="k">*</span>/parameters/<span class="k">*</span> 2&gt;/dev/null | <span class="nb">head</span> <span class="nt">-20</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="adding-custom-kernel-parameters-with-__setup">Adding Custom Kernel Parameters with __setup()</h3>
+
+<p>When you write a kernel subsystem or driver that needs its own boot parameter, use the <code class="language-plaintext highlighter-rouge">__setup()</code> macro:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* my_driver/mydevice.c */</span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;linux/init.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/string.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/printk.h&gt;</span><span class="cp">
+</span>
+<span class="k">static</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">mydevice_debug_level</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="k">static</span> <span class="kt">char</span> <span class="n">mydevice_mode</span><span class="p">[</span><span class="mi">32</span><span class="p">]</span> <span class="o">=</span> <span class="s">"normal"</span><span class="p">;</span>
+
+<span class="cm">/* Handler called when "mydevice.debug=" is found in cmdline */</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="n">__init</span> <span class="nf">mydevice_debug_setup</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">str</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">kstrtouint</span><span class="p">(</span><span class="n">str</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mydevice_debug_level</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>  <span class="cm">/* parse failed */</span>
+    <span class="n">pr_info</span><span class="p">(</span><span class="s">"mydevice: debug level set to %u</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">mydevice_debug_level</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>  <span class="cm">/* 1 = successfully consumed the parameter */</span>
+<span class="p">}</span>
+<span class="cm">/* Register "mydevice.debug=N" as a kernel boot parameter */</span>
+<span class="n">__setup</span><span class="p">(</span><span class="s">"mydevice.debug="</span><span class="p">,</span> <span class="n">mydevice_debug_setup</span><span class="p">);</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="n">__init</span> <span class="nf">mydevice_mode_setup</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">str</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">strlcpy</span><span class="p">(</span><span class="n">mydevice_mode</span><span class="p">,</span> <span class="n">str</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">mydevice_mode</span><span class="p">));</span>
+    <span class="n">pr_info</span><span class="p">(</span><span class="s">"mydevice: mode set to '%s'</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">mydevice_mode</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="n">__setup</span><span class="p">(</span><span class="s">"mydevice.mode="</span><span class="p">,</span> <span class="n">mydevice_mode_setup</span><span class="p">);</span>
+
+<span class="cm">/* These can now be used in the command line:
+ * mydevice.debug=3 mydevice.mode=turbo
+ */</span>
+</code></pre></div></div>
+
+<p>For module parameters that also work as boot parameters (when the driver is built-in):</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;linux/moduleparam.h&gt;</span><span class="cp">
+</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="n">debug</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="n">module_param</span><span class="p">(</span><span class="n">debug</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="mo">0644</span><span class="p">);</span>
+<span class="n">MODULE_PARM_DESC</span><span class="p">(</span><span class="n">debug</span><span class="p">,</span> <span class="s">"Enable debug output (0=off, 1=on)"</span><span class="p">);</span>
+
+<span class="cm">/* When built as module: modprobe mydevice debug=1
+ * When built-in: kernel cmdline: mydevice.debug=1
+ */</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-questions">Interview Questions</h2>
+
+<p><strong>Q: What is the root= kernel parameter and what values can it take?</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">root=</code> specifies the block device containing the root filesystem. Common values include: <code class="language-plaintext highlighter-rouge">/dev/mmcblk0p2</code> (second partition of the first MMC/eMMC device), <code class="language-plaintext highlighter-rouge">/dev/sda1</code> (first partition of a SATA or USB disk), <code class="language-plaintext highlighter-rouge">/dev/nfs</code> (network filesystem via NFS), <code class="language-plaintext highlighter-rouge">ubi0:rootfs</code> (UBI volume on NAND flash), and <code class="language-plaintext highlighter-rouge">/dev/ram0</code> (initramfs in RAM). The value can also use the <code class="language-plaintext highlighter-rouge">PARTUUID=</code> or <code class="language-plaintext highlighter-rouge">UUID=</code> form to identify partitions by UUID rather than device name, which is more robust when device enumeration order changes.</p>
+
+<p><strong>Q: What is the difference between rootwait and rootdelay?</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">rootdelay=N</code> causes the kernel to sleep for exactly N seconds before attempting to mount the root filesystem — it always waits that long even if the device appears in 1 second. <code class="language-plaintext highlighter-rouge">rootwait</code> tells the kernel to poll continuously and proceed as soon as the root device appears, with no fixed timeout (kernel 5.15+ supports <code class="language-plaintext highlighter-rouge">rootwait=N</code> for a maximum wait time). <code class="language-plaintext highlighter-rouge">rootwait</code> is the preferred modern approach because it is faster (no unnecessary delay) and more reliable for devices like USB and SD cards that have unpredictable enumeration time.</p>
+
+<p><strong>Q: How do you enable early console output on a serial port?</strong></p>
+
+<p>Use the <code class="language-plaintext highlighter-rouge">earlycon=</code> parameter, which activates the serial port before the full UART driver is initialized. For a PL011 UART at a known physical address: <code class="language-plaintext highlighter-rouge">earlycon=pl011,0x10009000</code>. For Device Tree-based systems that define <code class="language-plaintext highlighter-rouge">stdout-path</code> in the <code class="language-plaintext highlighter-rouge">chosen</code> node, simply <code class="language-plaintext highlighter-rouge">earlycon</code> (no arguments) is sufficient — the kernel reads the UART address from the DT. Combine it with <code class="language-plaintext highlighter-rouge">console=ttyAMA0,115200</code> to get both early boot messages and the regular console: <code class="language-plaintext highlighter-rouge">earlycon=pl011,0x10009000 console=ttyAMA0,115200</code>.</p>
+
+<p><strong>Q: How does the Device Tree’s chosen node relate to kernel parameters?</strong></p>
+
+<p>The <code class="language-plaintext highlighter-rouge">chosen</code> node in the Device Tree (under the root <code class="language-plaintext highlighter-rouge">/</code> node) contains a <code class="language-plaintext highlighter-rouge">bootargs</code> property that the kernel reads as additional kernel command line parameters. U-Boot typically writes its <code class="language-plaintext highlighter-rouge">bootargs</code> environment variable into the DT’s <code class="language-plaintext highlighter-rouge">chosen/bootargs</code> before booting, so the DT <code class="language-plaintext highlighter-rouge">bootargs</code> reflects the bootloader’s choice. The <code class="language-plaintext highlighter-rouge">stdout-path</code> property in <code class="language-plaintext highlighter-rouge">chosen</code> tells the kernel (and earlycon) which UART to use for early console output, allowing the kernel to find the console without needing explicit address information in the command line.</p>
+
+<p><strong>Q: What parameters would you use for an NFS root filesystem boot?</strong></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>root=/dev/nfs nfsroot=192.168.1.1:/srv/nfs/myboard,v3,tcp ip=dhcp console=ttyS0,115200 rw
+</code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">root=/dev/nfs</code> tells the VFS to use NFS as root. <code class="language-plaintext highlighter-rouge">nfsroot=&lt;server-IP&gt;:&lt;export-path&gt;</code> specifies the NFS server and exported directory. <code class="language-plaintext highlighter-rouge">ip=dhcp</code> (or a static IP) configures the network interface early enough for NFS to work before init runs. <code class="language-plaintext highlighter-rouge">v3,tcp</code> selects NFS version 3 over TCP for reliability. On the server side, the path must be exported in <code class="language-plaintext highlighter-rouge">/etc/exports</code> and <code class="language-plaintext highlighter-rouge">rpcbind</code>/<code class="language-plaintext highlighter-rouge">nfs-kernel-server</code> must be running.</p>
+
+<p><strong>Q: How do you add a custom kernel boot parameter in your own kernel module?</strong></p>
+
+<p>Use the <code class="language-plaintext highlighter-rouge">__setup()</code> macro for subsystems or built-in drivers. Define a setup function with signature <code class="language-plaintext highlighter-rouge">int __init myfunc(char *str)</code> that parses the string after the <code class="language-plaintext highlighter-rouge">=</code> sign and returns 1 on success. Pass the parameter name (including <code class="language-plaintext highlighter-rouge">=</code>) and the function to <code class="language-plaintext highlighter-rouge">__setup("mydriver.param=", myfunc)</code>. The function is called before <code class="language-plaintext highlighter-rouge">module_init()</code> runs. For loadable modules, use <code class="language-plaintext highlighter-rouge">module_param(varname, type, permissions)</code> which also becomes a kernel cmdline parameter when the module is compiled in (using the <code class="language-plaintext highlighter-rouge">modulename.paramname=value</code> syntax).</p>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<ul>
+  <li><strong>Linux kernel parameter reference:</strong> <code class="language-plaintext highlighter-rouge">Documentation/admin-guide/kernel-parameters.txt</code> in the kernel source — the definitive list of all recognized parameters</li>
+  <li><strong>“Mastering Embedded Linux Programming” by Chris Simmonds</strong> — U-Boot bootargs, NFS root, and practical embedded boot scenarios</li>
+  <li><strong>Serial console documentation:</strong> <code class="language-plaintext highlighter-rouge">Documentation/admin-guide/serial-console.rst</code> — console= syntax and multiple console support</li>
+  <li><strong>earlycon documentation:</strong> <code class="language-plaintext highlighter-rouge">Documentation/admin-guide/earlyprintk.rst</code> — early console setup before driver initialization</li>
+  <li><strong>Device Tree chosen node:</strong> <code class="language-plaintext highlighter-rouge">Documentation/devicetree/booting-without-of.txt</code> — how the bootloader communicates with the kernel via DT</li>
+  <li><strong>NFS root documentation:</strong> <code class="language-plaintext highlighter-rouge">Documentation/admin-guide/nfs/nfsroot.rst</code> — complete NFS root boot setup guide</li>
+</ul>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fab fa-linux"></i>
+        <span>Linux Kernel Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/embedded-linux/kernel/kconfig-menuconfig/" class="gtn-link ">
+          <i class="fas fa-sliders"></i> Kconfig &amp; menuconfig
+        </a>
+        <a href="/embedded-linux/kernel/kernel-compilation/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> Kernel Compilation
+        </a>
+        <a href="/embedded-linux/kernel/boot-parameters/" class="gtn-link gts-active">
+          <i class="fas fa-list-check"></i> Boot Parameters
+        </a>
+        <a href="/embedded-linux/kernel/kernel-subsystems/" class="gtn-link ">
+          <i class="fab fa-linux"></i> Kernel Subsystems
+        </a>
+        <a href="/embedded-linux/kernel/printk-debug/" class="gtn-link ">
+          <i class="fas fa-bug"></i> printk &amp; Dynamic Debug
+        </a>
+        <a href="/embedded-linux/kernel/ftrace-kprobes/" class="gtn-link ">
+          <i class="fas fa-chart-line"></i> ftrace &amp; kprobes
+        </a>
+      </nav>
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/embedded-linux/kernel/kernel-compilation/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Kernel Compilation</span>
+      </a>
+      
+      
+      <a href="/embedded-linux/kernel/kernel-subsystems/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Kernel Subsystems</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

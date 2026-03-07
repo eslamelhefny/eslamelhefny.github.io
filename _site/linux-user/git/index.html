@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Git Basics · Eslam Mohamed</title>
+  <meta name="description" content="Track code with Git — commits, branching strategies, merging vs rebasing, working with remotes, undoing mistakes, and best practices for kernel and embedded development workflows." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-user/">Linux User Guide</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Git Basics</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 01 — Linux User</span>
+        <span class="guide-stage-pill">Stage 09</span>
+      </div>
+      <h1 class="guide-title">Git Basics</h1>
+      <p class="guide-subtitle">Track code with Git — commits, branching strategies, merging vs rebasing, working with remotes, undoing mistakes, and best practices for kernel and embedded development workflows.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="what-is-git">What is Git?</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p><strong>Git</strong> is a distributed version control system. Every developer has a full copy of the repository including its complete history. There is no single point of failure.</p>
+
+<h3 id="initial-setup">Initial Setup</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Set your identity (stored globally in ~/.gitconfig)</span>
+git config <span class="nt">--global</span> user.name  <span class="s2">"Eslam Mohamed"</span>
+git config <span class="nt">--global</span> user.email <span class="s2">"eslam@example.com"</span>
+git config <span class="nt">--global</span> core.editor <span class="s2">"vim"</span>
+git config <span class="nt">--global</span> init.defaultBranch main
+
+<span class="c"># View all config</span>
+git config <span class="nt">--list</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="the-three-areas">The Three Areas</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Working Directory  →  Staging Area (Index)  →  Repository (.git)
+     (edit files)        (git add)               (git commit)
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Area</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Working Directory</strong></td>
+      <td>Your actual files on disk</td>
+    </tr>
+    <tr>
+      <td><strong>Staging Area</strong></td>
+      <td>Snapshot prepared for the next commit</td>
+    </tr>
+    <tr>
+      <td><strong>Repository</strong></td>
+      <td>Permanent history stored in <code class="language-plaintext highlighter-rouge">.git/</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-basic" id="core-workflow">Core Workflow</h2>
+
+<h3 id="initialising-and-cloning">Initialising and Cloning</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Create a new repository</span>
+<span class="nb">mkdir </span>myproject <span class="o">&amp;&amp;</span> <span class="nb">cd </span>myproject
+git init
+git init <span class="nt">--initial-branch</span><span class="o">=</span>main     <span class="c"># Bash 2.28+</span>
+
+<span class="c"># Clone an existing repository</span>
+git clone https://github.com/user/repo.git
+git clone git@github.com:user/repo.git      <span class="c"># SSH</span>
+git clone <span class="nt">--depth</span><span class="o">=</span>1 https://...              <span class="c"># shallow clone (last commit only)</span>
+git clone <span class="nt">--branch</span> dev https://...           <span class="c"># clone specific branch</span>
+</code></pre></div></div>
+
+<h3 id="status-and-inspection">Status and Inspection</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git status                  <span class="c"># show modified/staged/untracked files</span>
+git status <span class="nt">-s</span>               <span class="c"># short format</span>
+git diff                    <span class="c"># unstaged changes</span>
+git diff <span class="nt">--staged</span>           <span class="c"># staged changes (what will be committed)</span>
+git diff HEAD               <span class="c"># all uncommitted changes</span>
+git diff branch1..branch2   <span class="c"># diff between branches</span>
+</code></pre></div></div>
+
+<h3 id="staging-and-committing">Staging and Committing</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Stage files</span>
+git add file.txt
+git add src/                  <span class="c"># entire directory</span>
+git add <span class="k">*</span>.c                   <span class="c"># all .c files</span>
+git add <span class="nt">-p</span>                    <span class="c"># interactive: stage hunks selectively</span>
+
+<span class="c"># Unstage</span>
+git restore <span class="nt">--staged</span> file.txt
+
+<span class="c"># Commit</span>
+git commit <span class="nt">-m</span> <span class="s2">"feat: add sensor calibration routine"</span>
+git commit                    <span class="c"># opens editor for multi-line message</span>
+git commit <span class="nt">-a</span> <span class="nt">-m</span> <span class="s2">"fix: correct baud rate calculation"</span>  <span class="c"># stage tracked files + commit</span>
+
+<span class="c"># Amend the last commit (only if not yet pushed!)</span>
+git commit <span class="nt">--amend</span> <span class="nt">-m</span> <span class="s2">"fix: correct baud rate to 115200"</span>
+git commit <span class="nt">--amend</span> <span class="nt">--no-edit</span>  <span class="c"># add staged changes to last commit without editing message</span>
+</code></pre></div></div>
+
+<h3 id="viewing-history">Viewing History</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git log                           <span class="c"># full log</span>
+git log <span class="nt">--oneline</span>                 <span class="c"># one line per commit</span>
+git log <span class="nt">--oneline</span> <span class="nt">--graph</span> <span class="nt">--all</span>   <span class="c"># ASCII branch graph</span>
+git log <span class="nt">-5</span>                        <span class="c"># last 5 commits</span>
+git log <span class="nt">--author</span><span class="o">=</span><span class="s2">"Eslam"</span>          <span class="c"># filter by author</span>
+git log <span class="nt">--since</span><span class="o">=</span><span class="s2">"2 weeks ago"</span>
+git log <span class="nt">--grep</span><span class="o">=</span><span class="s2">"fix"</span>              <span class="c"># commits with "fix" in message</span>
+git log <span class="nt">-S</span> <span class="s2">"function_name"</span>        <span class="c"># commits that changed occurrences of string</span>
+git log <span class="nt">--</span> path/to/file           <span class="c"># history of a specific file</span>
+
+git show abc1234                  <span class="c"># details of a specific commit</span>
+git show HEAD~2                   <span class="c"># two commits before HEAD</span>
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">git log --oneline --graph --all</code> output:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>* 3a7f1c2 (HEAD -&gt; main) feat: add I2C driver
+* 8b2e4d1 fix: handle negative temperature values
+| * a4c9f3e (feature/uart) feat: UART DMA mode
+|/
+* 1d5e6a0 (tag: v1.0) initial commit
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="branching">Branching</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># List branches</span>
+git branch               <span class="c"># local branches</span>
+git branch <span class="nt">-r</span>            <span class="c"># remote branches</span>
+git branch <span class="nt">-a</span>            <span class="c"># all branches</span>
+
+<span class="c"># Create and switch</span>
+git branch feature/uart
+git switch feature/uart
+
+<span class="c"># Create + switch in one command</span>
+git switch <span class="nt">-c</span> feature/spi
+
+<span class="c"># Rename</span>
+git branch <span class="nt">-m</span> old-name new-name
+
+<span class="c"># Delete</span>
+git branch <span class="nt">-d</span> feature/uart        <span class="c"># safe delete (only if merged)</span>
+git branch <span class="nt">-D</span> feature/uart        <span class="c"># force delete</span>
+
+<span class="c"># Switch back</span>
+git switch main
+git switch -                      <span class="c"># switch to previous branch</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="merging-vs-rebasing">Merging vs Rebasing</h2>
+
+<h3 id="git-merge--preserves-history"><code class="language-plaintext highlighter-rouge">git merge</code> — Preserves History</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git switch main
+git merge feature/uart            <span class="c"># creates a merge commit</span>
+
+<span class="c"># Fast-forward merge (no diverging history — no merge commit needed)</span>
+git merge <span class="nt">--ff-only</span> feature/docs
+
+<span class="c"># No fast-forward (always create a merge commit — good for visibility)</span>
+git merge <span class="nt">--no-ff</span> feature/uart
+</code></pre></div></div>
+
+<p><strong>After merge:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>main:  A---B---C---M
+               \  /
+feature:        D-E
+</code></pre></div></div>
+<p>Merge preserves the full branch history. Use for shared/public branches.</p>
+
+<h3 id="git-rebase--linear-history"><code class="language-plaintext highlighter-rouge">git rebase</code> — Linear History</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git switch feature/uart
+git rebase main           <span class="c"># replay feature commits on top of latest main</span>
+
+<span class="c"># After rebase, merge becomes fast-forward</span>
+git switch main
+git merge feature/uart
+</code></pre></div></div>
+
+<p><strong>After rebase:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>main:  A---B---C---D'---E'   (D' and E' are replayed commits)
+</code></pre></div></div>
+<p>Rebase creates a cleaner, linear history. Use for local/private feature branches before merging. <strong>Never rebase shared branches.</strong></p>
+
+<h3 id="resolving-merge-conflicts">Resolving Merge Conflicts</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># After a conflict, Git marks the files</span>
+<span class="c"># Edit them to resolve, then:</span>
+git add conflicted_file.c
+git merge <span class="nt">--continue</span>      <span class="c"># or: git rebase --continue</span>
+
+<span class="c"># Abort</span>
+git merge <span class="nt">--abort</span>
+git rebase <span class="nt">--abort</span>
+
+<span class="c"># Use a merge tool</span>
+git mergetool             <span class="c"># opens configured tool (vimdiff, meld, etc.)</span>
+</code></pre></div></div>
+
+<p><strong>Conflict markers:</strong></p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span> <span class="n">HEAD</span> <span class="p">(</span><span class="n">current</span> <span class="n">branch</span><span class="p">)</span>
+<span class="kt">int</span> <span class="n">baud_rate</span> <span class="o">=</span> <span class="mi">115200</span><span class="p">;</span>
+<span class="o">=======</span>
+<span class="kt">int</span> <span class="n">baud_rate</span> <span class="o">=</span> <span class="mi">9600</span><span class="p">;</span>
+<span class="o">&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span> <span class="n">feature</span><span class="o">/</span><span class="n">uart</span> <span class="p">(</span><span class="n">incoming</span> <span class="n">branch</span><span class="p">)</span>
+</code></pre></div></div>
+<p>Edit the file to keep what you want, remove the markers, then <code class="language-plaintext highlighter-rouge">git add</code>.</p>
+
+<hr />
+
+<h2 class="gc-mid" id="remote-repositories">Remote Repositories</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># View remotes</span>
+git remote <span class="nt">-v</span>
+
+<span class="c"># Add a remote</span>
+git remote add origin git@github.com:user/repo.git
+
+<span class="c"># Fetch (download, don't merge)</span>
+git fetch origin
+git fetch <span class="nt">--all</span>
+
+<span class="c"># Pull (fetch + merge)</span>
+git pull origin main
+git pull <span class="nt">--rebase</span> origin main    <span class="c"># rebase instead of merge</span>
+
+<span class="c"># Push</span>
+git push origin main
+git push <span class="nt">-u</span> origin feature/uart  <span class="c"># set upstream tracking</span>
+git push <span class="nt">--force-with-lease</span>      <span class="c"># safe force push (checks for remote changes)</span>
+
+<span class="c"># Delete remote branch</span>
+git push origin <span class="nt">--delete</span> feature/uart
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="undoing-mistakes">Undoing Mistakes</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Discard unstaged changes in a file</span>
+git restore file.txt
+
+<span class="c"># Discard all unstaged changes</span>
+git restore <span class="nb">.</span>
+
+<span class="c"># Unstage a file</span>
+git restore <span class="nt">--staged</span> file.txt
+
+<span class="c"># Undo the last commit (keep changes staged)</span>
+git reset <span class="nt">--soft</span> HEAD~1
+
+<span class="c"># Undo the last commit (keep changes unstaged)</span>
+git reset HEAD~1          <span class="c"># or --mixed</span>
+
+<span class="c"># Undo the last commit AND discard changes (destructive!)</span>
+git reset <span class="nt">--hard</span> HEAD~1
+
+<span class="c"># Undo a PUSHED commit safely (creates a new "undo" commit)</span>
+git revert abc1234
+
+<span class="c"># Recover a deleted branch</span>
+git reflog                <span class="c"># find the commit SHA</span>
+git switch <span class="nt">-c</span> recovered-branch abc1234
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-git-for-kernelembedded-work">Advanced: Git for Kernel/Embedded Work</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="git-stash--shelve-work-in-progress"><code class="language-plaintext highlighter-rouge">git stash</code> — Shelve Work in Progress</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git stash                        <span class="c"># stash all modified tracked files</span>
+git stash push <span class="nt">-m</span> <span class="s2">"WIP: UART fix"</span>
+git stash list                   <span class="c"># list stashes</span>
+git stash pop                    <span class="c"># apply + drop top stash</span>
+git stash apply stash@<span class="o">{</span>2<span class="o">}</span>        <span class="c"># apply specific stash (keep it)</span>
+git stash drop stash@<span class="o">{</span>2<span class="o">}</span>         <span class="c"># delete a stash</span>
+git stash clear                  <span class="c"># delete all stashes</span>
+git stash show <span class="nt">-p</span>                <span class="c"># show stash diff</span>
+</code></pre></div></div>
+
+<h3 id="git-bisect--binary-search-for-regressions"><code class="language-plaintext highlighter-rouge">git bisect</code> — Binary Search for Regressions</h3>
+
+<p><code class="language-plaintext highlighter-rouge">git bisect</code> finds the commit that introduced a bug by binary searching through history.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git bisect start
+git bisect bad                   <span class="c"># current HEAD is broken</span>
+git bisect good v1.0.0           <span class="c"># v1.0.0 was working</span>
+
+<span class="c"># Git checks out a middle commit — test it</span>
+make <span class="o">&amp;&amp;</span> ./test.sh
+git bisect bad                   <span class="c"># or: git bisect good</span>
+
+<span class="c"># Repeat until Git reports the first bad commit</span>
+<span class="c"># Then:</span>
+git bisect reset                 <span class="c"># return to HEAD</span>
+
+<span class="c"># Automate with a test script</span>
+git bisect run ./test.sh
+</code></pre></div></div>
+
+<h3 id="signing-commits-kernel-workflow">Signing Commits (Kernel Workflow)</h3>
+
+<p>The Linux kernel uses <strong>signed-off-by</strong> lines and optionally GPG-signed commits.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Signed-off-by (DCO — Developer Certificate of Origin)</span>
+git commit <span class="nt">-s</span> <span class="nt">-m</span> <span class="s2">"drivers: i2c: add support for BME280"</span>
+<span class="c"># Adds: Signed-off-by: Eslam Mohamed &lt;eslam@example.com&gt;</span>
+
+<span class="c"># GPG signing</span>
+git config <span class="nt">--global</span> commit.gpgsign <span class="nb">true
+</span>git commit <span class="nt">-S</span> <span class="nt">-m</span> <span class="s2">"feat: kernel module for custom ADC"</span>
+
+<span class="c"># Verify signatures</span>
+git log <span class="nt">--show-signature</span>
+</code></pre></div></div>
+
+<h3 id="git-format-patch-and-git-am--emailing-patches"><code class="language-plaintext highlighter-rouge">git format-patch</code> and <code class="language-plaintext highlighter-rouge">git am</code> — Emailing Patches</h3>
+
+<p>Linux kernel patches are submitted as plain-text emails (not pull requests).</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Generate patch files for the last 3 commits</span>
+git format-patch <span class="nt">-3</span> HEAD
+<span class="c"># Creates: 0001-commit-one.patch, 0002-commit-two.patch, …</span>
+
+<span class="c"># Generate a cover letter</span>
+git format-patch <span class="nt">-3</span> HEAD <span class="nt">--cover-letter</span>
+
+<span class="c"># Apply a patch file</span>
+git am 0001-fix-i2c-timeout.patch
+
+<span class="c"># Apply all patches in a directory</span>
+git am patches/<span class="k">*</span>.patch
+
+<span class="c"># Send via email (with git-send-email)</span>
+git send-email <span class="nt">--to</span><span class="o">=</span>linux-kernel@vger.kernel.org <span class="k">*</span>.patch
+</code></pre></div></div>
+
+<h3 id="worktrees--multiple-working-directories">Worktrees — Multiple Working Directories</h3>
+
+<p>Work on multiple branches simultaneously without stashing.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Add a worktree for a branch</span>
+git worktree add ../hotfix-branch hotfix/v1.0.1
+
+<span class="c"># List worktrees</span>
+git worktree list
+
+<span class="c"># Remove a worktree</span>
+git worktree remove ../hotfix-branch
+</code></pre></div></div>
+
+<h3 id="submodules--embed-external-repositories">Submodules — Embed External Repositories</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Add a submodule</span>
+git submodule add https://github.com/example/libsensor.git lib/sensor
+
+<span class="c"># Initialize and update submodules after cloning</span>
+git clone <span class="nt">--recurse-submodules</span> https://...
+git submodule update <span class="nt">--init</span> <span class="nt">--recursive</span>
+
+<span class="c"># Update all submodules to latest</span>
+git submodule update <span class="nt">--remote</span>
+</code></pre></div></div>
+
+<h3 id="gitconfig-useful-aliases"><code class="language-plaintext highlighter-rouge">.gitconfig</code> Useful Aliases</h3>
+
+<div class="language-ini highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">[alias]</span>
+    <span class="py">st</span>   <span class="p">=</span> <span class="s">status -s</span>
+    <span class="py">lg</span>   <span class="p">=</span> <span class="s">log --oneline --graph --all --decorate</span>
+    <span class="py">co</span>   <span class="p">=</span> <span class="s">checkout</span>
+    <span class="py">sw</span>   <span class="p">=</span> <span class="s">switch</span>
+    <span class="py">aa</span>   <span class="p">=</span> <span class="s">add --all</span>
+    <span class="py">cm</span>   <span class="p">=</span> <span class="s">commit -m</span>
+    <span class="py">amend</span> <span class="p">=</span> <span class="s">commit --amend --no-edit</span>
+    <span class="py">undo</span>  <span class="p">=</span> <span class="s">reset HEAD~1</span>
+    <span class="py">ff</span>    <span class="p">=</span> <span class="s">merge --ff-only</span>
+    <span class="py">rb</span>    <span class="p">=</span> <span class="s">rebase</span>
+    <span class="py">wip</span>   <span class="p">=</span> <span class="s">!git add -A &amp;&amp; git commit -m "WIP"</span>
+    <span class="py">push-safe</span> <span class="p">=</span> <span class="s">push --force-with-lease</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">git fetch</code> and <code class="language-plaintext highlighter-rouge">git pull</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">git fetch</code> downloads commits and branch pointers from the remote into your local remote-tracking branches (e.g., <code class="language-plaintext highlighter-rouge">origin/main</code>) but does NOT modify your working directory or current branch. <code class="language-plaintext highlighter-rouge">git pull</code> is <code class="language-plaintext highlighter-rouge">git fetch</code> followed by <code class="language-plaintext highlighter-rouge">git merge</code> (or <code class="language-plaintext highlighter-rouge">git rebase</code> with <code class="language-plaintext highlighter-rouge">--rebase</code>). Use <code class="language-plaintext highlighter-rouge">git fetch</code> when you want to inspect what changed before integrating, and <code class="language-plaintext highlighter-rouge">git pull</code> when you’re ready to incorporate the changes immediately.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: What is <code class="language-plaintext highlighter-rouge">HEAD</code> in Git?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">HEAD</code> is a pointer to the currently checked-out commit — usually the tip of the current branch. When you commit, <code class="language-plaintext highlighter-rouge">HEAD</code> (and the branch it points to) advances to the new commit. When you <code class="language-plaintext highlighter-rouge">git switch</code> to another branch, <code class="language-plaintext highlighter-rouge">HEAD</code> moves to point to that branch. A “detached HEAD” state occurs when <code class="language-plaintext highlighter-rouge">HEAD</code> points directly to a commit SHA instead of a branch name.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: When should you use <code class="language-plaintext highlighter-rouge">merge</code> vs <code class="language-plaintext highlighter-rouge">rebase</code>?</strong></p>
+
+<blockquote>
+  <p><strong>Merge</strong> when: integrating a completed feature into <code class="language-plaintext highlighter-rouge">main</code>, working with shared/public branches, or when you want to preserve the exact history of when the feature was developed. Creates a merge commit.
+<strong>Rebase</strong> when: cleaning up local/private feature branch commits before merging, keeping a linear history, or syncing a feature branch with main while it’s still in progress.
+The golden rule: <strong>never rebase commits that have been pushed to a shared remote</strong> — it rewrites history and breaks everyone else’s clone.</p>
+</blockquote>
+
+<p><strong>Q4 — Intermediate: What does <code class="language-plaintext highlighter-rouge">git reset --soft</code>, <code class="language-plaintext highlighter-rouge">--mixed</code>, and <code class="language-plaintext highlighter-rouge">--hard</code> do?</strong></p>
+
+<blockquote>
+  <p>All three move the current branch pointer to the specified commit:</p>
+  <ul>
+    <li><code class="language-plaintext highlighter-rouge">--soft</code>: Moves HEAD only. Changes remain <strong>staged</strong>.</li>
+    <li><code class="language-plaintext highlighter-rouge">--mixed</code> (default): Moves HEAD and resets the index. Changes remain in <strong>working directory, unstaged</strong>.</li>
+    <li><code class="language-plaintext highlighter-rouge">--hard</code>: Moves HEAD, resets index AND working directory. Changes are <strong>discarded</strong>. Destructive!</li>
+  </ul>
+</blockquote>
+
+<p><strong>Q5 — Advanced: How does <code class="language-plaintext highlighter-rouge">git bisect</code> help find regressions, and how do you automate it?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">git bisect</code> performs a binary search through commit history. You mark the current HEAD as “bad” and an earlier known-good commit as “good”. Git checks out the midpoint; you test and mark it good/bad; Git halves the range again. After O(log n) steps it identifies the first bad commit. Automate with <code class="language-plaintext highlighter-rouge">git bisect run ./test.sh</code> — Git runs the script on each candidate (exit 0 = good, non-zero = bad) until it finds the culprit automatically.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Pro Git Book (free)</td>
+      <td><a href="https://git-scm.com/book/en/v2">git-scm.com/book</a></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 1 git</code></td>
+      <td>Git manual</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 gitworkflows</code></td>
+      <td>Git workflow patterns</td>
+    </tr>
+    <tr>
+      <td>Linux Kernel Submitting Patches</td>
+      <td><a href="https://www.kernel.org/doc/html/latest/process/submitting-patches.html">kernel.org/doc/html/latest/process/submitting-patches.html</a></td>
+    </tr>
+    <tr>
+      <td>Atlassian Git Tutorials</td>
+      <td><a href="https://www.atlassian.com/git/tutorials">atlassian.com/git/tutorials</a></td>
+    </tr>
+    <tr>
+      <td>Oh Shit, Git!? (quick fixes)</td>
+      <td><a href="https://ohshitgit.com">ohshitgit.com</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-terminal"></i>
+        <span>Linux User Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-user/filesystem-navigation/" class="gtn-link ">
+          <i class="fas fa-folder-open"></i> Filesystem Navigation
+        </a>
+        <a href="/linux-user/users-permissions/" class="gtn-link ">
+          <i class="fas fa-user-lock"></i> Users &amp; Permissions
+        </a>
+        <a href="/linux-user/process-management/" class="gtn-link ">
+          <i class="fas fa-microchip"></i> Process Management
+        </a>
+        <a href="/linux-user/package-management/" class="gtn-link ">
+          <i class="fas fa-box"></i> Package Management
+        </a>
+        <a href="/linux-user/networking/" class="gtn-link ">
+          <i class="fas fa-network-wired"></i> Networking Basics
+        </a>
+        <a href="/linux-user/ssh/" class="gtn-link ">
+          <i class="fas fa-lock"></i> SSH &amp; Remote Access
+        </a>
+        <a href="/linux-user/cron/" class="gtn-link ">
+          <i class="fas fa-clock"></i> Cron &amp; Scheduling
+        </a>
+        <a href="/linux-user/bash-scripting/" class="gtn-link ">
+          <i class="fas fa-terminal"></i> Bash Scripting
+        </a>
+        <a href="/linux-user/git/" class="gtn-link gts-active">
+          <i class="fab fa-git-alt"></i> Git Basics
+        </a>
+      </nav>
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-user/bash-scripting/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Bash Scripting</span>
+      </a>
+      
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

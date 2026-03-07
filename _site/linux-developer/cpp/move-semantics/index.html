@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Move Semantics · Eslam Mohamed</title>
+  <meta name="description" content="Understand C++ move semantics — lvalues vs rvalues, move constructors, std::move, perfect forwarding, universal references, and return value optimisation." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/cpp/">C++ Programming</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Move Semantics</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 03</span>
+      </div>
+      <h1 class="guide-title">Move Semantics</h1>
+      <p class="guide-subtitle">Understand C++ move semantics — lvalues vs rvalues, move constructors, std::move, perfect forwarding, universal references, and return value optimisation.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="lvalues-and-rvalues">lvalues and rvalues</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>Every expression in C++ has a <strong>value category</strong>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Meaning</th>
+      <th>Has address?</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>lvalue</strong></td>
+      <td>Named, persistent object</td>
+      <td>Yes</td>
+      <td><code class="language-plaintext highlighter-rouge">int x = 5; x</code></td>
+    </tr>
+    <tr>
+      <td><strong>rvalue</strong></td>
+      <td>Temporary, expiring</td>
+      <td>No</td>
+      <td><code class="language-plaintext highlighter-rouge">5</code>, <code class="language-plaintext highlighter-rouge">x + y</code>, <code class="language-plaintext highlighter-rouge">func()</code></td>
+    </tr>
+    <tr>
+      <td><strong>xvalue</strong></td>
+      <td>“eXpiring” lvalue after <code class="language-plaintext highlighter-rouge">std::move</code></td>
+      <td>Sort of</td>
+      <td><code class="language-plaintext highlighter-rouge">std::move(x)</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>       <span class="c1">// x is an lvalue; 5 is an rvalue</span>
+<span class="kt">int</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">3</span><span class="p">;</span>   <span class="c1">// x+3 is an rvalue (temporary)</span>
+
+<span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="kt">int</span><span class="o">&amp;</span> <span class="n">ref</span><span class="p">);</span>       <span class="c1">// binds to lvalues</span>
+<span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="kt">int</span><span class="o">&amp;&amp;</span> <span class="n">ref</span><span class="p">);</span>      <span class="c1">// binds to rvalues (rvalue reference)</span>
+
+<span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>       <span class="c1">// calls f(int&amp;)</span>
+<span class="n">f</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>       <span class="c1">// calls f(int&amp;&amp;)</span>
+<span class="n">f</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">3</span><span class="p">);</span>   <span class="c1">// calls f(int&amp;&amp;)</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="move-constructor--move-assignment">Move Constructor &amp; Move Assignment</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>Copying a large object (a vector, buffer, file handle) is expensive. <strong>Moving</strong> steals the internal resources from the temporary — O(1) instead of O(n).</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Buffer</span> <span class="p">{</span>
+    <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">data_</span><span class="p">;</span>
+    <span class="kt">size_t</span>   <span class="n">size_</span><span class="p">;</span>
+<span class="nl">public:</span>
+    <span class="c1">// Constructor</span>
+    <span class="k">explicit</span> <span class="n">Buffer</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">size</span><span class="p">)</span>
+        <span class="o">:</span> <span class="n">data_</span><span class="p">(</span><span class="k">new</span> <span class="kt">uint8_t</span><span class="p">[</span><span class="n">size</span><span class="p">]),</span> <span class="n">size_</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="p">{}</span>
+
+    <span class="c1">// Destructor</span>
+    <span class="o">~</span><span class="n">Buffer</span><span class="p">()</span> <span class="p">{</span> <span class="k">delete</span><span class="p">[]</span> <span class="n">data_</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="c1">// Copy — expensive: allocates + copies bytes</span>
+    <span class="n">Buffer</span><span class="p">(</span><span class="k">const</span> <span class="n">Buffer</span><span class="o">&amp;</span> <span class="n">other</span><span class="p">)</span>
+        <span class="o">:</span> <span class="n">data_</span><span class="p">(</span><span class="k">new</span> <span class="kt">uint8_t</span><span class="p">[</span><span class="n">other</span><span class="p">.</span><span class="n">size_</span><span class="p">]),</span> <span class="n">size_</span><span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">size_</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">memcpy</span><span class="p">(</span><span class="n">data_</span><span class="p">,</span> <span class="n">other</span><span class="p">.</span><span class="n">data_</span><span class="p">,</span> <span class="n">size_</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Move constructor — cheap: steals pointer, O(1)</span>
+    <span class="n">Buffer</span><span class="p">(</span><span class="n">Buffer</span><span class="o">&amp;&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="k">noexcept</span>
+        <span class="o">:</span> <span class="n">data_</span><span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">data_</span><span class="p">),</span> <span class="n">size_</span><span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">size_</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">other</span><span class="p">.</span><span class="n">data_</span> <span class="o">=</span> <span class="nb">nullptr</span><span class="p">;</span>   <span class="c1">// leave source in valid but empty state</span>
+        <span class="n">other</span><span class="p">.</span><span class="n">size_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Move assignment</span>
+    <span class="n">Buffer</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="n">Buffer</span><span class="o">&amp;&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span> <span class="o">!=</span> <span class="o">&amp;</span><span class="n">other</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">delete</span><span class="p">[]</span> <span class="n">data_</span><span class="p">;</span>          <span class="c1">// free current resource</span>
+            <span class="n">data_</span> <span class="o">=</span> <span class="n">other</span><span class="p">.</span><span class="n">data_</span><span class="p">;</span>
+            <span class="n">size_</span> <span class="o">=</span> <span class="n">other</span><span class="p">.</span><span class="n">size_</span><span class="p">;</span>
+            <span class="n">other</span><span class="p">.</span><span class="n">data_</span> <span class="o">=</span> <span class="nb">nullptr</span><span class="p">;</span>
+            <span class="n">other</span><span class="p">.</span><span class="n">size_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="o">*</span><span class="k">this</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<h3 id="why-noexcept-matters">Why <code class="language-plaintext highlighter-rouge">noexcept</code> Matters</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Mark move operations noexcept!</span>
+<span class="c1">// std::vector uses move instead of copy during reallocation</span>
+<span class="c1">// ONLY if the move constructor is noexcept.</span>
+<span class="c1">// Without noexcept, vector falls back to copying — losing the speedup.</span>
+<span class="n">Buffer</span><span class="p">(</span><span class="n">Buffer</span><span class="o">&amp;&amp;</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>            <span class="c1">// vector will use move: fast</span>
+<span class="n">Buffer</span><span class="p">(</span><span class="n">Buffer</span><span class="o">&amp;&amp;</span><span class="p">)</span> <span class="cm">/* no noexcept */</span><span class="p">;</span>   <span class="c1">// vector uses copy: slow</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="stdmove"><code class="language-plaintext highlighter-rouge">std::move</code></h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<p><code class="language-plaintext highlighter-rouge">std::move</code> is just a <strong>cast to rvalue reference</strong> — it doesn’t move anything by itself. It tells the compiler “I’m done with this object, feel free to steal its internals.”</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">a</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">};</span>
+
+<span class="c1">// Copy: a still valid, b is a deep copy</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">a</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>  <span class="c1">// 5</span>
+
+<span class="c1">// Move: b steals a's buffer, a is empty</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">a</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>  <span class="c1">// 0 (valid but unspecified state)</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">c</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>  <span class="c1">// 5</span>
+</code></pre></div></div>
+
+<h3 id="common-use-cases">Common Use Cases</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 1. Return from function — NRVO usually handles this,</span>
+<span class="c1">//    but explicit move is sometimes needed</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">build_data</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">result</span><span class="p">;</span>
+    <span class="c1">// ... fill result ...</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">;</span>   <span class="c1">// compiler applies RVO automatically</span>
+<span class="p">}</span>
+
+<span class="c1">// 2. Pass unique_ptr (non-copyable — must move)</span>
+<span class="kt">void</span> <span class="n">take_device</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">IDevice</span><span class="o">&gt;</span> <span class="n">dev</span><span class="p">);</span>
+
+<span class="k">auto</span> <span class="n">d</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">UartDevice</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="n">take_device</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">d</span><span class="p">));</span>   <span class="c1">// transfer ownership</span>
+<span class="c1">// d == nullptr now</span>
+
+<span class="c1">// 3. Store a string in a struct without copying</span>
+<span class="k">struct</span> <span class="nc">Packet</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;</span> <span class="n">data</span><span class="p">;</span>
+<span class="p">};</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="s">"temperature"</span><span class="p">;</span>
+<span class="n">Packet</span> <span class="n">p</span> <span class="p">{</span> <span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="p">{}</span> <span class="p">};</span>  <span class="c1">// s is empty now; no copy</span>
+</code></pre></div></div>
+
+<h3 id="after-stdmove--the-object-is-in-a-valid-but-unspecified-state">After <code class="language-plaintext highlighter-rouge">std::move</code> — the Object is in a “Valid but Unspecified” State</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="s">"hello"</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">t</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">s</span><span class="p">);</span>
+<span class="c1">// s is valid — you can reassign it</span>
+<span class="n">s</span> <span class="o">=</span> <span class="s">"world"</span><span class="p">;</span>  <span class="c1">// OK</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">s</span><span class="p">;</span>  <span class="c1">// "world"</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="perfect-forwarding">Perfect Forwarding</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p>Perfect forwarding lets a wrapper function pass arguments to another function while <strong>preserving their value category</strong> (lvalue/rvalue).</p>
+
+<h3 id="the-problem">The Problem</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">T</span> <span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">inner</span><span class="p">(</span><span class="n">arg</span><span class="p">);</span>        <span class="c1">// arg is always an lvalue inside the function!</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="s">"hello"</span><span class="p">;</span>
+<span class="n">wrapper</span><span class="p">(</span><span class="n">s</span><span class="p">);</span>                  <span class="c1">// inner sees lvalue — OK</span>
+<span class="n">wrapper</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="s">"hi"</span><span class="p">));</span>  <span class="c1">// inner sees lvalue, NOT rvalue — loses move!</span>
+</code></pre></div></div>
+
+<h3 id="universal-references--stdforward">Universal References + <code class="language-plaintext highlighter-rouge">std::forward</code></h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// T&amp;&amp; in a deduced context is a "universal reference" (not just rvalue ref)</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">inner</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">forward</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">arg</span><span class="p">));</span>  <span class="c1">// forward preserves value category</span>
+<span class="p">}</span>
+
+<span class="n">wrapper</span><span class="p">(</span><span class="n">s</span><span class="p">);</span>                   <span class="c1">// T = string&amp;  → forwards as lvalue</span>
+<span class="n">wrapper</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="s">"hi"</span><span class="p">));</span>   <span class="c1">// T = string   → forwards as rvalue</span>
+</code></pre></div></div>
+
+<h3 id="stdmake_unique-internally-uses-this"><code class="language-plaintext highlighter-rouge">std::make_unique</code> Internally Uses This</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">,</span> <span class="k">typename</span><span class="o">...</span> <span class="nc">Args</span><span class="p">&gt;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">make_unique</span><span class="p">(</span><span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="k">new</span> <span class="n">T</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">forward</span><span class="o">&lt;</span><span class="n">Args</span><span class="o">&gt;</span><span class="p">(</span><span class="n">args</span><span class="p">)...));</span>
+<span class="p">}</span>
+<span class="c1">// Arguments forwarded to T's constructor with correct value category</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="return-value-optimisation-rvo--nrvo">Return Value Optimisation (RVO / NRVO)</h2>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Named Return Value Optimisation (NRVO)</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">build</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">result</span><span class="p">;</span>   <span class="c1">// named local</span>
+    <span class="n">result</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="n">result</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">;</span>             <span class="c1">// compiler builds 'result' directly in caller</span>
+<span class="p">}</span>                              <span class="c1">// no copy, no move — zero cost</span>
+
+<span class="k">auto</span> <span class="n">v</span> <span class="o">=</span> <span class="n">build</span><span class="p">();</span>  <span class="c1">// v IS the result object (constructed in place)</span>
+
+<span class="c1">// When NRVO doesn't apply (multiple return paths):</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">build2</span><span class="p">(</span><span class="kt">bool</span> <span class="n">flag</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">;</span>
+    <span class="c1">// fill a and b ...</span>
+    <span class="k">return</span> <span class="n">flag</span> <span class="o">?</span> <span class="n">a</span> <span class="o">:</span> <span class="n">b</span><span class="p">;</span>  <span class="c1">// NRVO can't apply — return std::move(a/b) here</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>Rule:</strong> Don’t write <code class="language-plaintext highlighter-rouge">return std::move(local_var);</code> — it disables RVO/NRVO and may actually be slower. Let the compiler handle it.</p>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between a move constructor and a copy constructor?</strong></p>
+
+<blockquote>
+  <p>A copy constructor creates a new object with <strong>independent copies</strong> of all resources — for a buffer, it allocates new memory and copies bytes: O(n). A move constructor <strong>transfers ownership</strong> of resources from an expiring (rvalue) object: it copies the pointer and size, then nulls out the source’s pointer: O(1). The moved-from object is left in a valid but empty state. Move is faster when the source is a temporary or explicitly moved with <code class="language-plaintext highlighter-rouge">std::move</code>.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: What does <code class="language-plaintext highlighter-rouge">std::move</code> actually do?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">std::move</code> is an unconditional cast to an rvalue reference (<code class="language-plaintext highlighter-rouge">T&amp;&amp;</code>). It does not move anything. It tells the compiler that the object can be treated as a temporary — enabling the move constructor or move assignment operator to be called instead of the copy versions. The actual resource transfer happens in the move constructor/assignment, not in <code class="language-plaintext highlighter-rouge">std::move</code> itself.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: Why should move constructors be <code class="language-plaintext highlighter-rouge">noexcept</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">std::vector</code> (and other containers) must provide the strong exception guarantee during reallocation. If the move constructor can throw, the container cannot safely use it (it might leave the container in a broken state mid-operation), so it falls back to the copy constructor. Marking your move constructor <code class="language-plaintext highlighter-rouge">noexcept</code> tells the compiler and standard library that moving is safe to use, enabling the performance optimisation. Always mark move constructors and move assignment operators <code class="language-plaintext highlighter-rouge">noexcept</code> if they can’t throw.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: What is perfect forwarding and what problem does it solve?</strong></p>
+
+<blockquote>
+  <p>Without perfect forwarding, a generic wrapper function that takes <code class="language-plaintext highlighter-rouge">T</code> or <code class="language-plaintext highlighter-rouge">const T&amp;</code> always passes the argument as an lvalue to the inner function, losing rvalue information. A universal reference <code class="language-plaintext highlighter-rouge">T&amp;&amp;</code> combined with <code class="language-plaintext highlighter-rouge">std::forward&lt;T&gt;(arg)</code> preserves the value category: if <code class="language-plaintext highlighter-rouge">arg</code> was originally an rvalue, it’s forwarded as rvalue (enabling move semantics in the inner function); if it was an lvalue, it’s forwarded as lvalue (enabling copy or lvalue binding). This is the foundation of <code class="language-plaintext highlighter-rouge">std::make_unique</code>, <code class="language-plaintext highlighter-rouge">emplace_back</code>, and other factory functions.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>cppreference — Move constructors</td>
+      <td><a href="https://en.cppreference.com/w/cpp/language/move_constructor">en.cppreference.com/w/cpp/language/move_constructor</a></td>
+    </tr>
+    <tr>
+      <td>cppreference — Value categories</td>
+      <td><a href="https://en.cppreference.com/w/cpp/language/value_category">en.cppreference.com/w/cpp/language/value_category</a></td>
+    </tr>
+    <tr>
+      <td>Scott Meyers — Effective Modern C++</td>
+      <td>Item 23 (std::move), Item 24 (universal references)</td>
+    </tr>
+    <tr>
+      <td>Thomas Becker — C++ Rvalue References Explained</td>
+      <td><a href="http://thbecker.net/articles/rvalue_references/section_01.html">thbecker.net/articles/rvalue_references/section_01.html</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-code"></i>
+        <span>C++ Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/cpp/oop-raii/" class="gtn-link ">
+          <i class="fas fa-object-group"></i> OOP &amp; RAII
+        </a>
+        <a href="/linux-developer/cpp/templates-stl/" class="gtn-link ">
+          <i class="fas fa-shapes"></i> Templates &amp; STL
+        </a>
+        <a href="/linux-developer/cpp/smart-pointers/" class="gtn-link ">
+          <i class="fas fa-wand-magic-sparkles"></i> Smart Pointers
+        </a>
+        <a href="/linux-developer/cpp/move-semantics/" class="gtn-link gts-active">
+          <i class="fas fa-right-left"></i> Move Semantics
+        </a>
+        <a href="/linux-developer/cpp/cmake/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> CMake
+        </a>
+        <a href="/linux-developer/cpp/qt/" class="gtn-link ">
+          <i class="fas fa-window-maximize"></i> Qt Framework
+        </a>
+        <a href="/linux-developer/cpp/cpp17-cpp20/" class="gtn-link ">
+          <i class="fas fa-star"></i> C++17 / C++20
+        </a>
+      </nav>
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/cpp/smart-pointers/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Smart Pointers</span>
+      </a>
+      
+      
+      <a href="/linux-developer/cpp/cmake/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">CMake</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

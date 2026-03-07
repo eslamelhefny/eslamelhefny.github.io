@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POSIX File I/O · Eslam Mohamed</title>
+  <meta name="description" content="Master Linux file I/O — open/read/write/close, file descriptors, O_flags, ioctl, mmap memory-mapped I/O, and I/O multiplexing with select, poll, and epoll." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/posix/">POSIX APIs & Concurrency</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>POSIX File I/O</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 04</span>
+      </div>
+      <h1 class="guide-title">POSIX File I/O</h1>
+      <p class="guide-subtitle">Master Linux file I/O — open/read/write/close, file descriptors, O_flags, ioctl, mmap memory-mapped I/O, and I/O multiplexing with select, poll, and epoll.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="file-descriptors-and-basic-io">File Descriptors and Basic I/O</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>Every open file, socket, pipe, or device in Linux is represented by an integer <strong>file descriptor (fd)</strong>. The kernel maintains a per-process table of open file descriptions.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="cp">
+</span>
+<span class="c1">// Standard file descriptors</span>
+<span class="c1">// STDIN_FILENO  = 0</span>
+<span class="c1">// STDOUT_FILENO = 1</span>
+<span class="c1">// STDERR_FILENO = 2</span>
+
+<span class="c1">// open() — returns fd or -1 on error (check errno)</span>
+<span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">"/dev/ttyS0"</span><span class="p">,</span> <span class="n">O_RDWR</span> <span class="o">|</span> <span class="n">O_NOCTTY</span> <span class="o">|</span> <span class="n">O_NDELAY</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">fd</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">perror</span><span class="p">(</span><span class="s">"open"</span><span class="p">);</span>
+    <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// read() — returns bytes read, 0 on EOF, -1 on error</span>
+<span class="kt">uint8_t</span> <span class="n">buf</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
+<span class="kt">ssize_t</span> <span class="n">n</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buf</span><span class="p">));</span>
+
+<span class="c1">// write() — returns bytes written, -1 on error</span>
+<span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">msg</span> <span class="o">=</span> <span class="s">"Hello</span><span class="se">\r\n</span><span class="s">"</span><span class="p">;</span>
+<span class="kt">ssize_t</span> <span class="n">w</span> <span class="o">=</span> <span class="n">write</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">strlen</span><span class="p">(</span><span class="n">msg</span><span class="p">));</span>
+
+<span class="c1">// close() — always close when done!</span>
+<span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="important-open-flags">Important <code class="language-plaintext highlighter-rouge">open()</code> Flags</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Flag</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">O_RDONLY</code></td>
+      <td>Read only</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">O_WRONLY</code></td>
+      <td>Write only</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">O_RDWR</code></td>
+      <td>Read + write</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">O_CREAT</code></td>
+      <td>Create file if it doesn’t exist</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">O_TRUNC</code></td>
+      <td>Truncate file to zero length</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">O_APPEND</code></td>
+      <td>All writes go to end of file</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">O_NONBLOCK</code></td>
+      <td>Non-blocking mode</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">O_SYNC</code></td>
+      <td>Sync writes to disk before returning</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">O_CLOEXEC</code></td>
+      <td>Close fd on <code class="language-plaintext highlighter-rouge">exec()</code> (avoid fd leaks)</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Create or overwrite a file with mode 0644</span>
+<span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">"output.bin"</span><span class="p">,</span> <span class="n">O_WRONLY</span> <span class="o">|</span> <span class="n">O_CREAT</span> <span class="o">|</span> <span class="n">O_TRUNC</span><span class="p">,</span> <span class="mo">0644</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="robust-readwrite-loops">Robust Read/Write Loops</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// read() may return fewer bytes than requested (partial read)!</span>
+<span class="c1">// Always loop until all bytes are read.</span>
+<span class="kt">ssize_t</span> <span class="nf">read_all</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">count</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">size_t</span> <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="kt">uint8_t</span><span class="o">*</span><span class="p">)</span><span class="n">buf</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">total</span> <span class="o">&lt;</span> <span class="n">count</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">ssize_t</span> <span class="n">n</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">p</span> <span class="o">+</span> <span class="n">total</span><span class="p">,</span> <span class="n">count</span> <span class="o">-</span> <span class="n">total</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="n">total</span><span class="p">;</span>        <span class="c1">// EOF</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">errno</span> <span class="o">==</span> <span class="n">EINTR</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>  <span class="c1">// interrupted by signal</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>                     <span class="c1">// real error</span>
+        <span class="p">}</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="n">n</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">total</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">ssize_t</span> <span class="nf">write_all</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span><span class="o">*</span> <span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">count</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">size_t</span> <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="k">const</span> <span class="kt">uint8_t</span><span class="o">*</span><span class="p">)</span><span class="n">buf</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">total</span> <span class="o">&lt;</span> <span class="n">count</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">ssize_t</span> <span class="n">n</span> <span class="o">=</span> <span class="n">write</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">p</span> <span class="o">+</span> <span class="n">total</span><span class="p">,</span> <span class="n">count</span> <span class="o">-</span> <span class="n">total</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">errno</span> <span class="o">==</span> <span class="n">EINTR</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="n">n</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">total</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="lseek-file-positions-and-ioctl"><code class="language-plaintext highlighter-rouge">lseek</code>, File Positions, and <code class="language-plaintext highlighter-rouge">ioctl</code></h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;sys/ioctl.h&gt;</span><span class="cp">
+</span>
+<span class="c1">// lseek — reposition file offset</span>
+<span class="kt">off_t</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">lseek</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">SEEK_SET</span><span class="p">);</span>    <span class="c1">// go to start</span>
+<span class="kt">off_t</span> <span class="n">cur</span> <span class="o">=</span> <span class="n">lseek</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">SEEK_CUR</span><span class="p">);</span>    <span class="c1">// current position</span>
+<span class="kt">off_t</span> <span class="n">end</span> <span class="o">=</span> <span class="n">lseek</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">SEEK_END</span><span class="p">);</span>    <span class="c1">// file size</span>
+
+<span class="n">lseek</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">SEEK_SET</span><span class="p">);</span>   <span class="c1">// go to byte 100</span>
+<span class="n">lseek</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span>  <span class="n">SEEK_CUR</span><span class="p">);</span>   <span class="c1">// go back 4 bytes from current</span>
+
+<span class="c1">// ioctl — device-specific control</span>
+<span class="cp">#include</span> <span class="cpf">&lt;linux/serial.h&gt;</span><span class="cp">
+</span><span class="k">struct</span> <span class="n">serial_struct</span> <span class="n">ss</span><span class="p">;</span>
+<span class="n">ioctl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">TIOCGSERIAL</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ss</span><span class="p">);</span>    <span class="c1">// get serial info</span>
+<span class="n">ss</span><span class="p">.</span><span class="n">flags</span> <span class="o">|=</span> <span class="n">ASYNC_LOW_LATENCY</span><span class="p">;</span>
+<span class="n">ioctl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">TIOCSSERIAL</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ss</span><span class="p">);</span>    <span class="c1">// set serial info</span>
+
+<span class="c1">// Terminal I/O (tty)</span>
+<span class="cp">#include</span> <span class="cpf">&lt;termios.h&gt;</span><span class="cp">
+</span><span class="k">struct</span> <span class="n">termios</span> <span class="n">tty</span><span class="p">;</span>
+<span class="n">tcgetattr</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">tty</span><span class="p">);</span>
+<span class="n">cfsetispeed</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tty</span><span class="p">,</span> <span class="n">B115200</span><span class="p">);</span>
+<span class="n">cfsetospeed</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tty</span><span class="p">,</span> <span class="n">B115200</span><span class="p">);</span>
+<span class="n">tty</span><span class="p">.</span><span class="n">c_cflag</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">PARENB</span><span class="p">;</span>    <span class="c1">// no parity</span>
+<span class="n">tty</span><span class="p">.</span><span class="n">c_cflag</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">CSTOPB</span><span class="p">;</span>    <span class="c1">// 1 stop bit</span>
+<span class="n">tty</span><span class="p">.</span><span class="n">c_cflag</span> <span class="o">|=</span> <span class="n">CS8</span><span class="p">;</span>        <span class="c1">// 8 data bits</span>
+<span class="n">tty</span><span class="p">.</span><span class="n">c_cflag</span> <span class="o">|=</span> <span class="n">CREAD</span> <span class="o">|</span> <span class="n">CLOCAL</span><span class="p">;</span>
+<span class="n">tcsetattr</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">TCSANOW</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">tty</span><span class="p">);</span>
+
+<span class="c1">// Get number of bytes waiting in serial receive buffer</span>
+<span class="kt">int</span> <span class="n">bytes_waiting</span><span class="p">;</span>
+<span class="n">ioctl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">FIONREAD</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">bytes_waiting</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="memory-mapped-io-mmap">Memory-Mapped I/O (<code class="language-plaintext highlighter-rouge">mmap</code>)</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p><code class="language-plaintext highlighter-rouge">mmap</code> maps a file (or device register space) directly into the process’s virtual address space. Reads and writes go to/from the kernel’s page cache — no <code class="language-plaintext highlighter-rouge">read()</code>/<code class="language-plaintext highlighter-rouge">write()</code> syscalls needed.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;sys/mman.h&gt;</span><span class="cp">
+</span>
+<span class="c1">// Map a file into memory (read-only)</span>
+<span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">"large_data.bin"</span><span class="p">,</span> <span class="n">O_RDONLY</span><span class="p">);</span>
+<span class="k">struct</span> <span class="n">stat</span> <span class="n">sb</span><span class="p">;</span>
+<span class="n">fstat</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sb</span><span class="p">);</span>
+
+<span class="kt">uint8_t</span><span class="o">*</span> <span class="n">data</span> <span class="o">=</span> <span class="n">mmap</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">sb</span><span class="p">.</span><span class="n">st_size</span><span class="p">,</span>
+                     <span class="n">PROT_READ</span><span class="p">,</span>
+                     <span class="n">MAP_PRIVATE</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">data</span> <span class="o">==</span> <span class="n">MAP_FAILED</span><span class="p">)</span> <span class="p">{</span> <span class="n">perror</span><span class="p">(</span><span class="s">"mmap"</span><span class="p">);</span> <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="p">}</span>
+
+<span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>   <span class="c1">// fd can be closed after mmap</span>
+
+<span class="c1">// Access file contents as array — zero copies!</span>
+<span class="n">process_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sb</span><span class="p">.</span><span class="n">st_size</span><span class="p">);</span>
+
+<span class="n">munmap</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sb</span><span class="p">.</span><span class="n">st_size</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="mmap-for-hardware-registers-embedded-linux"><code class="language-plaintext highlighter-rouge">mmap</code> for Hardware Registers (Embedded Linux)</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;sys/mman.h&gt;</span><span class="cp">
+</span>
+<span class="cp">#define GPIO_BASE 0x3F200000   // Raspberry Pi GPIO base
+#define BLOCK_SIZE 4096
+</span>
+<span class="kt">int</span> <span class="n">mem_fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">"/dev/mem"</span><span class="p">,</span> <span class="n">O_RDWR</span> <span class="o">|</span> <span class="n">O_SYNC</span><span class="p">);</span>
+
+<span class="k">volatile</span> <span class="kt">uint32_t</span><span class="o">*</span> <span class="n">gpio</span> <span class="o">=</span> <span class="n">mmap</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="p">,</span>
+    <span class="n">PROT_READ</span> <span class="o">|</span> <span class="n">PROT_WRITE</span><span class="p">,</span> <span class="n">MAP_SHARED</span><span class="p">,</span> <span class="n">mem_fd</span><span class="p">,</span> <span class="n">GPIO_BASE</span><span class="p">);</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">gpio</span> <span class="o">==</span> <span class="n">MAP_FAILED</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">perror</span><span class="p">(</span><span class="s">"mmap"</span><span class="p">);</span> <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Direct register access — no syscall overhead!</span>
+<span class="n">gpio</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">gpio</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="o">~</span><span class="p">(</span><span class="mi">7</span> <span class="o">&lt;&lt;</span> <span class="mi">21</span><span class="p">))</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">21</span><span class="p">);</span>  <span class="c1">// GPIO 17 output</span>
+<span class="n">gpio</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">17</span><span class="p">);</span>    <span class="c1">// GPIO_SET: pin 17 high</span>
+<span class="n">gpio</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">17</span><span class="p">);</span>   <span class="c1">// GPIO_CLR: pin 17 low</span>
+</code></pre></div></div>
+
+<h3 id="mmap-flags"><code class="language-plaintext highlighter-rouge">mmap</code> Flags</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Flag</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MAP_PRIVATE</code></td>
+      <td>Copy-on-write; changes not visible to other processes</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MAP_SHARED</code></td>
+      <td>Changes visible to other processes sharing the mapping</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MAP_ANONYMOUS</code></td>
+      <td>Not backed by a file (use for shared memory between fork’d processes)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">PROT_READ</code></td>
+      <td>Pages can be read</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">PROT_WRITE</code></td>
+      <td>Pages can be written</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">PROT_EXEC</code></td>
+      <td>Pages can be executed</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-adv" id="io-multiplexing-select-poll-epoll">I/O Multiplexing: <code class="language-plaintext highlighter-rouge">select</code>, <code class="language-plaintext highlighter-rouge">poll</code>, <code class="language-plaintext highlighter-rouge">epoll</code></h2>
+
+<p>Watch multiple file descriptors simultaneously — without blocking on any single one.</p>
+
+<h3 id="poll--simpler-than-select"><code class="language-plaintext highlighter-rouge">poll</code> — Simpler than <code class="language-plaintext highlighter-rouge">select</code></h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;poll.h&gt;</span><span class="cp">
+</span>
+<span class="kt">int</span> <span class="n">fd1</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">"/dev/ttyS0"</span><span class="p">,</span> <span class="n">O_RDWR</span> <span class="o">|</span> <span class="n">O_NONBLOCK</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">fd2</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">"/dev/ttyS1"</span><span class="p">,</span> <span class="n">O_RDWR</span> <span class="o">|</span> <span class="n">O_NONBLOCK</span><span class="p">);</span>
+
+<span class="k">struct</span> <span class="n">pollfd</span> <span class="n">fds</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">{</span> <span class="p">.</span><span class="n">fd</span> <span class="o">=</span> <span class="n">fd1</span><span class="p">,</span> <span class="p">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">POLLIN</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="p">.</span><span class="n">fd</span> <span class="o">=</span> <span class="n">fd2</span><span class="p">,</span> <span class="p">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">POLLIN</span> <span class="p">},</span>
+<span class="p">};</span>
+
+<span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">poll</span><span class="p">(</span><span class="n">fds</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1000</span><span class="p">);</span>  <span class="c1">// timeout: 1000ms</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ret</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="n">perror</span><span class="p">(</span><span class="s">"poll"</span><span class="p">);</span> <span class="k">break</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ret</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>  <span class="p">{</span> <span class="n">puts</span><span class="p">(</span><span class="s">"timeout"</span><span class="p">);</span> <span class="k">continue</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">fds</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">revents</span> <span class="o">&amp;</span> <span class="n">POLLIN</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">uint8_t</span> <span class="n">buf</span><span class="p">[</span><span class="mi">64</span><span class="p">];</span>
+        <span class="kt">ssize_t</span> <span class="n">n</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">fd1</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buf</span><span class="p">));</span>
+        <span class="n">handle_data</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">fds</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">revents</span> <span class="o">&amp;</span> <span class="n">POLLIN</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// read fd2</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="epoll--scalable-for-many-file-descriptors"><code class="language-plaintext highlighter-rouge">epoll</code> — Scalable for Many File Descriptors</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;sys/epoll.h&gt;</span><span class="cp">
+</span>
+<span class="kt">int</span> <span class="n">epfd</span> <span class="o">=</span> <span class="n">epoll_create1</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="c1">// create epoll instance</span>
+
+<span class="c1">// Add file descriptors to watch</span>
+<span class="k">struct</span> <span class="n">epoll_event</span> <span class="n">ev</span> <span class="o">=</span> <span class="p">{</span> <span class="p">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">EPOLLIN</span><span class="p">,</span> <span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">fd</span> <span class="o">=</span> <span class="n">fd1</span> <span class="p">};</span>
+<span class="n">epoll_ctl</span><span class="p">(</span><span class="n">epfd</span><span class="p">,</span> <span class="n">EPOLL_CTL_ADD</span><span class="p">,</span> <span class="n">fd1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ev</span><span class="p">);</span>
+
+<span class="n">ev</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">fd</span> <span class="o">=</span> <span class="n">fd2</span><span class="p">;</span>
+<span class="n">epoll_ctl</span><span class="p">(</span><span class="n">epfd</span><span class="p">,</span> <span class="n">EPOLL_CTL_ADD</span><span class="p">,</span> <span class="n">fd2</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ev</span><span class="p">);</span>
+
+<span class="k">struct</span> <span class="n">epoll_event</span> <span class="n">events</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+<span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="n">epoll_wait</span><span class="p">(</span><span class="n">epfd</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>  <span class="c1">// -1 = wait forever</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">events</span> <span class="o">&amp;</span> <span class="n">EPOLLIN</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kt">int</span> <span class="n">ready_fd</span> <span class="o">=</span> <span class="n">events</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">data</span><span class="p">.</span><span class="n">fd</span><span class="p">;</span>
+            <span class="kt">uint8_t</span> <span class="n">buf</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
+            <span class="n">read</span><span class="p">(</span><span class="n">ready_fd</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buf</span><span class="p">));</span>
+            <span class="c1">// process...</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="n">close</span><span class="p">(</span><span class="n">epfd</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">poll</code> vs <code class="language-plaintext highlighter-rouge">epoll</code>:</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th><code class="language-plaintext highlighter-rouge">poll</code></th>
+      <th><code class="language-plaintext highlighter-rouge">epoll</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>FD limit</td>
+      <td>System limit</td>
+      <td>Thousands</td>
+    </tr>
+    <tr>
+      <td>Scan per call</td>
+      <td>O(n) — scans all FDs</td>
+      <td>O(ready) — only ready FDs</td>
+    </tr>
+    <tr>
+      <td>Use case</td>
+      <td>Few FDs (&lt; ~100)</td>
+      <td>Many FDs (servers, daemons)</td>
+    </tr>
+    <tr>
+      <td>API</td>
+      <td>Simple</td>
+      <td>More complex (create/ctl/wait)</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is a file descriptor and what does <code class="language-plaintext highlighter-rouge">O_CLOEXEC</code> do?</strong></p>
+
+<blockquote>
+  <p>A file descriptor is a small non-negative integer that is an index into the kernel’s per-process open file table. <code class="language-plaintext highlighter-rouge">O_CLOEXEC</code> marks the fd to be automatically closed when <code class="language-plaintext highlighter-rouge">exec()</code> is called. Without it, open fds are inherited by <code class="language-plaintext highlighter-rouge">exec()</code>‘d child processes — a security risk and resource leak. Best practice: always use <code class="language-plaintext highlighter-rouge">O_CLOEXEC</code> when opening fds you don’t intend to pass to child processes.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: Why must <code class="language-plaintext highlighter-rouge">read()</code> and <code class="language-plaintext highlighter-rouge">write()</code> be called in a loop?</strong></p>
+
+<blockquote>
+  <p>POSIX allows <code class="language-plaintext highlighter-rouge">read()</code> and <code class="language-plaintext highlighter-rouge">write()</code> to transfer fewer bytes than requested — a <strong>partial read/write</strong>. This can happen due to signals (<code class="language-plaintext highlighter-rouge">EINTR</code>), kernel buffer limits, or available data. A <code class="language-plaintext highlighter-rouge">read()</code> of 1000 bytes on a socket may return 400. If you don’t loop until all bytes are transferred, your application will silently process incomplete data. Always wrap I/O in a loop that checks the return value and accounts for both <code class="language-plaintext highlighter-rouge">EINTR</code> and partial transfers.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: When would you use <code class="language-plaintext highlighter-rouge">mmap</code> instead of <code class="language-plaintext highlighter-rouge">read()</code>/<code class="language-plaintext highlighter-rouge">write()</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">mmap</code> is ideal when: (a) processing large files where you want random access without seeking, (b) sharing memory between processes (<code class="language-plaintext highlighter-rouge">MAP_SHARED</code>), (c) mapping hardware register space in embedded Linux drivers (<code class="language-plaintext highlighter-rouge">/dev/mem</code>), or (d) zero-copy file-to-network transfers with <code class="language-plaintext highlighter-rouge">sendfile</code>. <code class="language-plaintext highlighter-rouge">read()</code>/<code class="language-plaintext highlighter-rouge">write()</code> is better for sequential streaming I/O, small amounts of data, and when you need explicit control over buffering. <code class="language-plaintext highlighter-rouge">mmap</code> avoids double-copying (kernel buffer → user buffer) but has overhead from page faults on first access.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: Explain the difference between <code class="language-plaintext highlighter-rouge">poll</code> and <code class="language-plaintext highlighter-rouge">epoll</code>, and when you’d choose <code class="language-plaintext highlighter-rouge">epoll</code>.</strong></p>
+
+<blockquote>
+  <p>Both monitor file descriptors for events. <code class="language-plaintext highlighter-rouge">poll</code> takes the entire list of watched FDs on every call — it runs in O(n) where n is the number of FDs, regardless of how many are ready. <code class="language-plaintext highlighter-rouge">epoll</code> maintains a kernel-side interest list; you add/remove FDs with <code class="language-plaintext highlighter-rouge">epoll_ctl</code>. <code class="language-plaintext highlighter-rouge">epoll_wait</code> only returns the ready FDs — O(ready events), not O(all FDs). For a server with 10,000 connections but only 10 active at a time, <code class="language-plaintext highlighter-rouge">poll</code> scans all 10,000 while <code class="language-plaintext highlighter-rouge">epoll</code> returns the 10. Choose <code class="language-plaintext highlighter-rouge">epoll</code> for high-connection-count servers; <code class="language-plaintext highlighter-rouge">poll</code> for simple programs with a handful of FDs.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 2 open</code></td>
+      <td>POSIX open manual</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 2 mmap</code></td>
+      <td>mmap manual</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 epoll</code></td>
+      <td>epoll API overview</td>
+    </tr>
+    <tr>
+      <td>The Linux Programming Interface (TLPI)</td>
+      <td>M. Kerrisk — definitive POSIX reference</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 signal</code></td>
+      <td>Signal handling reference</td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-network-wired"></i>
+        <span>POSIX &amp; Concurrency</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/posix/file-io/" class="gtn-link gts-active">
+          <i class="fas fa-file-code"></i> POSIX File I/O
+        </a>
+        <a href="/linux-developer/posix/processes-fork/" class="gtn-link ">
+          <i class="fas fa-sitemap"></i> Processes &amp; fork()
+        </a>
+        <a href="/linux-developer/posix/signals/" class="gtn-link ">
+          <i class="fas fa-bolt"></i> Signals
+        </a>
+        <a href="/linux-developer/posix/unix-sockets/" class="gtn-link ">
+          <i class="fas fa-plug"></i> UNIX Sockets
+        </a>
+        <a href="/linux-developer/posix/pthreads/" class="gtn-link ">
+          <i class="fas fa-microchip"></i> Pthreads
+        </a>
+        <a href="/linux-developer/posix/mutexes-semaphores/" class="gtn-link ">
+          <i class="fas fa-lock"></i> Mutexes &amp; Semaphores
+        </a>
+        <a href="/linux-developer/posix/pipes-ipc/" class="gtn-link ">
+          <i class="fas fa-arrows-left-right"></i> Pipes &amp; Shared Memory
+        </a>
+      </nav>
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      <div></div>
+      
+      <a href="/linux-developer/posix/processes-fork/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Processes & fork()</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+---
+layout: default
+title: "Build Systems — Yocto & Buildroot — Stage 10"
+description: "Automate the full embedded Linux build pipeline — toolchain, kernel, rootfs, and packages — using Buildroot and Yocto/OpenEmbedded."
+permalink: /kernel-developer/build-systems/
+---
+
+<style>
+.stage-hero {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(56,189,248,0.08) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 3.5rem 2rem 2.75rem; text-align: center;
+}
+.stage-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: #38bdf8; background: rgba(56,189,248,.1); border: 1px solid rgba(56,189,248,.25);
+  border-radius: 2rem; padding: .28rem .9rem; margin-bottom: 1rem;
+}
+.stage-hero h1 { font-size: clamp(1.6rem,3.5vw,2.4rem); font-weight: 800; margin: 0 0 .8rem; }
+.stage-hero p  { font-size: 1rem; color: var(--text-muted); max-width: 620px; margin: 0 auto 1.5rem; }
+.stage-hero-back {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-size: .8rem; font-weight: 600; color: var(--text-muted);
+  text-decoration: none; margin-bottom: 1.5rem;
+}
+.stage-hero-back:hover { color: #38bdf8; text-decoration: none; }
+.stage-grid-wrap { max-width: 1060px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+.stage-section-label {
+  font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: #38bdf8; margin-bottom: 1.4rem;
+}
+.stage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px,1fr)); gap: 1.2rem; }
+.sc-card {
+  --sc: #38bdf8;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 13px;
+  padding: 1.5rem; text-decoration: none; color: inherit;
+  display: flex; flex-direction: column; gap: .65rem;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.sc-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background: var(--sc); border-radius:13px 13px 0 0;
+}
+.sc-card:hover { transform:translateY(-4px); border-color:var(--sc); box-shadow:0 8px 28px rgba(0,0,0,.25); text-decoration:none; }
+.sc-card-top { display:flex; align-items:center; gap:.8rem; }
+.sc-icon {
+  width:40px; height:40px; border-radius:9px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+  background:rgba(56,189,248,.12); color:#38bdf8;
+}
+.sc-num  { font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:.15rem; }
+.sc-card h3 { font-size:.95rem; font-weight:700; margin:0; }
+.sc-card p  { font-size:.83rem; color:var(--text-muted); margin:0; line-height:1.55; }
+.sc-arrow   { margin-top:auto; padding-top:.4rem; font-size:.78rem; font-weight:600; color:#38bdf8; display:flex; align-items:center; gap:.3rem; }
+@media(max-width:600px){ .stage-grid{ grid-template-columns:1fr; } }
+</style>
+
+<div class="stage-hero">
+  <a href="{{ '/kernel-developer/' | relative_url }}" class="stage-hero-back"><i class="fas fa-arrow-left"></i> Kernel Developer Guide</a>
+  <div class="stage-hero-eyebrow"><i class="fas fa-layer-group"></i> Stage 10</div>
+  <h1>Build Systems — Yocto &amp; Buildroot</h1>
+  <p>Automate the entire toolchain, kernel, rootfs, and package build pipeline. Learn Buildroot for simplicity and Yocto/OpenEmbedded for production-grade flexibility.</p>
+</div>
+
+<div class="stage-grid-wrap">
+  <div class="stage-section-label"><i class="fas fa-map"></i> All Topics</div>
+  <div class="stage-grid">
+
+    <a href="{{ '/kernel-developer/build-systems/buildroot-basics/' | relative_url }}" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-hammer"></i></div>
+        <div><div class="sc-num">Topic 01</div><h3>Buildroot Basics</h3></div></div>
+      <p>Configure Buildroot, understand the directory layout, select packages, and build a complete toolchain + kernel + rootfs image.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="{{ '/kernel-developer/build-systems/buildroot-packages/' | relative_url }}" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-layer-group"></i></div>
+        <div><div class="sc-num">Topic 02</div><h3>Buildroot Packages &amp; Board Config</h3></div></div>
+      <p>Write custom .mk package files, board defconfigs, overlay directories, and post-build scripts for production targets.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="{{ '/kernel-developer/build-systems/bitbake-recipes/' | relative_url }}" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-code"></i></div>
+        <div><div class="sc-num">Topic 03</div><h3>BitBake &amp; Recipes</h3></div></div>
+      <p>BitBake syntax, recipe structure (SRC_URI, do_compile, do_install), bbappend files, and the fetch/unpack/patch workflow.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="{{ '/kernel-developer/build-systems/yocto-layers/' | relative_url }}" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-table-cells"></i></div>
+        <div><div class="sc-num">Topic 04</div><h3>Yocto Layers</h3></div></div>
+      <p>Layer architecture, bblayers.conf, creating a BSP layer, meta-* conventions, and integrating upstream community layers.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="{{ '/kernel-developer/build-systems/custom-distro/' | relative_url }}" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fab fa-linux"></i></div>
+        <div><div class="sc-num">Topic 05</div><h3>Custom Distro</h3></div></div>
+      <p>Define your own distribution policy, IMAGE_FEATURES, package groups, and IMAGE_INSTALL for a locked-down production image.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="{{ '/kernel-developer/build-systems/sdk-generation/' | relative_url }}" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-wrench"></i></div>
+        <div><div class="sc-num">Topic 06</div><h3>SDK Generation</h3></div></div>
+      <p>Generate standard and extensible SDKs (eSDK), distribute to app developers, and use devtool for fast iteration.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="{{ '/kernel-developer/build-systems/ci-pipeline/' | relative_url }}" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-rotate"></i></div>
+        <div><div class="sc-num">Topic 07</div><h3>CI / Automated Builds</h3></div></div>
+      <p>Integrate Yocto/Buildroot into CI pipelines with shared sstate-cache, reproducible builds, and artifact management.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+  </div>
+</div>

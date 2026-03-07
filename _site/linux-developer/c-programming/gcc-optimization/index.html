@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GCC Flags & Optimization · Eslam Mohamed</title>
+  <meta name="description" content="Master GCC warning flags, optimization levels, sanitizers, link-time optimization, cross-compilation flags, and how to read assembly output to understand what the compiler produces." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/c-programming/">C Programming</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>GCC Flags & Optimization</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 02</span>
+      </div>
+      <h1 class="guide-title">GCC Flags & Optimization</h1>
+      <p class="guide-subtitle">Master GCC warning flags, optimization levels, sanitizers, link-time optimization, cross-compilation flags, and how to read assembly output to understand what the compiler produces.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="essential-warning-flags">Essential Warning Flags</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>GCC warnings catch real bugs at compile time — always enable them in development.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Minimum recommended set</span>
+gcc <span class="nt">-Wall</span> <span class="nt">-Wextra</span> <span class="nt">-Wpedantic</span> <span class="nt">-Werror</span> <span class="nt">-o</span> program program.c
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Flag</th>
+      <th>What it catches</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-Wall</code></td>
+      <td>Most common warnings (misleadingly not “all”)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-Wextra</code></td>
+      <td>Extra warnings not in <code class="language-plaintext highlighter-rouge">-Wall</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-Wpedantic</code></td>
+      <td>ISO C conformance violations</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-Werror</code></td>
+      <td>Treat warnings as errors (enforces zero-warning policy)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-Wshadow</code></td>
+      <td>Variable shadows an outer scope variable</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-Wformat=2</code></td>
+      <td>String format vulnerabilities (<code class="language-plaintext highlighter-rouge">printf</code> etc.)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-Wconversion</code></td>
+      <td>Implicit type conversions that may lose data</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-Wno-unused-parameter</code></td>
+      <td>Suppress warnings for intentionally unused params</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-Wundef</code></td>
+      <td>Undefined macro used in <code class="language-plaintext highlighter-rouge">#if</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Production-grade warning set</span>
+CFLAGS <span class="o">=</span> <span class="nt">-Wall</span> <span class="nt">-Wextra</span> <span class="nt">-Wpedantic</span> <span class="nt">-Wshadow</span> <span class="nt">-Wformat</span><span class="o">=</span>2 <span class="se">\</span>
+         <span class="nt">-Wconversion</span> <span class="nt">-Wdouble-promotion</span> <span class="nt">-Wnull-dereference</span> <span class="se">\</span>
+         <span class="nt">-Wmisleading-indentation</span> <span class="nt">-Wstrict-prototypes</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="optimization-levels">Optimization Levels</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gcc <span class="nt">-O0</span> <span class="nt">-o</span> program program.c    <span class="c"># No optimization (default) — fastest compile, easiest to debug</span>
+gcc <span class="nt">-O1</span> <span class="nt">-o</span> program program.c    <span class="c"># Basic optimization</span>
+gcc <span class="nt">-O2</span> <span class="nt">-o</span> program program.c    <span class="c"># Recommended for production</span>
+gcc <span class="nt">-O3</span> <span class="nt">-o</span> program program.c    <span class="c"># Aggressive — may change behaviour (strict-aliasing, vectorization)</span>
+gcc <span class="nt">-Os</span> <span class="nt">-o</span> program program.c    <span class="c"># Optimize for size (embedded systems)</span>
+gcc <span class="nt">-Oz</span> <span class="nt">-o</span> program program.c    <span class="c"># Minimize size even more (Clang; GCC uses -Os)</span>
+gcc <span class="nt">-Og</span> <span class="nt">-o</span> program program.c    <span class="c"># Optimize for debugging (GCC 4.8+)</span>
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Level</th>
+      <th>Use case</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-O0</code></td>
+      <td>Development, debugging</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-O2</code></td>
+      <td>Production builds</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-O3</code></td>
+      <td>Performance-critical code (benchmark first!)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-Os</code></td>
+      <td>Embedded systems — flash is limited</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-Og</code></td>
+      <td>Debug builds that still have some optimization</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-basic" id="debugging-flags">Debugging Flags</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gcc <span class="nt">-g</span>   <span class="nt">-o</span> program program.c    <span class="c"># DWARF debug info (compatible with GDB, Valgrind)</span>
+gcc <span class="nt">-g3</span>  <span class="nt">-o</span> program program.c    <span class="c"># Include macro definitions</span>
+gcc <span class="nt">-ggdb</span> <span class="nt">-o</span> program program.c   <span class="c"># GDB-specific extensions</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p><strong>Never strip debug info from binaries you keep for crash analysis.</strong> Build with <code class="language-plaintext highlighter-rouge">-g</code> + <code class="language-plaintext highlighter-rouge">-O2</code> for production; store the unstripped binary separately for debugging.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-mid" id="sanitizers">Sanitizers</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<p>Compile-time instrumentation that detects bugs at runtime with ~2x overhead:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># AddressSanitizer — heap/stack overflows, use-after-free, double-free</span>
+gcc <span class="nt">-fsanitize</span><span class="o">=</span>address <span class="nt">-g</span> <span class="nt">-o</span> program program.c
+
+<span class="c"># UndefinedBehaviorSanitizer — signed overflow, null deref, invalid shifts</span>
+gcc <span class="nt">-fsanitize</span><span class="o">=</span>undefined <span class="nt">-g</span> <span class="nt">-o</span> program program.c
+
+<span class="c"># Both together (recommended during development)</span>
+gcc <span class="nt">-fsanitize</span><span class="o">=</span>address,undefined <span class="nt">-g</span> <span class="nt">-o</span> program program.c
+
+<span class="c"># ThreadSanitizer — data races (can't combine with ASan)</span>
+gcc <span class="nt">-fsanitize</span><span class="o">=</span>thread <span class="nt">-g</span> <span class="nt">-o</span> program program.c
+</code></pre></div></div>
+
+<p><strong>Example ASan output:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>==42==ERROR: AddressSanitizer: stack-buffer-overflow
+WRITE of size 4 at 0x7ffd1234 thread T0
+    #0 0x401150 in fill_array program.c:8
+    #1 0x4011a0 in main program.c:14
+Shadow bytes around the buggy address:
+  0x7ffd1230: 00 00 00 00 f2 f2 f2 f2
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="cross-compilation-flags">Cross-Compilation Flags</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Target ARMv7 with hardware floating point (Raspberry Pi 2/3)</span>
+arm-linux-gnueabihf-gcc <span class="se">\</span>
+    <span class="nt">-march</span><span class="o">=</span>armv7-a <span class="se">\</span>
+    <span class="nt">-mfpu</span><span class="o">=</span>neon-vfpv4 <span class="se">\</span>
+    <span class="nt">-mfloat-abi</span><span class="o">=</span>hard <span class="se">\</span>
+    <span class="nt">-O2</span> <span class="nt">-o</span> sensor sensor.c
+
+<span class="c"># Target ARMv8 / AArch64</span>
+aarch64-linux-gnu-gcc <span class="se">\</span>
+    <span class="nt">-march</span><span class="o">=</span>armv8-a <span class="se">\</span>
+    <span class="nt">-O2</span> <span class="nt">-o</span> sensor sensor.c
+
+<span class="c"># Target bare-metal Cortex-M4 (no OS, no stdlib)</span>
+arm-none-eabi-gcc <span class="se">\</span>
+    <span class="nt">-mcpu</span><span class="o">=</span>cortex-m4 <span class="se">\</span>
+    <span class="nt">-mthumb</span> <span class="se">\</span>
+    <span class="nt">-mfpu</span><span class="o">=</span>fpv4-sp-d16 <span class="se">\</span>
+    <span class="nt">-mfloat-abi</span><span class="o">=</span>hard <span class="se">\</span>
+    <span class="nt">-ffreestanding</span> <span class="nt">-nostdlib</span> <span class="se">\</span>
+    <span class="nt">-Os</span> <span class="nt">-o</span> firmware.elf firmware.c
+</code></pre></div></div>
+
+<h3 id="useful-analysis-flags">Useful Analysis Flags</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Show preprocessed output</span>
+gcc <span class="nt">-E</span> program.c <span class="nt">-o</span> program.i
+
+<span class="c"># Show assembly output</span>
+gcc <span class="nt">-S</span> <span class="nt">-O2</span> program.c <span class="nt">-o</span> program.s
+
+<span class="c"># Show object file symbols</span>
+nm program.o
+readelf <span class="nt">-s</span> program.o
+
+<span class="c"># Show all compiler passes</span>
+gcc <span class="nt">-v</span> program.c <span class="nt">-o</span> program
+
+<span class="c"># Report include paths</span>
+gcc <span class="nt">-v</span> <span class="nt">-E</span> /dev/null
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-reading-assembly-output">Advanced: Reading Assembly Output</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p>Understanding assembly output helps you verify optimizations and diagnose performance issues.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Generate annotated assembly with source interleaved</span>
+gcc <span class="nt">-O2</span> <span class="nt">-g</span> <span class="nt">-S</span> <span class="nt">-fverbose-asm</span> program.c <span class="nt">-o</span> program.s
+
+<span class="c"># Or use objdump on the compiled binary</span>
+gcc <span class="nt">-O2</span> <span class="nt">-g</span> <span class="nt">-o</span> program program.c
+objdump <span class="nt">-d</span> <span class="nt">-S</span> program | less
+</code></pre></div></div>
+
+<p><strong>Example — comparing optimization levels:</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="nf">sum_array</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">arr</span><span class="p">,</span> <span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+    <span class="k">return</span> <span class="n">s</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># -O0: naive loop</span>
+<span class="c"># -O2: loop unrolling, no pipeline stalls</span>
+<span class="c"># -O3 with AVX2: SIMD vectorization using ymm registers (processes 8 ints at once)</span>
+gcc <span class="nt">-O3</span> <span class="nt">-march</span><span class="o">=</span>native <span class="nt">-S</span> sum.c
+</code></pre></div></div>
+
+<h3 id="link-time-optimization-lto">Link-Time Optimization (LTO)</h3>
+
+<p>LTO lets the compiler optimize <strong>across</strong> translation unit boundaries:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gcc <span class="nt">-O2</span> <span class="nt">-flto</span> <span class="nt">-o</span> program main.c utils.c sensor.c
+<span class="c"># GCC sees all source files simultaneously at link time</span>
+<span class="c"># Can inline functions across files, eliminate dead code globally</span>
+</code></pre></div></div>
+
+<h3 id="profile-guided-optimization-pgo">Profile-Guided Optimization (PGO)</h3>
+
+<p>Let real workload data guide optimization:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Step 1: Instrument build</span>
+gcc <span class="nt">-fprofile-generate</span> <span class="nt">-O2</span> <span class="nt">-o</span> program_inst program.c
+
+<span class="c"># Step 2: Run with representative data</span>
+./program_inst &lt; workload.dat
+
+<span class="c"># Step 3: Optimized build using collected profiles</span>
+gcc <span class="nt">-fprofile-use</span> <span class="nt">-O2</span> <span class="nt">-o</span> program_pgo program.c
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">-O2</code> and <code class="language-plaintext highlighter-rouge">-O3</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">-O2</code> enables a well-tested set of optimizations that are safe for all conforming code. <code class="language-plaintext highlighter-rouge">-O3</code> enables additional aggressive optimizations — vectorization, aggressive inlining, tree-loop transformations — that may change the order of floating-point operations or assume strict aliasing, potentially breaking code that has undefined behaviour. Use <code class="language-plaintext highlighter-rouge">-O2</code> by default; only switch to <code class="language-plaintext highlighter-rouge">-O3</code> after profiling and testing.</p>
+</blockquote>
+
+<p><strong>Q2 — Intermediate: What is strict aliasing and why can it cause bugs?</strong></p>
+
+<blockquote>
+  <p>The strict aliasing rule states that you may not access an object through a pointer of an incompatible type (except <code class="language-plaintext highlighter-rouge">char *</code>). GCC assumes you follow this rule at <code class="language-plaintext highlighter-rouge">-O2</code>+, allowing it to elide loads. Code that violates it (e.g., type-punning via <code class="language-plaintext highlighter-rouge">*(int *)&amp;float_val</code>) has undefined behaviour and may produce wrong results after optimization. Safe alternatives: use <code class="language-plaintext highlighter-rouge">union</code> (C99 explicitly allows this) or <code class="language-plaintext highlighter-rouge">memcpy</code> for type punning, or pass <code class="language-plaintext highlighter-rouge">-fno-strict-aliasing</code>.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: How does AddressSanitizer work and what overhead does it add?</strong></p>
+
+<blockquote>
+  <p>ASan works by inserting instrumented “shadow memory” alongside every allocation. Each 8 bytes of real memory get 1 byte of shadow tracking validity. Before every memory access, the compiler-inserted code checks the shadow byte. Heap is surrounded by poisoned “redzones” to catch overflows. Typical overhead: ~2× memory, ~2× runtime — acceptable for CI/CD but not production.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: Explain LTO and when it provides the most benefit.</strong></p>
+
+<blockquote>
+  <p>Link-Time Optimization allows GCC to inline and optimize across <code class="language-plaintext highlighter-rouge">.c</code> file boundaries. Normally the compiler only sees one translation unit at a time; functions in other <code class="language-plaintext highlighter-rouge">.c</code> files can’t be inlined. With LTO, all IR (GIMPLE) is written into <code class="language-plaintext highlighter-rouge">.o</code> files and the linker passes them all to the optimizer at once. Most benefit: when you have many small helper functions in utility modules that are called frequently. Cross-file inlining can eliminate function call overhead and enable further constant propagation.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GCC Optimize Options</td>
+      <td><a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html">gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html</a></td>
+    </tr>
+    <tr>
+      <td>GCC Warning Options</td>
+      <td><a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html">gcc.gnu.org/onlinedocs/gcc/Warning-Options.html</a></td>
+    </tr>
+    <tr>
+      <td>Compiler Explorer (Godbolt)</td>
+      <td><a href="https://godbolt.org">godbolt.org</a> — see assembly output live</td>
+    </tr>
+    <tr>
+      <td>AddressSanitizer wiki</td>
+      <td><a href="https://github.com/google/sanitizers">github.com/google/sanitizers</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-file-code"></i>
+        <span>C Programming Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/c-programming/pointers-memory/" class="gtn-link ">
+          <i class="fas fa-memory"></i> Pointers &amp; Memory
+        </a>
+        <a href="/linux-developer/c-programming/structs-unions/" class="gtn-link ">
+          <i class="fas fa-cube"></i> Structs &amp; Unions
+        </a>
+        <a href="/linux-developer/c-programming/file-io/" class="gtn-link ">
+          <i class="fas fa-file-code"></i> File I/O
+        </a>
+        <a href="/linux-developer/c-programming/dynamic-allocation/" class="gtn-link ">
+          <i class="fas fa-layer-group"></i> Dynamic Allocation
+        </a>
+        <a href="/linux-developer/c-programming/makefiles/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> Makefiles
+        </a>
+        <a href="/linux-developer/c-programming/gcc-optimization/" class="gtn-link gts-active">
+          <i class="fas fa-gears"></i> GCC Flags &amp; Optimization
+        </a>
+        <a href="/linux-developer/c-programming/gdb/" class="gtn-link ">
+          <i class="fas fa-bug"></i> GDB Debugging
+        </a>
+      </nav>
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/c-programming/makefiles/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Makefiles</span>
+      </a>
+      
+      
+      <a href="/linux-developer/c-programming/gdb/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">GDB Debugging</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

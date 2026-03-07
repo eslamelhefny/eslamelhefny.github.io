@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GNU Cross-Toolchain · Eslam Mohamed</title>
+  <meta name="description" content="Understanding cross-compilation toolchains: components, naming conventions, ABI options, and building custom toolchains with Crosstool-NG." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/embedded-linux/">Embedded Linux Developer</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>GNU Cross-Toolchain</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 03 — Embedded Linux</span>
+        <span class="guide-stage-pill">Stage 05</span>
+      </div>
+      <h1 class="guide-title">GNU Cross-Toolchain</h1>
+      <p class="guide-subtitle">Understanding cross-compilation toolchains: components, naming conventions, ABI options, and building custom toolchains with Crosstool-NG.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="what-is-a-cross-toolchain">What Is a Cross-Toolchain?</h2>
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>A <strong>cross-toolchain</strong> is a set of compiler tools that run on one machine (the <em>build host</em>) but produce executables for a different machine (the <em>target</em>). In embedded Linux development the build host is typically an x86-64 workstation running Ubuntu or Debian, while the target is an ARM, MIPS, RISC-V, or PowerPC board.</p>
+
+<h3 id="why-not-compile-natively-on-the-target">Why Not Compile Natively on the Target?</h3>
+
+<p>Embedded targets are often constrained:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Constraint</th>
+      <th>Detail</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Slow CPU</td>
+      <td>A 1 GHz Cortex-A7 compiles a medium project in minutes vs seconds on a host</td>
+    </tr>
+    <tr>
+      <td>Limited RAM</td>
+      <td>256 MB RAM cannot hold the GCC intermediate files for large projects</td>
+    </tr>
+    <tr>
+      <td>No storage</td>
+      <td>A 16 MB NOR flash cannot hold a full toolchain</td>
+    </tr>
+    <tr>
+      <td>No OS</td>
+      <td>Bare-metal targets have no operating system to run a compiler</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Cross-compilation solves all of these by doing the heavy lifting on the host and only deploying the compiled artifacts to the target.</p>
+
+<h3 id="toolchain-components">Toolchain Components</h3>
+
+<p>A GNU cross-toolchain is composed of three main packages:</p>
+
+<p><strong>1. Binutils</strong> — binary utilities that manipulate object files and executables:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tool</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">as</code></td>
+      <td>Assembler — converts <code class="language-plaintext highlighter-rouge">.s</code> files to <code class="language-plaintext highlighter-rouge">.o</code> object files</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">ld</code></td>
+      <td>Linker — combines <code class="language-plaintext highlighter-rouge">.o</code> files into an ELF executable</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">objcopy</code></td>
+      <td>Copy/translate object files, convert ELF → binary/srec/ihex</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">objdump</code></td>
+      <td>Disassemble and display information about object files</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">readelf</code></td>
+      <td>Display detailed ELF structure (sections, symbols, headers)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">nm</code></td>
+      <td>List symbols defined or referenced by object files</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">strip</code></td>
+      <td>Remove symbol table and debug info to shrink binaries</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">ar</code></td>
+      <td>Create, modify, and extract static library archives (<code class="language-plaintext highlighter-rouge">.a</code> files)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">size</code></td>
+      <td>Display section sizes and total size of object/executable files</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>2. GCC / G++</strong> — the GNU Compiler Collection. Compiles C, C++, Fortran, etc. to target machine code.</p>
+
+<p><strong>3. C Library</strong> — the standard C runtime library that every userspace program links against:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>C Library</th>
+      <th>Description</th>
+      <th>Typical Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>glibc</strong> (GNU libc)</td>
+      <td>Full POSIX compliance, widest compatibility, large footprint (~2 MB)</td>
+      <td>Desktop Linux, embedded boards with &gt;64 MB RAM</td>
+    </tr>
+    <tr>
+      <td><strong>musl libc</strong></td>
+      <td>Small, clean, standards-conforming, ~600 KB</td>
+      <td>Minimal embedded systems, static builds</td>
+    </tr>
+    <tr>
+      <td><strong>uClibc-ng</strong></td>
+      <td>Fork of uClibc, small footprint, configurable</td>
+      <td>Very resource-constrained targets</td>
+    </tr>
+    <tr>
+      <td><strong>newlib</strong></td>
+      <td>C library for bare-metal / RTOS targets (no Linux kernel)</td>
+      <td>Cortex-M microcontrollers</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="toolchain-naming-convention">Toolchain Naming Convention</h3>
+
+<p>The cross-compiler follows a predictable four-field naming convention:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>arch-vendor-kernel-abi-gcc
+│    │      │       │
+│    │      │       └── ABI: gnueabihf, gnueabi, musleabi, uclibc...
+│    │      └────────── kernel: linux (for Linux targets), elf (bare-metal)
+│    └───────────────── vendor: optional label (linux, buildroot, none, poky...)
+└────────────────────── architecture: arm, aarch64, mipsel, riscv64, powerpc...
+</code></pre></div></div>
+
+<p>Common examples:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Triplet</th>
+      <th>Target</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">arm-linux-gnueabihf-gcc</code></td>
+      <td>32-bit ARM, Linux, glibc, hard-float ABI</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">arm-linux-gnueabi-gcc</code></td>
+      <td>32-bit ARM, Linux, glibc, soft-float ABI</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">aarch64-linux-gnu-gcc</code></td>
+      <td>64-bit ARM (Cortex-A53/A72), Linux, glibc</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">mipsel-linux-gnu-gcc</code></td>
+      <td>MIPS little-endian, Linux, glibc</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">riscv64-linux-gnu-gcc</code></td>
+      <td>RISC-V 64-bit, Linux, glibc</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">arm-none-eabi-gcc</code></td>
+      <td>32-bit ARM, bare-metal (no OS), no C library</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="installing-a-cross-compiler-on-ubuntudebian">Installing a Cross-Compiler on Ubuntu/Debian</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sudo </span>apt update
+<span class="nv">$ </span><span class="nb">sudo </span>apt search <span class="s2">"arm-linux-gnueabihf"</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Sorting...
+Full Text Search...
+binutils-arm-linux-gnueabihf/jammy 2.38-4ubuntu2 amd64
+  GNU binary utilities, for arm-linux-gnueabihf target
+
+gcc-arm-linux-gnueabihf/jammy 4:11.2.0-1ubuntu1 amd64
+  GNU C compiler for armhf architecture
+
+g++-arm-linux-gnueabihf/jammy 4:11.2.0-1ubuntu1 amd64
+  GNU C++ compiler for armhf architecture
+
+cpp-arm-linux-gnueabihf/jammy 4:11.2.0-1ubuntu1 amd64
+  GNU C preprocessor for armhf architecture
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sudo </span>apt <span class="nb">install </span>gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
+
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="nt">--version</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>arm-linux-gnueabihf-gcc (Ubuntu 11.3.0-1ubuntu1~22.04) 11.3.0
+Copyright (C) 2021 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+</code></pre></div></div>
+
+<h3 id="your-first-cross-compiled-binary">Your First Cross-Compiled Binary</h3>
+
+<p>Create a simple C program:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* hello.c */</span>
+<span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Hello from ARM!</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Compile it for ARM:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="nt">-o</span> hello hello.c
+
+<span class="nv">$ </span>file hello
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hello: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV),
+dynamically linked, interpreter /lib/ld-linux-armhf.so.3,
+BuildID[sha1]=3a1c9e5d4b7f2a8e6d0c1b5f9e3a7d2c4b8f1e6a,
+for GNU/Linux 3.2.0, not stripped
+</code></pre></div></div>
+
+<p>Compare with a native x86 binary:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>gcc <span class="nt">-o</span> hello_native hello.c
+
+<span class="nv">$ </span>file hello_native
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hello_native: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV),
+dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2,
+BuildID[sha1]=7f3d2a1c9e5b4f8e0d6c2b4a7f3d1c9e5b7f2a4c,
+for GNU/Linux 3.2.0, not stripped
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">ARM, EABI5</code> confirms the binary targets ARM. You cannot run this on the host:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>./hello
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bash: ./hello: cannot execute binary file: Exec format error
+</code></pre></div></div>
+
+<p>To run it you need to copy it to an ARM board, or use QEMU user-mode emulation (covered in the QEMU guide).</p>
+
+<hr />
+
+<h2 class="gc-mid" id="abi-instruction-sets-and-compiler-flags">ABI, Instruction Sets, and Compiler Flags</h2>
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="hard-float-vs-soft-float-abi">Hard-Float vs Soft-Float ABI</h3>
+
+<p>The <em>Application Binary Interface</em> (ABI) defines how function arguments and return values are passed between functions — specifically which registers and calling conventions are used.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>ABI</th>
+      <th>Flag</th>
+      <th>Float Register Usage</th>
+      <th>Performance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>soft-float</strong> (<code class="language-plaintext highlighter-rouge">gnueabi</code>)</td>
+      <td><code class="language-plaintext highlighter-rouge">-mfloat-abi=soft</code></td>
+      <td>FP ops done in integer registers, no FPU</td>
+      <td>Slow, compatible with all ARM chips</td>
+    </tr>
+    <tr>
+      <td><strong>soft-fp</strong> (<code class="language-plaintext highlighter-rouge">gnueabi</code> + vfp)</td>
+      <td><code class="language-plaintext highlighter-rouge">-mfloat-abi=softfp</code></td>
+      <td>Uses VFP/NEON unit but passes args in integer regs</td>
+      <td>Mixed — intermediate</td>
+    </tr>
+    <tr>
+      <td><strong>hard-float</strong> (<code class="language-plaintext highlighter-rouge">gnueabihf</code>)</td>
+      <td><code class="language-plaintext highlighter-rouge">-mfloat-abi=hard</code></td>
+      <td>Uses VFP/NEON unit AND passes args in float registers</td>
+      <td>Fastest, requires hardware FPU</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Critical rule:</strong> You cannot link soft-float object files with hard-float object files. All <code class="language-plaintext highlighter-rouge">.o</code> files and libraries in a project must use the same float ABI.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Compiling with explicit hard-float + NEON for Cortex-A9</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="se">\</span>
+    <span class="nt">-march</span><span class="o">=</span>armv7-a <span class="se">\</span>
+    <span class="nt">-mtune</span><span class="o">=</span>cortex-a9 <span class="se">\</span>
+    <span class="nt">-mfpu</span><span class="o">=</span>neon <span class="se">\</span>
+    <span class="nt">-mfloat-abi</span><span class="o">=</span>hard <span class="se">\</span>
+    <span class="nt">-O2</span> <span class="se">\</span>
+    <span class="nt">-o</span> signal_proc signal_proc.c
+
+<span class="nv">$ </span>file signal_proc
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>signal_proc: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV),
+dynamically linked, interpreter /lib/ld-linux-armhf.so.3,
+for GNU/Linux 3.2.0, not stripped
+</code></pre></div></div>
+
+<p>Check that NEON instructions were generated:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>arm-linux-gnueabihf-objdump <span class="nt">-d</span> signal_proc | <span class="nb">grep</span> <span class="nt">-E</span> <span class="s2">"vmul|vadd|vld"</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    8524:   f2200d50    vmul.f32  d16, d16, d16
+    852c:   f2200d51    vmul.f32  d17, d16, d17
+    8534:   f3000d50    vadd.f32  d16, d16, d0
+    853c:   f4200a8f    vld1.32   {d16-d17}, [r0]
+</code></pre></div></div>
+
+<h3 id="arm-vs-thumb-instruction-sets">ARM vs Thumb Instruction Sets</h3>
+
+<p>ARM processors support multiple instruction set modes:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Mode</th>
+      <th>Instruction Width</th>
+      <th>Code Density</th>
+      <th>Performance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ARM</td>
+      <td>32-bit fixed</td>
+      <td>Larger code size</td>
+      <td>Slightly faster on older cores</td>
+    </tr>
+    <tr>
+      <td>Thumb</td>
+      <td>16-bit compressed</td>
+      <td>~30% smaller code</td>
+      <td>Slightly slower on ARMv4/5</td>
+    </tr>
+    <tr>
+      <td>Thumb-2</td>
+      <td>Mixed 16/32-bit</td>
+      <td>Best density</td>
+      <td>Equal or better performance</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>For Cortex-A (ARMv7-A), Thumb-2 is recommended for its code density without performance loss:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="nt">-mthumb</span> <span class="nt">-march</span><span class="o">=</span>armv7-a <span class="nt">-O2</span> <span class="nt">-o</span> hello_thumb hello.c
+
+<span class="c"># Check instruction set used</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-objdump <span class="nt">-d</span> hello_thumb | <span class="nb">head</span> <span class="nt">-30</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hello_thumb:     file format elf32-littlearm
+
+Disassembly of section .text:
+
+000103d4 &lt;_start&gt;:
+   103d4:   f04f 0b00   mov.w   fp, #0
+   103d8:   f04f 0e00   mov.w   lr, #0
+   103dc:   bc0e        pop     {r1, r2, r3}
+   103e0:   466d        mov     sp, r5
+   103e4:   f7ff fffe   bl      100a0 &lt;__libc_start_main@plt&gt;
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">mov.w</code> and <code class="language-plaintext highlighter-rouge">bl</code> are Thumb-2 instructions (note the mixed 16/32-bit encoding).</p>
+
+<h3 id="understanding-multilib">Understanding Multilib</h3>
+
+<p>Some toolchains are built with <em>multilib</em> support — they can produce binaries for multiple ABIs from a single installation:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="nt">-print-multi-lib</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>.;
+thumb;@mthumb
+armv6-m/thumb;@mthumb@march=armv6s-m
+armv7-m/thumb;@mthumb@march=armv7-m
+armv7e-m/thumb;@mthumb@march=armv7e-m
+armv7-ar/thumb;@mthumb@march=armv7
+armv8-m.base/thumb;@mthumb@march=armv8-m.base
+armv8-m.main/thumb;@mthumb@march=armv8-m.main
+</code></pre></div></div>
+
+<p>Each entry is a directory path for the pre-compiled multilib variant and the flags that activate it.</p>
+
+<h3 id="inspecting-gcc-configuration-with--v">Inspecting GCC Configuration with -v</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="nt">-v</span> hello.c <span class="nt">-o</span> hello 2&gt;&amp;1 | <span class="nb">head</span> <span class="nt">-20</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Using built-in specs.
+COLLECT_GCC=arm-linux-gnueabihf-gcc
+COLLECT_LTO_WRAPPER=/usr/lib/gcc-cross/arm-linux-gnueabihf/11/lto-wrapper
+Target: arm-linux-gnueabihf
+Configured with: ../src/configure -v
+  --with-pkgversion='Ubuntu 11.3.0-1ubuntu1~22.04'
+  --enable-languages=c,ada,c++,go,d,fortran,objc,obj-c++,m2
+  --prefix=/usr
+  --with-gcc-major-version-only
+  --program-suffix=-11
+  --program-prefix=arm-linux-gnueabihf-
+  --enable-shared --enable-linker-build-id
+  --libexecdir=/usr/lib
+  --without-included-gettext
+  --enable-threads=posix
+  --libdir=/usr/lib
+  --enable-nls
+  --enable-bootstrap
+  --enable-clocale=gnu
+  --with-float=hard
+  --with-fpu=vfpv3-d16
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">--with-float=hard</code> and <code class="language-plaintext highlighter-rouge">--with-fpu=vfpv3-d16</code> confirm this is a hard-float toolchain. The configuration line shows all compile-time options that were used to build GCC itself.</p>
+
+<h3 id="building-a-custom-toolchain-with-crosstool-ng">Building a Custom Toolchain with Crosstool-NG</h3>
+
+<p>While Debian/Ubuntu packages are convenient, you sometimes need a custom toolchain — different C library, specific kernel headers version, or non-standard target. <strong>Crosstool-NG</strong> automates the complex multi-step build process.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install prerequisites</span>
+<span class="nv">$ </span><span class="nb">sudo </span>apt <span class="nb">install </span>gcc g++ gperf bison flex texinfo help2man make <span class="se">\</span>
+    libncurses5-dev python3-dev autoconf automake libtool <span class="se">\</span>
+    libtool-bin gawk wget bzip2 xz-utils unzip patch libstdc++6
+
+<span class="c"># Download and install Crosstool-NG</span>
+<span class="nv">$ </span>wget http://crosstool-ng.org/download/crosstool-ng/crosstool-ng-1.26.0.tar.xz
+<span class="nv">$ </span><span class="nb">tar </span>xf crosstool-ng-1.26.0.tar.xz
+<span class="nv">$ </span><span class="nb">cd </span>crosstool-ng-1.26.0
+<span class="nv">$ </span>./configure <span class="nt">--prefix</span><span class="o">=</span><span class="nv">$HOME</span>/crosstool-ng
+<span class="nv">$ </span>make <span class="o">&amp;&amp;</span> make <span class="nb">install</span>
+<span class="nv">$ </span><span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$HOME</span>/crosstool-ng/bin:<span class="nv">$PATH</span>
+
+<span class="c"># List available sample configurations</span>
+<span class="nv">$ </span>ct-ng list-samples | <span class="nb">grep </span>arm
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[L...]   arm-cortex_a15-linux-gnueabihf
+[L...]   arm-cortex_a5-linux-uclibcgnueabihf
+[L...]   arm-cortex_a8-linux-gnueabi
+[L...]   arm-cortex_a9-linux-gnueabihf
+[L...]   arm-unknown-linux-gnueabi
+[L...]   arm-unknown-linux-musleabi
+[L...]   arm-unknown-linux-musleabihf
+[L...]   armv6-rpi-linux-gnueabihf
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Start from a sample configuration</span>
+<span class="nv">$ </span>ct-ng arm-cortex_a9-linux-gnueabihf
+
+<span class="c"># Open menuconfig to customize</span>
+<span class="nv">$ </span>ct-ng menuconfig
+</code></pre></div></div>
+
+<p>Key menuconfig sections to review:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Section</th>
+      <th>Important Settings</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Target options</td>
+      <td>Architecture, ABI, FPU type</td>
+    </tr>
+    <tr>
+      <td>Toolchain options</td>
+      <td>Vendor string, tuple’s vendor</td>
+    </tr>
+    <tr>
+      <td>Operating System</td>
+      <td>Linux kernel headers version</td>
+    </tr>
+    <tr>
+      <td>C-library</td>
+      <td>glibc / musl / uClibc-ng, version</td>
+    </tr>
+    <tr>
+      <td>C compiler</td>
+      <td>GCC version, C++ support, LTO</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Build the toolchain (takes 30-90 minutes)</span>
+<span class="nv">$ </span>ct-ng build
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[INFO ]  Retrieving needed toolchain components' tarballs
+[INFO ]  Getting 'gcc-12.2.0'...
+[INFO ]  Getting 'linux-5.15.61'...
+[INFO ]  Getting 'glibc-2.36'...
+[INFO ]  Getting 'binutils-2.39'...
+[INFO ]  Extracting and patching toolchain components
+[INFO ]  Building toolchain
+[INFO ]  Installing final gcc compiler
+[INFO ]  Finalizing the toolchain's directory
+[INFO ]  Build completed
+[EXTRA]  Elapsed time: 47m14s
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Add to PATH</span>
+<span class="nv">$ </span><span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$HOME</span>/x-tools/arm-cortex_a9-linux-gnueabihf/bin:<span class="nv">$PATH</span>
+
+<span class="c"># Test</span>
+<span class="nv">$ </span>arm-cortex_a9-linux-gnueabihf-gcc <span class="nt">--version</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>arm-cortex_a9-linux-gnueabihf-gcc (crosstool-NG 1.26.0) 12.2.0
+Copyright (C) 2022 Free Software Foundation, Inc.
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="sysroot-layout-linker-scripts-and-canadian-cross">Sysroot Layout, Linker Scripts, and Canadian Cross</h2>
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="the-bootstrapping-problem">The Bootstrapping Problem</h3>
+
+<p>Building a cross-compiler from source involves a fundamental chicken-and-egg problem:</p>
+
+<ol>
+  <li>To compile glibc for the target, you need a cross-compiler.</li>
+  <li>To build a full cross-compiler, you need a working C library for the target.</li>
+</ol>
+
+<p>This is the <strong>bootstrapping problem</strong>. Crosstool-NG solves it in several stages:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Stage 1: Build a minimal "bootstrap" cross-gcc
+         (no C library, only enough to compile glibc)
+         build_host_cc → cross-gcc-stage1 (C only, static, no libc)
+
+Stage 2: Cross-compile the C library using stage-1 gcc
+         cross-gcc-stage1 → target-glibc (headers + basic objects)
+
+Stage 3: Build a full cross-gcc using the partial C library
+         build_host_cc + target-glibc → cross-gcc-stage2 (full C/C++)
+
+Stage 4: Rebuild the C library using the full cross-gcc
+         cross-gcc-stage2 → target-glibc-final
+
+Stage 5: Rebuild full cross-gcc once more against final glibc
+         Final cross toolchain
+</code></pre></div></div>
+
+<h3 id="toolchain-sysroot-layout">Toolchain Sysroot Layout</h3>
+
+<p>The installed toolchain contains a <em>sysroot</em> — a directory tree that mirrors the target filesystem’s <code class="language-plaintext highlighter-rouge">/usr</code> directory, containing the C library and headers the cross-compiler uses during compilation and linking:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> /usr/arm-linux-gnueabihf/
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bin  include  lib
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> /usr/arm-linux-gnueabihf/lib/
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>crt1.o     crti.o         crtn.o         gcrt1.o
+ld-linux-armhf.so.3  libanl.so.1     libc.so.6
+libc_nonshared.a     libdl.so.2      libm.so.6
+libnss_compat.so.2   libnss_dns.so.2  libpthread.so.0
+libresolv.so.2       librt.so.1      libutil.so.1
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> /usr/arm-linux-gnueabihf/include/ | <span class="nb">head</span> <span class="nt">-20</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>aio.h         alloca.h       ar.h           argp.h
+assert.h      bits/          byteswap.h     complex.h
+cpio.h        ctype.h        dirent.h       dlfcn.h
+endian.h      errno.h        execinfo.h     fcntl.h
+features.h    fenv.h         fnmatch.h      fts.h
+</code></pre></div></div>
+
+<h3 id="using-sysroot-flag">Using –sysroot Flag</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">--sysroot</code> flag redirects all library and header searches to a custom directory instead of the toolchain’s built-in sysroot. This is essential when you want to link against libraries installed on the actual target board:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Without --sysroot: uses toolchain's built-in sysroot</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="nt">-o</span> myapp main.c <span class="nt">-lssl</span>
+
+<span class="c"># With --sysroot: uses a custom staging area</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="se">\</span>
+    <span class="nt">--sysroot</span><span class="o">=</span>/opt/rpi-sysroot <span class="se">\</span>
+    <span class="nt">-o</span> myapp main.c <span class="se">\</span>
+    <span class="nt">-lssl</span>
+
+<span class="c"># The compiler now searches:</span>
+<span class="c">#   /opt/rpi-sysroot/usr/include     for headers</span>
+<span class="c">#   /opt/rpi-sysroot/usr/lib         for libraries</span>
+<span class="c">#   /opt/rpi-sysroot/lib             for libraries</span>
+</code></pre></div></div>
+
+<p>To avoid typing <code class="language-plaintext highlighter-rouge">--sysroot</code> every time, you can create a wrapper script or configure it in the toolchain specs:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Create a gcc wrapper script</span>
+<span class="nb">cat</span> <span class="o">&gt;</span> /usr/local/bin/rpi-gcc <span class="o">&lt;&lt;</span> <span class="sh">'</span><span class="no">EOF</span><span class="sh">'
+#!/bin/bash
+exec arm-linux-gnueabihf-gcc --sysroot=/opt/rpi-sysroot "</span><span class="nv">$@</span><span class="sh">"
+</span><span class="no">EOF
+</span><span class="nb">chmod</span> +x /usr/local/bin/rpi-gcc
+</code></pre></div></div>
+
+<h3 id="linker-scripts">Linker Scripts</h3>
+
+<p>The toolchain’s linker uses <strong>linker scripts</strong> to define how output sections are placed in memory. For applications these are provided automatically, but for bare-metal or bootloader work you write them manually:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># See which linker script is being used</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="nt">-v</span> <span class="nt">-o</span> hello hello.c 2&gt;&amp;1 | <span class="nb">grep</span> <span class="s2">"linker script"</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>COLLECT_GCC_OPTIONS='-v' '-o' 'hello' '-march=armv7' '-mfloat-abi=hard'
+ /usr/lib/gcc-cross/arm-linux-gnueabihf/11/collect2 \
+   -dynamic-linker /lib/ld-linux-armhf.so.3 \
+   /usr/arm-linux-gnueabihf/lib/crt1.o \
+   --script /usr/arm-linux-gnueabihf/lib/ldscripts/armelf_linux_eabi.xdyn
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Print the default linker script</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-ld <span class="nt">--verbose</span> | <span class="nb">head</span> <span class="nt">-40</span>
+</code></pre></div></div>
+
+<h3 id="canadian-cross-compilation">Canadian Cross-Compilation</h3>
+
+<p>A <strong>Canadian cross</strong> is a build scenario where three different machines are involved:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Machine</th>
+      <th>Role</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Build</strong></td>
+      <td>The machine running the compiler build process</td>
+      <td>x86-64 Ubuntu server</td>
+    </tr>
+    <tr>
+      <td><strong>Host</strong></td>
+      <td>The machine that will run the cross-compiler</td>
+      <td>Windows x86-64 (MinGW)</td>
+    </tr>
+    <tr>
+      <td><strong>Target</strong></td>
+      <td>The machine the cross-compiler generates code for</td>
+      <td>ARM Cortex-A9</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>This is used to create cross-compilers that run on Windows or macOS for embedded targets. Crosstool-NG supports this via the CT_CANADIAN option in menuconfig.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Normal cross:     build == host,  host != target
+                  x86 → builds compiler → compiler runs on x86 → generates ARM code
+
+Canadian cross:   build != host,  host != target
+                  x86 → builds compiler → compiler runs on Windows → generates ARM code
+</code></pre></div></div>
+
+<h3 id="building-glibc-from-scratch">Building glibc From Scratch</h3>
+
+<p>For full control, here is how glibc is built manually for an ARM target (as Crosstool-NG does internally):</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Step 1: Install kernel headers into a staging sysroot</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm <span class="nv">INSTALL_HDR_PATH</span><span class="o">=</span>/opt/arm-sysroot/usr headers_install
+
+<span class="c"># Step 2: Configure glibc with the cross-compiler</span>
+<span class="nv">$ </span><span class="nb">mkdir </span>glibc-build <span class="o">&amp;&amp;</span> <span class="nb">cd </span>glibc-build
+<span class="nv">$ </span>../glibc-2.36/configure <span class="se">\</span>
+    <span class="nt">--prefix</span><span class="o">=</span>/usr <span class="se">\</span>
+    <span class="nt">--build</span><span class="o">=</span>x86_64-linux-gnu <span class="se">\</span>
+    <span class="nt">--host</span><span class="o">=</span>arm-linux-gnueabihf <span class="se">\</span>
+    <span class="nt">--with-headers</span><span class="o">=</span>/opt/arm-sysroot/usr/include <span class="se">\</span>
+    <span class="nt">--disable-multilib</span> <span class="se">\</span>
+    <span class="nt">--disable-nls</span> <span class="se">\</span>
+    <span class="nt">--enable-kernel</span><span class="o">=</span>4.14
+
+<span class="c"># Step 3: Build and install</span>
+<span class="nv">$ </span>make <span class="nt">-j</span><span class="si">$(</span><span class="nb">nproc</span><span class="si">)</span>
+<span class="nv">$ </span>make <span class="nb">install </span><span class="nv">DESTDIR</span><span class="o">=</span>/opt/arm-sysroot
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-questions">Interview Questions</h2>
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q: What is the difference between a native compiler and a cross-compiler?</strong></p>
+
+<p>A native compiler runs on the same machine architecture it generates code for — for example, <code class="language-plaintext highlighter-rouge">gcc</code> on an x86-64 Ubuntu workstation produces x86-64 binaries. A cross-compiler runs on one architecture (the build host, typically x86-64) but generates binaries for a different architecture (the target, such as ARM or MIPS). Cross-compilers are essential in embedded development because the target hardware is often too resource-constrained to run a compiler directly, or does not yet have an OS installed.</p>
+
+<p><strong>Q: Explain the meaning of arm-linux-gnueabihf — each component.</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">arm</code> is the target CPU architecture (32-bit ARM). <code class="language-plaintext highlighter-rouge">linux</code> is the kernel/OS the binaries will run on. <code class="language-plaintext highlighter-rouge">gnu</code> is the vendor/C-library identifier indicating GNU C Library (glibc). <code class="language-plaintext highlighter-rouge">eabi</code> stands for Embedded Application Binary Interface — the ARM ABI specification for function calling conventions, register usage, and object file format. <code class="language-plaintext highlighter-rouge">hf</code> stands for hard-float, meaning the compiler will use the hardware floating-point unit (VFP/NEON) and pass floating-point arguments in FPU registers rather than general-purpose integer registers.</p>
+
+<p><strong>Q: What is the difference between hard-float and soft-float ABI?</strong></p>
+
+<p>With soft-float ABI (<code class="language-plaintext highlighter-rouge">-mfloat-abi=soft</code>), the compiler emulates all floating-point operations using integer registers and software routines, which works on any ARM chip but is significantly slower. With hard-float ABI (<code class="language-plaintext highlighter-rouge">-mfloat-abi=hard</code>), the compiler uses the hardware FPU (VFP, NEON) for computations and also passes floating-point function arguments and return values in the FPU registers (<code class="language-plaintext highlighter-rouge">s0-s15</code> / <code class="language-plaintext highlighter-rouge">d0-d7</code>). This is faster but requires a CPU with an FPU. There is also <code class="language-plaintext highlighter-rouge">softfp</code>, which uses the FPU for computation but passes values in integer registers — this allows linking between soft and softfp code but not between soft and hard-float. Linking hard-float objects with soft-float objects causes an ABI mismatch linker error.</p>
+
+<p><strong>Q: How do you verify a binary was compiled for the correct architecture?</strong></p>
+
+<p>Use the <code class="language-plaintext highlighter-rouge">file</code> command: <code class="language-plaintext highlighter-rouge">file mybinary</code> will report the ELF architecture, bit-width, endianness, and ABI. For ARM it shows <code class="language-plaintext highlighter-rouge">ELF 32-bit LSB, ARM, EABI5</code>. Use <code class="language-plaintext highlighter-rouge">readelf -h mybinary</code> for more detail including <code class="language-plaintext highlighter-rouge">e_machine</code> (ARM = 40), <code class="language-plaintext highlighter-rouge">e_flags</code> showing hard-float ABI flag (<code class="language-plaintext highlighter-rouge">EF_ARM_ABI_VER5 | EF_ARM_ABI_FLOAT_HARD</code>). Use <code class="language-plaintext highlighter-rouge">arm-linux-gnueabihf-objdump -f mybinary</code> to see the architecture flags. Attempting to run a mis-targeted binary on the host gives <code class="language-plaintext highlighter-rouge">Exec format error</code>.</p>
+
+<p><strong>Q: What is Crosstool-NG and when would you use it over a pre-built toolchain?</strong></p>
+
+<p>Crosstool-NG is a build system that automates the complex multi-stage process of building a complete GNU cross-toolchain from source. You use it when you need: (1) a specific GCC version not available in your distro’s packages, (2) a specific glibc/musl version matched to your target’s kernel, (3) a non-standard target triplet, (4) a toolchain built with custom patches, (5) exact reproducibility for a product that will be in production for years. Pre-built toolchains (from Ubuntu apt, Arm’s developer site, or Linaro) are faster to install and sufficient for most development work.</p>
+
+<p><strong>Q: What is the bootstrapping problem in toolchain building?</strong></p>
+
+<p>The bootstrapping problem is the circular dependency in building a cross-toolchain: you need a cross-compiler to build the C library for the target, but you need a C library to build a full cross-compiler. The solution is a multi-stage build: first build a minimal “stage 1” cross-GCC that is incomplete (C only, statically linked, no C library support) — just enough to compile the C library. Then cross-compile the C library using this stage-1 compiler. Then build a full “stage 2” cross-GCC that links against the newly built C library. This is the process Crosstool-NG and GNU’s own bootstrap sequence implement.</p>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<ul>
+  <li><strong>Crosstool-NG Documentation</strong> — official guide for building custom toolchains (https://crosstool-ng.github.io/docs/)</li>
+  <li><strong>“Mastering Embedded Linux Programming”</strong> — Frank Vasquez &amp; Chris Simmonds, 3rd Ed. — Chapter 2 covers toolchains in depth</li>
+  <li><strong>GNU Binutils Manual</strong> — reference for as, ld, objcopy, strip, readelf, nm (https://sourceware.org/binutils/docs/)</li>
+  <li><strong>GCC Cross-Compilation Documentation</strong> — official GCC docs on cross-compilation options and multilib (https://gcc.gnu.org/onlinedocs/gcc/Submodel-Options.html)</li>
+  <li><strong>ARM ABI Documentation</strong> — Procedure Call Standard for the Arm Architecture (AAPCS) (https://github.com/ARM-software/abi-aa)</li>
+  <li><strong>Linaro Toolchain Releases</strong> — pre-built ARM toolchains maintained by Linaro (https://releases.linaro.org/components/toolchain/binaries/)</li>
+</ul>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-gears"></i>
+        <span>Cross-Compilation Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/embedded-linux/cross-compilation/gnu-toolchain/" class="gtn-link gts-active">
+          <i class="fas fa-gears"></i> GNU Toolchain
+        </a>
+        <a href="/embedded-linux/cross-compilation/sysroot-libraries/" class="gtn-link ">
+          <i class="fas fa-folder-tree"></i> Sysroot &amp; Libraries
+        </a>
+        <a href="/embedded-linux/cross-compilation/static-dynamic-linking/" class="gtn-link ">
+          <i class="fas fa-link"></i> Static vs Dynamic Linking
+        </a>
+        <a href="/embedded-linux/cross-compilation/qemu-emulation/" class="gtn-link ">
+          <i class="fas fa-computer"></i> QEMU Emulation
+        </a>
+        <a href="/embedded-linux/cross-compilation/binary-analysis/" class="gtn-link ">
+          <i class="fas fa-magnifying-glass-chart"></i> readelf / objdump / nm
+        </a>
+        <a href="/embedded-linux/cross-compilation/cross-compile-cmake/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> Cross-Compiling with CMake
+        </a>
+      </nav>
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      <div></div>
+      
+      <a href="/embedded-linux/cross-compilation/sysroot-libraries/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Sysroot & Libraries</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mutexes & Semaphores · Eslam Mohamed</title>
+  <meta name="description" content="Master POSIX synchronisation — pthread_mutex, condition variables, POSIX semaphores, read-write locks, avoiding deadlocks, and priority inversion." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/posix/">POSIX APIs & Concurrency</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Mutexes & Semaphores</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 04</span>
+      </div>
+      <h1 class="guide-title">Mutexes & Semaphores</h1>
+      <p class="guide-subtitle">Master POSIX synchronisation — pthread_mutex, condition variables, POSIX semaphores, read-write locks, avoiding deadlocks, and priority inversion.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="mutex-mutual-exclusion-lock">Mutex (Mutual Exclusion Lock)</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>A <strong>mutex</strong> is a lock that allows only one thread at a time to access a shared resource (critical section).</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;pthread.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span>
+<span class="k">static</span> <span class="n">pthread_mutex_t</span> <span class="n">g_lock</span> <span class="o">=</span> <span class="n">PTHREAD_MUTEX_INITIALIZER</span><span class="p">;</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="n">g_counter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="kt">void</span><span class="o">*</span> <span class="nf">increment_thread</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100000</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">g_lock</span><span class="p">);</span>
+        <span class="c1">// --- critical section ---</span>
+        <span class="n">g_counter</span><span class="o">++</span><span class="p">;</span>
+        <span class="c1">// ------------------------</span>
+        <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">g_lock</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Dynamic initialisation (with attributes)</span>
+<span class="n">pthread_mutex_t</span> <span class="n">mutex</span><span class="p">;</span>
+<span class="n">pthread_mutexattr_t</span> <span class="n">attr</span><span class="p">;</span>
+<span class="n">pthread_mutexattr_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
+<span class="n">pthread_mutexattr_settype</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">,</span> <span class="n">PTHREAD_MUTEX_ERRORCHECK</span><span class="p">);</span>  <span class="c1">// detect recursive lock</span>
+<span class="n">pthread_mutex_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
+<span class="n">pthread_mutexattr_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
+<span class="c1">// ... use mutex ...</span>
+<span class="n">pthread_mutex_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="mutex-types">Mutex Types</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Behaviour</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">PTHREAD_MUTEX_NORMAL</code> (default)</td>
+      <td>Deadlocks if same thread locks twice</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">PTHREAD_MUTEX_RECURSIVE</code></td>
+      <td>Same thread can lock multiple times (must unlock same count)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">PTHREAD_MUTEX_ERRORCHECK</code></td>
+      <td>Returns <code class="language-plaintext highlighter-rouge">EDEADLK</code> if same thread tries to lock twice</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">PTHREAD_MUTEX_DEFAULT</code></td>
+      <td>Unspecified (usually same as NORMAL)</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-basic" id="condition-variables">Condition Variables</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>A <strong>condition variable</strong> lets threads wait for a condition to become true. It must always be used <strong>with a mutex</strong>.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;pthread.h&gt;</span><span class="cp">
+</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="n">pthread_mutex_t</span> <span class="n">lock</span><span class="p">;</span>
+    <span class="n">pthread_cond_t</span>  <span class="n">not_empty</span><span class="p">;</span>
+    <span class="n">pthread_cond_t</span>  <span class="n">not_full</span><span class="p">;</span>
+    <span class="kt">int</span>  <span class="n">buf</span><span class="p">[</span><span class="mi">16</span><span class="p">];</span>
+    <span class="kt">int</span>  <span class="n">head</span><span class="p">,</span> <span class="n">tail</span><span class="p">,</span> <span class="n">count</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">BoundedQueue</span><span class="p">;</span>
+
+<span class="k">static</span> <span class="n">BoundedQueue</span> <span class="n">q</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">lock</span>      <span class="o">=</span> <span class="n">PTHREAD_MUTEX_INITIALIZER</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">not_empty</span> <span class="o">=</span> <span class="n">PTHREAD_COND_INITIALIZER</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">not_full</span>  <span class="o">=</span> <span class="n">PTHREAD_COND_INITIALIZER</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="kt">void</span> <span class="nf">enqueue</span><span class="p">(</span><span class="kt">int</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">q</span><span class="p">.</span><span class="n">lock</span><span class="p">);</span>
+
+    <span class="c1">// Wait while full — always use while (not if!) to guard against spurious wakeups</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">q</span><span class="p">.</span><span class="n">count</span> <span class="o">==</span> <span class="mi">16</span><span class="p">)</span>
+        <span class="n">pthread_cond_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">q</span><span class="p">.</span><span class="n">not_full</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">q</span><span class="p">.</span><span class="n">lock</span><span class="p">);</span>  <span class="c1">// atomically unlocks mutex and waits</span>
+
+    <span class="n">q</span><span class="p">.</span><span class="n">buf</span><span class="p">[</span><span class="n">q</span><span class="p">.</span><span class="n">tail</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">;</span>
+    <span class="n">q</span><span class="p">.</span><span class="n">tail</span> <span class="o">%=</span> <span class="mi">16</span><span class="p">;</span>
+    <span class="n">q</span><span class="p">.</span><span class="n">count</span><span class="o">++</span><span class="p">;</span>
+
+    <span class="n">pthread_cond_signal</span><span class="p">(</span><span class="o">&amp;</span><span class="n">q</span><span class="p">.</span><span class="n">not_empty</span><span class="p">);</span>  <span class="c1">// wake one waiting consumer</span>
+    <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">q</span><span class="p">.</span><span class="n">lock</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">dequeue</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">q</span><span class="p">.</span><span class="n">lock</span><span class="p">);</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="n">q</span><span class="p">.</span><span class="n">count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">pthread_cond_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">q</span><span class="p">.</span><span class="n">not_empty</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">q</span><span class="p">.</span><span class="n">lock</span><span class="p">);</span>
+
+    <span class="kt">int</span> <span class="n">val</span> <span class="o">=</span> <span class="n">q</span><span class="p">.</span><span class="n">buf</span><span class="p">[</span><span class="n">q</span><span class="p">.</span><span class="n">head</span><span class="o">++</span><span class="p">];</span>
+    <span class="n">q</span><span class="p">.</span><span class="n">head</span> <span class="o">%=</span> <span class="mi">16</span><span class="p">;</span>
+    <span class="n">q</span><span class="p">.</span><span class="n">count</span><span class="o">--</span><span class="p">;</span>
+
+    <span class="n">pthread_cond_signal</span><span class="p">(</span><span class="o">&amp;</span><span class="n">q</span><span class="p">.</span><span class="n">not_full</span><span class="p">);</span>   <span class="c1">// wake one waiting producer</span>
+    <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">q</span><span class="p">.</span><span class="n">lock</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">val</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="pthread_cond_wait-protocol"><code class="language-plaintext highlighter-rouge">pthread_cond_wait</code> Protocol</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1. Lock mutex
+2. Check condition — if NOT true:
+   a. pthread_cond_wait() — atomically unlocks mutex and blocks
+   b. When woken: re-acquires mutex and returns
+   c. Re-check condition (spurious wakeups are possible!)
+3. Do work
+4. Unlock mutex
+</code></pre></div></div>
+
+<h3 id="timed-wait">Timed Wait</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">timespec</span> <span class="n">deadline</span><span class="p">;</span>
+<span class="n">clock_gettime</span><span class="p">(</span><span class="n">CLOCK_REALTIME</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">deadline</span><span class="p">);</span>
+<span class="n">deadline</span><span class="p">.</span><span class="n">tv_sec</span> <span class="o">+=</span> <span class="mi">5</span><span class="p">;</span>   <span class="c1">// 5-second timeout</span>
+
+<span class="kt">int</span> <span class="n">rc</span> <span class="o">=</span> <span class="n">pthread_cond_timedwait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cond</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mutex</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">deadline</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">rc</span> <span class="o">==</span> <span class="n">ETIMEDOUT</span><span class="p">)</span> <span class="n">puts</span><span class="p">(</span><span class="s">"timed out!"</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="posix-semaphores">POSIX Semaphores</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<p>A semaphore maintains a count. <code class="language-plaintext highlighter-rouge">sem_wait</code> decrements (blocks if 0); <code class="language-plaintext highlighter-rouge">sem_post</code> increments.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;semaphore.h&gt;</span><span class="cp">
+</span>
+<span class="c1">// Unnamed semaphore (within one process or between threads)</span>
+<span class="n">sem_t</span> <span class="n">sem</span><span class="p">;</span>
+<span class="n">sem_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sem</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>   <span class="c1">// pshared=0 (threads), initial=1</span>
+
+<span class="n">sem_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sem</span><span class="p">);</span>     <span class="c1">// P() — decrement; block if 0</span>
+<span class="c1">// ... critical section ...</span>
+<span class="n">sem_post</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sem</span><span class="p">);</span>     <span class="c1">// V() — increment; wake one waiter</span>
+
+<span class="n">sem_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sem</span><span class="p">);</span>
+
+<span class="c1">// Named semaphore (between processes)</span>
+<span class="n">sem_t</span><span class="o">*</span> <span class="n">named</span> <span class="o">=</span> <span class="n">sem_open</span><span class="p">(</span><span class="s">"/myapp_sem"</span><span class="p">,</span> <span class="n">O_CREAT</span><span class="p">,</span> <span class="mo">0644</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+<span class="n">sem_wait</span><span class="p">(</span><span class="n">named</span><span class="p">);</span>
+<span class="c1">// ...</span>
+<span class="n">sem_post</span><span class="p">(</span><span class="n">named</span><span class="p">);</span>
+<span class="n">sem_close</span><span class="p">(</span><span class="n">named</span><span class="p">);</span>
+<span class="n">sem_unlink</span><span class="p">(</span><span class="s">"/myapp_sem"</span><span class="p">);</span>   <span class="c1">// remove from filesystem</span>
+</code></pre></div></div>
+
+<h3 id="mutex-vs-semaphore">Mutex vs. Semaphore</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th>Mutex</th>
+      <th>Semaphore</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ownership</td>
+      <td>Only the locking thread can unlock</td>
+      <td>Any thread can post</td>
+    </tr>
+    <tr>
+      <td>Count</td>
+      <td>Binary (0 or 1)</td>
+      <td>Integer (0 to N)</td>
+    </tr>
+    <tr>
+      <td>Use case</td>
+      <td>Mutual exclusion</td>
+      <td>Signalling, counting resources</td>
+    </tr>
+    <tr>
+      <td>Priority inheritance</td>
+      <td>Supported</td>
+      <td>Not supported</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-mid" id="read-write-lock-pthread_rwlock">Read-Write Lock (<code class="language-plaintext highlighter-rouge">pthread_rwlock</code>)</h2>
+
+<p>Allows <strong>multiple concurrent readers</strong> but exclusive access for writers — higher throughput when reads dominate.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;pthread.h&gt;</span><span class="cp">
+</span>
+<span class="n">pthread_rwlock_t</span> <span class="n">rwlock</span> <span class="o">=</span> <span class="n">PTHREAD_RWLOCK_INITIALIZER</span><span class="p">;</span>
+<span class="k">static</span> <span class="kt">float</span> <span class="n">sensor_cache</span><span class="p">[</span><span class="mi">100</span><span class="p">];</span>
+
+<span class="c1">// Multiple readers can hold this simultaneously</span>
+<span class="kt">void</span><span class="o">*</span> <span class="nf">reader_thread</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">pthread_rwlock_rdlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rwlock</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">val</span> <span class="o">=</span> <span class="n">sensor_cache</span><span class="p">[</span><span class="mi">42</span><span class="p">];</span>
+    <span class="n">pthread_rwlock_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rwlock</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Only one writer; all readers must be gone</span>
+<span class="kt">void</span><span class="o">*</span> <span class="nf">writer_thread</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">pthread_rwlock_wrlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rwlock</span><span class="p">);</span>
+    <span class="n">sensor_cache</span><span class="p">[</span><span class="mi">42</span><span class="p">]</span> <span class="o">=</span> <span class="mi">23</span><span class="p">.</span><span class="mi">5</span><span class="n">f</span><span class="p">;</span>
+    <span class="n">pthread_rwlock_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rwlock</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="deadlocks-and-how-to-avoid-them">Deadlocks and How to Avoid Them</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p><strong>Deadlock</strong> occurs when two or more threads each hold a lock the other needs.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Thread 1: lock(A), then tries to lock(B) — blocks
+Thread 2: lock(B), then tries to lock(A) — blocks
+→ both blocked forever
+</code></pre></div></div>
+
+<h3 id="deadlock-prevention">Deadlock Prevention</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Strategy 1: Consistent lock ordering — always lock in the same order</span>
+<span class="c1">// Always lock mutex_a before mutex_b, everywhere in the code</span>
+<span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex_a</span><span class="p">);</span>
+<span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex_b</span><span class="p">);</span>
+<span class="c1">// ... work ...</span>
+<span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex_b</span><span class="p">);</span>
+<span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex_a</span><span class="p">);</span>
+
+<span class="c1">// Strategy 2: Try-lock and back off</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">pthread_mutex_trylock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex_b</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex_a</span><span class="p">);</span>
+    <span class="c1">// retry after a backoff</span>
+<span class="p">}</span>
+
+<span class="c1">// Strategy 3: Use a single global lock for small programs</span>
+<span class="c1">// Strategy 4: Avoid holding multiple locks simultaneously (redesign)</span>
+
+<span class="c1">// Detection: use thread sanitizer</span>
+<span class="c1">// gcc -fsanitize=thread -g -o prog prog.c -lpthread</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="priority-inversion">Priority Inversion</h2>
+
+<p><strong>Priority inversion</strong> occurs when a high-priority thread is blocked waiting for a mutex held by a low-priority thread, which is preempted by a medium-priority thread.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>High (blocked on mutex) ← Medium (running, blocks High) ← Low (holds mutex, can't run)
+</code></pre></div></div>
+
+<p><strong>Fix — Priority Inheritance Protocol:</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pthread_mutexattr_t</span> <span class="n">attr</span><span class="p">;</span>
+<span class="n">pthread_mutexattr_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
+<span class="n">pthread_mutexattr_setprotocol</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">,</span> <span class="n">PTHREAD_PRIO_INHERIT</span><span class="p">);</span>
+<span class="n">pthread_mutex_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
+<span class="c1">// When Low holds the mutex, it temporarily inherits High's priority</span>
+<span class="c1">// → Medium can no longer preempt Low → Low finishes → High unblocks</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is a race condition and how do mutexes prevent it?</strong></p>
+
+<blockquote>
+  <p>A race condition occurs when two threads access shared data concurrently and at least one access is a write, producing undefined results depending on which thread “wins” the race. A mutex serialises access: only the thread holding the lock can execute the critical section. Other threads attempting to lock the mutex will block until the holder unlocks it. This guarantees that only one thread at a time modifies the shared data, making the operation atomic at the application level.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: Why must <code class="language-plaintext highlighter-rouge">pthread_cond_wait</code> always be used with a <code class="language-plaintext highlighter-rouge">while</code> loop?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">pthread_cond_wait</code> can return spuriously — even when no other thread has called <code class="language-plaintext highlighter-rouge">pthread_cond_signal</code>. This is permitted by POSIX to allow efficient implementation on some architectures. If you use <code class="language-plaintext highlighter-rouge">if</code> instead of <code class="language-plaintext highlighter-rouge">while</code>, a spurious wakeup will cause the thread to proceed even though the condition isn’t actually true, leading to incorrect behaviour. The <code class="language-plaintext highlighter-rouge">while</code> loop re-checks the condition after every wakeup, handling both spurious wakeups and the case where another consumer already consumed the resource after signalling.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: What is the difference between <code class="language-plaintext highlighter-rouge">pthread_cond_signal</code> and <code class="language-plaintext highlighter-rouge">pthread_cond_broadcast</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">pthread_cond_signal</code> wakes exactly <strong>one</strong> waiting thread (implementation may choose which). <code class="language-plaintext highlighter-rouge">pthread_cond_broadcast</code> wakes <strong>all</strong> waiting threads; each must re-acquire the mutex and re-check the condition, so only one proceeds at a time. Use <code class="language-plaintext highlighter-rouge">signal</code> when exactly one thread can handle the event (e.g. one item added to a queue). Use <code class="language-plaintext highlighter-rouge">broadcast</code> when all waiting threads must re-evaluate (e.g. a configuration reload that affects all threads, or when a condition changes from full to available).</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: What is priority inversion and how does priority inheritance fix it?</strong></p>
+
+<blockquote>
+  <p>Priority inversion: a high-priority thread H blocks waiting for a mutex held by low-priority thread L. A medium-priority thread M (which doesn’t need the mutex) preempts L, preventing L from running and releasing the mutex. H is effectively running at M’s lower priority — inversion. Priority inheritance: when H blocks on the mutex, L’s scheduling priority is temporarily raised to H’s level, so M can’t preempt L. L finishes, releases the mutex, reverts to its original priority, and H proceeds. Enable with <code class="language-plaintext highlighter-rouge">PTHREAD_PRIO_INHERIT</code> on the mutex attribute.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 3 pthread_mutex_init</code></td>
+      <td>Mutex API</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 3 pthread_cond_init</code></td>
+      <td>Condition variable API</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 sem_overview</code></td>
+      <td>POSIX semaphore overview</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 3 pthread_rwlock_init</code></td>
+      <td>Reader-writer lock API</td>
+    </tr>
+    <tr>
+      <td>TLPI Chapter 30</td>
+      <td>Thread synchronisation</td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-network-wired"></i>
+        <span>POSIX &amp; Concurrency</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/posix/file-io/" class="gtn-link ">
+          <i class="fas fa-file-code"></i> POSIX File I/O
+        </a>
+        <a href="/linux-developer/posix/processes-fork/" class="gtn-link ">
+          <i class="fas fa-sitemap"></i> Processes &amp; fork()
+        </a>
+        <a href="/linux-developer/posix/signals/" class="gtn-link ">
+          <i class="fas fa-bolt"></i> Signals
+        </a>
+        <a href="/linux-developer/posix/unix-sockets/" class="gtn-link ">
+          <i class="fas fa-plug"></i> UNIX Sockets
+        </a>
+        <a href="/linux-developer/posix/pthreads/" class="gtn-link ">
+          <i class="fas fa-microchip"></i> Pthreads
+        </a>
+        <a href="/linux-developer/posix/mutexes-semaphores/" class="gtn-link gts-active">
+          <i class="fas fa-lock"></i> Mutexes &amp; Semaphores
+        </a>
+        <a href="/linux-developer/posix/pipes-ipc/" class="gtn-link ">
+          <i class="fas fa-arrows-left-right"></i> Pipes &amp; Shared Memory
+        </a>
+      </nav>
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/posix/pthreads/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Pthreads</span>
+      </a>
+      
+      
+      <a href="/linux-developer/posix/pipes-ipc/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Pipes & Shared Memory</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>File I/O · Eslam Mohamed</title>
+  <meta name="description" content="Master C standard I/O — fopen/fread/fwrite, buffered vs unbuffered I/O, binary file handling, seeking, and robust error checking patterns for production code." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/c-programming/">C Programming</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>File I/O</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 02</span>
+      </div>
+      <h1 class="guide-title">File I/O</h1>
+      <p class="guide-subtitle">Master C standard I/O — fopen/fread/fwrite, buffered vs unbuffered I/O, binary file handling, seeking, and robust error checking patterns for production code.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="standard-io-stdio">Standard I/O (stdio)</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>The C standard library provides <strong>buffered</strong> I/O through <code class="language-plaintext highlighter-rouge">FILE *</code> streams. The OS handles the raw file descriptor underneath.</p>
+
+<h3 id="opening-and-closing-files">Opening and Closing Files</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span>
+<span class="kt">FILE</span> <span class="o">*</span><span class="n">fp</span> <span class="o">=</span> <span class="n">fopen</span><span class="p">(</span><span class="s">"data.txt"</span><span class="p">,</span> <span class="s">"r"</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">fp</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">perror</span><span class="p">(</span><span class="s">"fopen"</span><span class="p">);</span>   <span class="c1">// prints: fopen: No such file or directory</span>
+    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// ... use the file ...</span>
+
+<span class="n">fclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p><strong>Mode strings:</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Mode</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">"r"</code></td>
+      <td>Read only — file must exist</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">"w"</code></td>
+      <td>Write only — truncates or creates</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">"a"</code></td>
+      <td>Append — creates if absent</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">"r+"</code></td>
+      <td>Read + write — must exist</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">"w+"</code></td>
+      <td>Read + write — truncate/create</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">"rb"</code>, <code class="language-plaintext highlighter-rouge">"wb"</code></td>
+      <td>Binary mode (important on Windows)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="reading-text">Reading Text</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">char</span> <span class="n">line</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
+
+<span class="c1">// Read one line at a time (preferred for text files)</span>
+<span class="k">while</span> <span class="p">(</span><span class="n">fgets</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">line</span><span class="p">),</span> <span class="n">fp</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"%s"</span><span class="p">,</span> <span class="n">line</span><span class="p">);</span>   <span class="c1">// fgets keeps the newline</span>
+<span class="p">}</span>
+
+<span class="c1">// Read one character at a time</span>
+<span class="kt">int</span> <span class="n">c</span><span class="p">;</span>
+<span class="k">while</span> <span class="p">((</span><span class="n">c</span> <span class="o">=</span> <span class="n">fgetc</span><span class="p">(</span><span class="n">fp</span><span class="p">))</span> <span class="o">!=</span> <span class="n">EOF</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">putchar</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Formatted read (like scanf but from file)</span>
+<span class="kt">int</span> <span class="n">id</span><span class="p">;</span> <span class="kt">float</span> <span class="n">value</span><span class="p">;</span>
+<span class="n">fscanf</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="s">"%d %f"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">id</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="writing-text">Writing Text</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fprintf</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="s">"id=%d value=%.2f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">id</span><span class="p">,</span> <span class="n">value</span><span class="p">);</span>
+<span class="n">fputs</span><span class="p">(</span><span class="s">"Hello, file!</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">fp</span><span class="p">);</span>
+<span class="n">fputc</span><span class="p">(</span><span class="sc">'A'</span><span class="p">,</span> <span class="n">fp</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="binary-file-io">Binary File I/O</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<p>For structured data (sensor logs, firmware images, configuration blobs), binary I/O is faster and more compact than text.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="kt">uint32_t</span> <span class="n">timestamp</span><span class="p">;</span>
+    <span class="kt">float</span>    <span class="n">temperature</span><span class="p">;</span>
+    <span class="kt">float</span>    <span class="n">pressure</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">SensorRecord</span><span class="p">;</span>
+
+<span class="c1">// Write binary</span>
+<span class="n">SensorRecord</span> <span class="n">rec</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1704067200</span><span class="p">,</span> <span class="mi">23</span><span class="p">.</span><span class="mi">5</span><span class="n">f</span><span class="p">,</span> <span class="mi">1013</span><span class="p">.</span><span class="mi">25</span><span class="n">f</span><span class="p">};</span>
+<span class="kt">FILE</span> <span class="o">*</span><span class="n">fp</span> <span class="o">=</span> <span class="n">fopen</span><span class="p">(</span><span class="s">"sensor.bin"</span><span class="p">,</span> <span class="s">"wb"</span><span class="p">);</span>
+<span class="n">fwrite</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rec</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">SensorRecord</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fp</span><span class="p">);</span>
+<span class="n">fclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+
+<span class="c1">// Read binary</span>
+<span class="n">SensorRecord</span> <span class="n">out</span><span class="p">;</span>
+<span class="n">fp</span> <span class="o">=</span> <span class="n">fopen</span><span class="p">(</span><span class="s">"sensor.bin"</span><span class="p">,</span> <span class="s">"rb"</span><span class="p">);</span>
+<span class="kt">size_t</span> <span class="n">n</span> <span class="o">=</span> <span class="n">fread</span><span class="p">(</span><span class="o">&amp;</span><span class="n">out</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">SensorRecord</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fp</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="n">perror</span><span class="p">(</span><span class="s">"fread"</span><span class="p">);</span> <span class="p">}</span>
+<span class="n">fclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+
+<span class="n">printf</span><span class="p">(</span><span class="s">"temp=%.2f pressure=%.2f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">out</span><span class="p">.</span><span class="n">temperature</span><span class="p">,</span> <span class="n">out</span><span class="p">.</span><span class="n">pressure</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p><strong>Writing/reading an array:</strong></p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">SensorRecord</span> <span class="n">records</span><span class="p">[</span><span class="mi">100</span><span class="p">];</span>
+<span class="c1">// fill records...</span>
+
+<span class="n">fwrite</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">SensorRecord</span><span class="p">),</span> <span class="mi">100</span><span class="p">,</span> <span class="n">fp</span><span class="p">);</span>  <span class="c1">// write 100 records at once</span>
+<span class="n">fread</span><span class="p">(</span><span class="n">records</span><span class="p">,</span>  <span class="k">sizeof</span><span class="p">(</span><span class="n">SensorRecord</span><span class="p">),</span> <span class="mi">100</span><span class="p">,</span> <span class="n">fp</span><span class="p">);</span>  <span class="c1">// read them back</span>
+</code></pre></div></div>
+
+<h3 id="file-seeking">File Seeking</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// fseek(fp, offset, whence)</span>
+<span class="c1">// whence: SEEK_SET (from start), SEEK_CUR (from current), SEEK_END (from end)</span>
+
+<span class="n">fseek</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">SEEK_END</span><span class="p">);</span>
+<span class="kt">long</span> <span class="n">size</span> <span class="o">=</span> <span class="n">ftell</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>    <span class="c1">// file size in bytes</span>
+<span class="n">fseek</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">SEEK_SET</span><span class="p">);</span>   <span class="c1">// rewind to start</span>
+
+<span class="c1">// Read record #5 directly (random access)</span>
+<span class="n">fseek</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="mi">5</span> <span class="o">*</span> <span class="nf">sizeof</span><span class="p">(</span><span class="n">SensorRecord</span><span class="p">),</span> <span class="n">SEEK_SET</span><span class="p">);</span>
+<span class="n">fread</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rec</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">SensorRecord</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fp</span><span class="p">);</span>
+
+<span class="c1">// Rewind shorthand</span>
+<span class="n">rewind</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="buffering">Buffering</h2>
+
+<p>The standard library buffers I/O internally to reduce system calls. Three modes:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Mode</th>
+      <th>Function</th>
+      <th>Behaviour</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Full buffering</td>
+      <td><code class="language-plaintext highlighter-rouge">_IOFBF</code></td>
+      <td>Flush when buffer is full (default for files)</td>
+    </tr>
+    <tr>
+      <td>Line buffering</td>
+      <td><code class="language-plaintext highlighter-rouge">_IOLBF</code></td>
+      <td>Flush on newline (default for terminals)</td>
+    </tr>
+    <tr>
+      <td>Unbuffered</td>
+      <td><code class="language-plaintext highlighter-rouge">_IONBF</code></td>
+      <td>Every write goes directly to kernel</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Set buffer size to 64 KB for bulk file copy</span>
+<span class="n">setvbuf</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">_IOFBF</span><span class="p">,</span> <span class="mi">65536</span><span class="p">);</span>
+
+<span class="c1">// Force immediate write (flush buffer to kernel)</span>
+<span class="n">fflush</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+
+<span class="c1">// Unbuffered (e.g., for logging crashes)</span>
+<span class="n">setvbuf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">_IONBF</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-robust-error-handling">Advanced: Robust Error Handling</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p>Production code must check every I/O call:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;errno.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp">
+</span>
+<span class="kt">int</span> <span class="nf">write_config</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="k">const</span> <span class="n">Config</span> <span class="o">*</span><span class="n">cfg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">FILE</span> <span class="o">*</span><span class="n">fp</span> <span class="o">=</span> <span class="n">fopen</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">"wb"</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">fp</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">"Cannot open %s: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Write header magic</span>
+    <span class="k">const</span> <span class="kt">uint32_t</span> <span class="n">MAGIC</span> <span class="o">=</span> <span class="mh">0xDEADBEEF</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">fwrite</span><span class="p">(</span><span class="o">&amp;</span><span class="n">MAGIC</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">MAGIC</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fp</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">goto</span> <span class="n">write_err</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">fwrite</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Config</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fp</span><span class="p">)</span>    <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">goto</span> <span class="n">write_err</span><span class="p">;</span>
+
+    <span class="c1">// Flush to kernel buffer</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">fflush</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">goto</span> <span class="n">write_err</span><span class="p">;</span>
+
+    <span class="n">fclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="nl">write_err:</span>
+    <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">"Write error on %s: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+    <span class="n">fclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="checking-fread-return-value">Checking <code class="language-plaintext highlighter-rouge">fread</code> Return Value</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">size_t</span> <span class="n">n</span> <span class="o">=</span> <span class="n">fread</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Record</span><span class="p">),</span> <span class="n">COUNT</span><span class="p">,</span> <span class="n">fp</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">!=</span> <span class="n">COUNT</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">feof</span><span class="p">(</span><span class="n">fp</span><span class="p">))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">"Unexpected end of file (got %zu of %d)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">COUNT</span><span class="p">);</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">ferror</span><span class="p">(</span><span class="n">fp</span><span class="p">))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">"Read error: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="temporary-files">Temporary Files</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// mkstemp: create a unique temp file securely</span>
+<span class="kt">char</span> <span class="n">template</span><span class="p">[]</span> <span class="o">=</span> <span class="s">"/tmp/myapp_XXXXXX"</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">mkstemp</span><span class="p">(</span><span class="n">template</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">fd</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="n">perror</span><span class="p">(</span><span class="s">"mkstemp"</span><span class="p">);</span> <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="p">}</span>
+
+<span class="kt">FILE</span> <span class="o">*</span><span class="n">fp</span> <span class="o">=</span> <span class="n">fdopen</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="s">"w+b"</span><span class="p">);</span>   <span class="c1">// wrap fd in FILE*</span>
+<span class="n">fprintf</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="s">"temporary data"</span><span class="p">);</span>
+<span class="n">fclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+<span class="n">unlink</span><span class="p">(</span><span class="n">template</span><span class="p">);</span>   <span class="c1">// delete the file</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What does <code class="language-plaintext highlighter-rouge">fgets</code> do differently from <code class="language-plaintext highlighter-rouge">gets</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">fgets(buf, size, fp)</code> reads at most <code class="language-plaintext highlighter-rouge">size-1</code> characters and always null-terminates, preventing buffer overflows. The unsafe <code class="language-plaintext highlighter-rouge">gets()</code> has no length limit — it was removed from C11 entirely because it can overwrite adjacent memory. Always use <code class="language-plaintext highlighter-rouge">fgets</code>.</p>
+</blockquote>
+
+<p><strong>Q2 — Intermediate: What is the difference between <code class="language-plaintext highlighter-rouge">fflush</code> and <code class="language-plaintext highlighter-rouge">fsync</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">fflush(fp)</code> moves data from the C library’s userspace buffer to the <strong>kernel’s buffer</strong> (page cache). The kernel can still lose it if power is cut. <code class="language-plaintext highlighter-rouge">fsync(fd)</code> additionally flushes from the kernel buffer to the <strong>physical storage device</strong> (writes to disk). For crash-safe files (logs, databases), you need <code class="language-plaintext highlighter-rouge">fsync</code> after flushing.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: Why must you open binary files with <code class="language-plaintext highlighter-rouge">"rb"</code> / <code class="language-plaintext highlighter-rouge">"wb"</code> mode?</strong></p>
+
+<blockquote>
+  <p>On Unix/Linux, <code class="language-plaintext highlighter-rouge">"r"</code> and <code class="language-plaintext highlighter-rouge">"rb"</code> are identical — no translation happens. On Windows, text mode performs CR-LF ↔ LF translation on reads/writes. If you open a binary file (firmware image, struct data) in text mode on Windows, the translation will corrupt the data. Using <code class="language-plaintext highlighter-rouge">"rb"</code> / <code class="language-plaintext highlighter-rouge">"wb"</code> is portable and makes intent explicit.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: How would you implement a simple binary log file that survives a crash without corruption?</strong></p>
+
+<blockquote>
+  <p>Use a <strong>write-ahead log</strong> pattern:</p>
+  <ol>
+    <li>Write each record with a CRC checksum appended.</li>
+    <li>Call <code class="language-plaintext highlighter-rouge">fflush()</code> then <code class="language-plaintext highlighter-rouge">fsync()</code> after each record.</li>
+    <li>On recovery, scan the file and discard any trailing record whose checksum doesn’t match (it was partially written during the crash).
+Alternatively, write to a new temp file, call <code class="language-plaintext highlighter-rouge">fsync</code>, then <code class="language-plaintext highlighter-rouge">rename</code> over the old file — <code class="language-plaintext highlighter-rouge">rename</code> is atomic on Linux, so readers always see either the old or the new file, never a partial update.</li>
+  </ol>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 3 fopen</code></td>
+      <td>fopen, fclose, fread, fwrite</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 3 fseek</code></td>
+      <td>File positioning</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 3 setvbuf</code></td>
+      <td>I/O buffering control</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 2 fsync</code></td>
+      <td>Kernel → disk sync</td>
+    </tr>
+    <tr>
+      <td>GNU C Library manual</td>
+      <td><a href="https://www.gnu.org/software/libc/manual/html_node/I_002fO-on-Streams.html">gnu.org/software/libc/manual</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-file-code"></i>
+        <span>C Programming Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/c-programming/pointers-memory/" class="gtn-link ">
+          <i class="fas fa-memory"></i> Pointers &amp; Memory
+        </a>
+        <a href="/linux-developer/c-programming/structs-unions/" class="gtn-link ">
+          <i class="fas fa-cube"></i> Structs &amp; Unions
+        </a>
+        <a href="/linux-developer/c-programming/file-io/" class="gtn-link gts-active">
+          <i class="fas fa-file-code"></i> File I/O
+        </a>
+        <a href="/linux-developer/c-programming/dynamic-allocation/" class="gtn-link ">
+          <i class="fas fa-layer-group"></i> Dynamic Allocation
+        </a>
+        <a href="/linux-developer/c-programming/makefiles/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> Makefiles
+        </a>
+        <a href="/linux-developer/c-programming/gcc-optimization/" class="gtn-link ">
+          <i class="fas fa-gears"></i> GCC Flags &amp; Optimization
+        </a>
+        <a href="/linux-developer/c-programming/gdb/" class="gtn-link ">
+          <i class="fas fa-bug"></i> GDB Debugging
+        </a>
+      </nav>
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/c-programming/structs-unions/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Structs & Unions</span>
+      </a>
+      
+      
+      <a href="/linux-developer/c-programming/dynamic-allocation/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Dynamic Allocation</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Process Management · Eslam Mohamed</title>
+  <meta name="description" content="Monitor, control, and debug Linux processes. Understand process states, signals, scheduling priorities, cgroups v2, and systemd service units." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-user/">Linux User Guide</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Process Management</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 01 — Linux User</span>
+        <span class="guide-stage-pill">Stage 03</span>
+      </div>
+      <h1 class="guide-title">Process Management</h1>
+      <p class="guide-subtitle">Monitor, control, and debug Linux processes. Understand process states, signals, scheduling priorities, cgroups v2, and systemd service units.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="what-is-a-process">What is a Process?</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>A <strong>process</strong> is a running instance of a program. The kernel gives each process:</p>
+<ul>
+  <li>A unique <strong>PID</strong> (Process ID)</li>
+  <li>Its own virtual memory space</li>
+  <li>Open file descriptors</li>
+  <li>A scheduling slot on the CPU</li>
+</ul>
+
+<p>Processes form a <strong>tree</strong>: every process has a parent (except <code class="language-plaintext highlighter-rouge">init</code>/systemd, PID 1).</p>
+
+<h3 id="process-states">Process States</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>State</th>
+      <th>Symbol</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Running / Runnable</td>
+      <td><code class="language-plaintext highlighter-rouge">R</code></td>
+      <td>On CPU or waiting for CPU</td>
+    </tr>
+    <tr>
+      <td>Sleeping (interruptible)</td>
+      <td><code class="language-plaintext highlighter-rouge">S</code></td>
+      <td>Waiting for I/O or event (can be interrupted by signal)</td>
+    </tr>
+    <tr>
+      <td>Sleeping (uninterruptible)</td>
+      <td><code class="language-plaintext highlighter-rouge">D</code></td>
+      <td>Waiting for hardware I/O — cannot be killed!</td>
+    </tr>
+    <tr>
+      <td>Stopped</td>
+      <td><code class="language-plaintext highlighter-rouge">T</code></td>
+      <td>Paused by SIGSTOP or debugger</td>
+    </tr>
+    <tr>
+      <td>Zombie</td>
+      <td><code class="language-plaintext highlighter-rouge">Z</code></td>
+      <td>Finished, waiting for parent to <code class="language-plaintext highlighter-rouge">wait()</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-basic" id="viewing-processes">Viewing Processes</h2>
+
+<h3 id="ps--process-snapshot"><code class="language-plaintext highlighter-rouge">ps</code> — Process Snapshot</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ps aux            <span class="c"># all processes, user-oriented format</span>
+ps aux | <span class="nb">grep </span>nginx
+ps <span class="nt">-ef</span>            <span class="c"># all processes, full format (shows PPID)</span>
+ps <span class="nt">--forest</span>       <span class="c"># tree view of parent-child</span>
+ps <span class="nt">-p</span> 1234        <span class="c"># specific PID</span>
+ps <span class="nt">-u</span> eslam       <span class="c"># processes by user</span>
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">ps aux</code> columns:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>USER   PID  %CPU %MEM    VSZ    RSS  TTY  STAT  START   TIME  COMMAND
+root     1   0.0  0.1 168764  13256   ?   Ss   08:00   0:02  /sbin/init
+eslam 1234   2.1  1.4 512000  45000 pts/0 Sl   09:15   0:18  python3 train.py
+</code></pre></div></div>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">VSZ</code>: virtual memory size (including swapped out)</li>
+  <li><code class="language-plaintext highlighter-rouge">RSS</code>: resident set size (actual RAM in use)</li>
+  <li><code class="language-plaintext highlighter-rouge">STAT</code>: process state (see table above; <code class="language-plaintext highlighter-rouge">s</code>=session leader, <code class="language-plaintext highlighter-rouge">l</code>=multi-threaded, <code class="language-plaintext highlighter-rouge">+</code>=foreground)</li>
+</ul>
+
+<h3 id="top--htop--live-process-monitor"><code class="language-plaintext highlighter-rouge">top</code> / <code class="language-plaintext highlighter-rouge">htop</code> — Live Process Monitor</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>top           <span class="c"># built-in, available everywhere</span>
+htop          <span class="c"># enhanced (install with: sudo apt install htop)</span>
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">top</code> keyboard shortcuts:</strong></p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">k</code> — kill a process (prompts for PID and signal)</li>
+  <li><code class="language-plaintext highlighter-rouge">r</code> — renice (change priority)</li>
+  <li><code class="language-plaintext highlighter-rouge">P</code> — sort by CPU usage</li>
+  <li><code class="language-plaintext highlighter-rouge">M</code> — sort by memory usage</li>
+  <li><code class="language-plaintext highlighter-rouge">1</code> — toggle per-CPU bars</li>
+  <li><code class="language-plaintext highlighter-rouge">q</code> — quit</li>
+</ul>
+
+<p><strong><code class="language-plaintext highlighter-rouge">htop</code> shortcuts:</strong></p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">F5</code> — tree view</li>
+  <li><code class="language-plaintext highlighter-rouge">F9</code> — kill menu</li>
+  <li><code class="language-plaintext highlighter-rouge">F6</code> — sort column</li>
+</ul>
+
+<h3 id="pgrep--pidof"><code class="language-plaintext highlighter-rouge">pgrep</code> / <code class="language-plaintext highlighter-rouge">pidof</code></h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pgrep nginx           <span class="c"># list PIDs of processes named nginx</span>
+pgrep <span class="nt">-u</span> eslam        <span class="c"># all PIDs owned by eslam</span>
+pidof sshd            <span class="c"># PID of sshd</span>
+pgrep <span class="nt">-la</span> python      <span class="c"># list PID + full command line</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="controlling-processes">Controlling Processes</h2>
+
+<h3 id="foreground-background-and-job-control">Foreground, Background, and Job Control</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>long_command &amp;        <span class="c"># start in background</span>
+Ctrl+Z                <span class="c"># suspend foreground process (sends SIGTSTP)</span>
+<span class="nb">bg</span>                    <span class="c"># resume suspended job in background</span>
+<span class="nb">fg</span>                    <span class="c"># bring background job to foreground</span>
+<span class="nb">fg</span> %2                 <span class="c"># bring job number 2 to foreground</span>
+<span class="nb">jobs</span>                  <span class="c"># list all jobs in current shell</span>
+<span class="nb">jobs</span> <span class="nt">-l</span>               <span class="c"># include PIDs</span>
+</code></pre></div></div>
+
+<h3 id="nohup--survive-shell-exit"><code class="language-plaintext highlighter-rouge">nohup</code> — Survive Shell Exit</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">nohup </span>python3 train.py &amp;    <span class="c"># run detached from terminal</span>
+<span class="nb">nohup </span>python3 train.py <span class="o">&gt;</span> /var/log/train.log 2&gt;&amp;1 &amp;
+<span class="c"># output goes to nohup.out by default</span>
+</code></pre></div></div>
+
+<h3 id="killing-processes">Killing Processes</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">kill </span>1234             <span class="c"># send SIGTERM (graceful shutdown request)</span>
+<span class="nb">kill</span> <span class="nt">-9</span> 1234          <span class="c"># send SIGKILL (cannot be caught or ignored!)</span>
+<span class="nb">kill</span> <span class="nt">-STOP</span> 1234       <span class="c"># pause the process</span>
+<span class="nb">kill</span> <span class="nt">-CONT</span> 1234       <span class="c"># resume a stopped process</span>
+killall nginx         <span class="c"># kill all processes named nginx</span>
+pkill <span class="nt">-f</span> <span class="s2">"python3 train"</span>   <span class="c"># kill by matching command line</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="signals-reference">Signals Reference</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Signal</th>
+      <th>Number</th>
+      <th>Default Action</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGHUP</code></td>
+      <td>1</td>
+      <td>Terminate</td>
+      <td>Hangup (reload config in daemons)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGINT</code></td>
+      <td>2</td>
+      <td>Terminate</td>
+      <td>Interrupt from keyboard (Ctrl+C)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGQUIT</code></td>
+      <td>3</td>
+      <td>Core dump</td>
+      <td>Quit from keyboard (Ctrl+\)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGKILL</code></td>
+      <td>9</td>
+      <td>Terminate</td>
+      <td>Cannot be caught/ignored — immediate kill</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGTERM</code></td>
+      <td>15</td>
+      <td>Terminate</td>
+      <td>Graceful termination request (default for <code class="language-plaintext highlighter-rouge">kill</code>)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGSTOP</code></td>
+      <td>19</td>
+      <td>Stop</td>
+      <td>Pause process — cannot be caught/ignored</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGTSTP</code></td>
+      <td>20</td>
+      <td>Stop</td>
+      <td>Pause from terminal (Ctrl+Z) — can be caught</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGCONT</code></td>
+      <td>18</td>
+      <td>Continue</td>
+      <td>Resume a stopped process</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGUSR1</code></td>
+      <td>10</td>
+      <td>Terminate</td>
+      <td>User-defined signal 1 (apps use for reload)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGUSR2</code></td>
+      <td>12</td>
+      <td>Terminate</td>
+      <td>User-defined signal 2</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGCHLD</code></td>
+      <td>17</td>
+      <td>Ignore</td>
+      <td>Child stopped or terminated</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGPIPE</code></td>
+      <td>13</td>
+      <td>Terminate</td>
+      <td>Broken pipe (write to closed socket)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGSEGV</code></td>
+      <td>11</td>
+      <td>Core dump</td>
+      <td>Segmentation fault (invalid memory access)</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># List all signals</span>
+<span class="nb">kill</span> <span class="nt">-l</span>
+<span class="nb">trap</span> <span class="s2">"echo Caught SIGTERM"</span> SIGTERM   <span class="c"># handle signal in shell script</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="process-priorities">Process Priorities</h2>
+
+<h3 id="nice-and-renice"><code class="language-plaintext highlighter-rouge">nice</code> and <code class="language-plaintext highlighter-rouge">renice</code></h3>
+
+<p><strong>Nice value</strong> ranges from -20 (highest priority) to +19 (lowest). Default is 0.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Start process with lower priority</span>
+<span class="nb">nice</span> <span class="nt">-n</span> 10 make <span class="nt">-j4</span>
+
+<span class="c"># Start process with higher priority (requires root)</span>
+<span class="nb">sudo nice</span> <span class="nt">-n</span> <span class="nt">-5</span> realtime_sensor
+
+<span class="c"># Change priority of running process</span>
+renice +5 <span class="nt">-p</span> 1234          <span class="c"># lower priority of PID 1234</span>
+renice <span class="nt">-5</span> <span class="nt">-u</span> eslam         <span class="c"># change priority for all of eslam's procs (root)</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ps <span class="nt">-o</span> pid,ni,comm <span class="nt">-p</span> 1234
+  PID  NI COMMAND
+ 1234  10 make
+</code></pre></div></div>
+
+<h3 id="procpid--exploring-a-running-process"><code class="language-plaintext highlighter-rouge">/proc/PID</code> — Exploring a Running Process</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">PID</span><span class="o">=</span>1234
+
+<span class="nb">cat</span> /proc/<span class="nv">$PID</span>/status      <span class="c"># state, memory, UID, threads</span>
+<span class="nb">cat</span> /proc/<span class="nv">$PID</span>/cmdline     <span class="c"># full command (NUL-separated; tr '\0' ' ')</span>
+<span class="nb">cat</span> /proc/<span class="nv">$PID</span>/environ     <span class="c"># environment variables</span>
+<span class="nb">cat</span> /proc/<span class="nv">$PID</span>/maps        <span class="c"># memory maps (libraries, heap, stack)</span>
+<span class="nb">cat</span> /proc/<span class="nv">$PID</span>/net/tcp     <span class="c"># open TCP connections</span>
+<span class="nb">ls</span> <span class="nt">-l</span> /proc/<span class="nv">$PID</span>/fd        <span class="c"># open file descriptors</span>
+<span class="nb">cat</span> /proc/<span class="nv">$PID</span>/io          <span class="c"># I/O statistics (bytes read/written)</span>
+<span class="nb">cat</span> /proc/<span class="nv">$PID</span>/sched        <span class="c"># scheduler stats</span>
+</code></pre></div></div>
+
+<h3 id="zombie-processes">Zombie Processes</h3>
+
+<p>A zombie holds a PID but has finished executing. It exists only so the parent can call <code class="language-plaintext highlighter-rouge">wait()</code> to retrieve the exit status.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Find zombies</span>
+ps aux | <span class="nb">grep </span>Z
+
+<span class="c"># Typically you kill the PARENT, not the zombie</span>
+<span class="nb">kill</span> <span class="nt">-SIGCHLD</span> &lt;parent_pid&gt;
+</code></pre></div></div>
+
+<p>If the parent never calls <code class="language-plaintext highlighter-rouge">wait()</code>, zombies accumulate until the parent dies (at which point init/systemd adopts and reaps them). Persistent zombies indicate a bug in the parent program.</p>
+
+<h3 id="strace--system-call-tracer"><code class="language-plaintext highlighter-rouge">strace</code> — System Call Tracer</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>strace <span class="nb">ls</span>                        <span class="c"># trace all syscalls of ls</span>
+strace <span class="nt">-e</span> openat <span class="nb">ls</span>              <span class="c"># trace only openat calls</span>
+strace <span class="nt">-p</span> 1234                   <span class="c"># attach to running process</span>
+strace <span class="nt">-o</span> trace.txt <span class="nt">-f</span> ./server  <span class="c"># save output, follow forks</span>
+strace <span class="nt">-c</span> <span class="nb">ls</span> /tmp                <span class="c"># count syscalls (summary)</span>
+</code></pre></div></div>
+
+<p><strong>Example output:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>strace <span class="nt">-e</span> openat <span class="nb">cat</span> /etc/hostname
+openat<span class="o">(</span>AT_FDCWD, <span class="s2">"/etc/ld.so.cache"</span>, O_RDONLY|O_CLOEXEC<span class="o">)</span> <span class="o">=</span> 3
+openat<span class="o">(</span>AT_FDCWD, <span class="s2">"/lib/x86_64-linux-gnu/libc.so.6"</span>, O_RDONLY|O_CLOEXEC<span class="o">)</span> <span class="o">=</span> 3
+openat<span class="o">(</span>AT_FDCWD, <span class="s2">"/etc/hostname"</span>, O_RDONLY<span class="o">)</span> <span class="o">=</span> 3
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-cgroups-v2-and-systemd">Advanced: cgroups v2 and systemd</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="cgroups-v2-control-groups">cgroups v2 (Control Groups)</h3>
+
+<p>cgroups limit and account for resources (CPU, memory, I/O, PIDs) for groups of processes.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Check if cgroups v2 is active</span>
+mount | <span class="nb">grep </span>cgroup2
+<span class="c"># cgroup2 on /sys/fs/cgroup type cgroup2</span>
+
+<span class="c"># Create a new cgroup</span>
+<span class="nb">sudo mkdir</span> /sys/fs/cgroup/mygroup
+
+<span class="c"># Add a process to the group</span>
+<span class="nb">echo</span> <span class="nv">$$</span> | <span class="nb">sudo tee</span> /sys/fs/cgroup/mygroup/cgroup.procs
+
+<span class="c"># Set memory limit (200 MiB)</span>
+<span class="nb">echo</span> <span class="k">$((</span><span class="m">200</span> <span class="o">*</span> <span class="m">1024</span> <span class="o">*</span> <span class="m">1024</span><span class="k">))</span> | <span class="nb">sudo tee</span> /sys/fs/cgroup/mygroup/memory.max
+
+<span class="c"># Set CPU limit (50% of one core)</span>
+<span class="nb">echo</span> <span class="s2">"5000 10000"</span> | <span class="nb">sudo tee</span> /sys/fs/cgroup/mygroup/cpu.max
+<span class="c">#    ^quota ^period (microseconds)</span>
+
+<span class="c"># View current resource usage</span>
+<span class="nb">cat</span> /sys/fs/cgroup/mygroup/memory.current
+<span class="nb">cat</span> /sys/fs/cgroup/mygroup/cpu.stat
+</code></pre></div></div>
+
+<h3 id="systemd-service-units">systemd Service Units</h3>
+
+<p>systemd manages services as <strong>unit files</strong> under <code class="language-plaintext highlighter-rouge">/etc/systemd/system/</code> or <code class="language-plaintext highlighter-rouge">/lib/systemd/system/</code>.</p>
+
+<p><strong>Example service file</strong> <code class="language-plaintext highlighter-rouge">/etc/systemd/system/myapp.service</code>:</p>
+<div class="language-ini highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">[Unit]</span>
+<span class="py">Description</span><span class="p">=</span><span class="s">My Application Service</span>
+<span class="py">After</span><span class="p">=</span><span class="s">network.target</span>
+<span class="py">Requires</span><span class="p">=</span><span class="s">postgresql.service</span>
+
+<span class="nn">[Service]</span>
+<span class="py">Type</span><span class="p">=</span><span class="s">simple</span>
+<span class="py">User</span><span class="p">=</span><span class="s">myapp</span>
+<span class="py">Group</span><span class="p">=</span><span class="s">myapp</span>
+<span class="py">WorkingDirectory</span><span class="p">=</span><span class="s">/opt/myapp</span>
+<span class="py">ExecStart</span><span class="p">=</span><span class="s">/opt/myapp/bin/server --config /etc/myapp/config.yml</span>
+<span class="py">ExecReload</span><span class="p">=</span><span class="s">/bin/kill -HUP $MAINPID</span>
+<span class="py">Restart</span><span class="p">=</span><span class="s">on-failure</span>
+<span class="py">RestartSec</span><span class="p">=</span><span class="s">5s</span>
+
+<span class="c"># Resource limits via cgroups
+</span><span class="py">MemoryMax</span><span class="p">=</span><span class="s">512M</span>
+<span class="py">CPUQuota</span><span class="p">=</span><span class="s">50%</span>
+
+<span class="c"># Security hardening
+</span><span class="py">NoNewPrivileges</span><span class="p">=</span><span class="s">true</span>
+<span class="py">ProtectSystem</span><span class="p">=</span><span class="s">strict</span>
+<span class="py">ProtectHome</span><span class="p">=</span><span class="s">true</span>
+
+<span class="nn">[Install]</span>
+<span class="py">WantedBy</span><span class="p">=</span><span class="s">multi-user.target</span>
+</code></pre></div></div>
+
+<p><strong>Managing services:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>systemctl daemon-reload           <span class="c"># reload unit files after edit</span>
+<span class="nb">sudo </span>systemctl start myapp             <span class="c"># start</span>
+<span class="nb">sudo </span>systemctl stop myapp              <span class="c"># stop</span>
+<span class="nb">sudo </span>systemctl restart myapp           <span class="c"># stop + start</span>
+<span class="nb">sudo </span>systemctl reload myapp            <span class="c"># send reload signal (SIGHUP)</span>
+<span class="nb">sudo </span>systemctl <span class="nb">enable </span>myapp            <span class="c"># start at boot</span>
+<span class="nb">sudo </span>systemctl disable myapp           <span class="c"># remove from boot</span>
+<span class="nb">sudo </span>systemctl status myapp            <span class="c"># show status + recent logs</span>
+journalctl <span class="nt">-u</span> myapp <span class="nt">-f</span>                 <span class="c"># live log stream for service</span>
+journalctl <span class="nt">-u</span> myapp <span class="nt">--since</span> <span class="s2">"1 hour ago"</span>
+</code></pre></div></div>
+
+<h3 id="analyzing-boot-time">Analyzing Boot Time</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>systemd-analyze                     <span class="c"># total boot time</span>
+systemd-analyze blame               <span class="c"># time each unit took</span>
+systemd-analyze critical-chain      <span class="c"># critical path</span>
+systemd-analyze plot <span class="o">&gt;</span> boot.svg     <span class="c"># visual timeline</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">kill -9</code> and <code class="language-plaintext highlighter-rouge">kill -15</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">kill -15</code> (SIGTERM) is a polite request to terminate — the process can catch the signal, flush buffers, close files, and exit cleanly. <code class="language-plaintext highlighter-rouge">kill -9</code> (SIGKILL) is delivered directly by the kernel and cannot be caught, blocked, or ignored. Use SIGTERM first; only escalate to SIGKILL if the process doesn’t respond.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: What is a zombie process and how do you remove it?</strong></p>
+
+<blockquote>
+  <p>A zombie is a process that has finished but whose exit status has not been collected by its parent (the parent hasn’t called <code class="language-plaintext highlighter-rouge">wait()</code>). Zombies hold a PID but consume almost no resources. You cannot kill a zombie directly — you must kill or signal the <strong>parent</strong> process (<code class="language-plaintext highlighter-rouge">kill -SIGCHLD &lt;ppid&gt;</code>) to prompt it to reap its children. If the parent is unkillable, the zombie persists until the parent exits.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: How would you find out what files a process has open?</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lsof <span class="nt">-p</span> &lt;PID&gt;
+<span class="c"># or inspect directly:</span>
+<span class="nb">ls</span> <span class="nt">-la</span> /proc/&lt;PID&gt;/fd
+</code></pre></div></div>
+
+<p><strong>Q4 — Intermediate: What is an orphan process? How does Linux handle it?</strong></p>
+
+<blockquote>
+  <p>An <strong>orphan</strong> is a process whose parent has exited before it. Linux automatically re-parents orphans to <strong>PID 1</strong> (init/systemd), which periodically calls <code class="language-plaintext highlighter-rouge">wait()</code> to reap them. This prevents orphans from becoming zombies.</p>
+</blockquote>
+
+<p><strong>Q5 — Advanced: Explain D-state (uninterruptible sleep). Why can’t you kill a process in D-state?</strong></p>
+
+<blockquote>
+  <p>A process enters D-state (<code class="language-plaintext highlighter-rouge">TASK_UNINTERRUPTIBLE</code>) when it is waiting for a kernel operation to complete and that operation cannot be safely interrupted — typically a hardware I/O operation such as waiting for a disk or NFS response. Sending a signal to a D-state process does nothing; the signal is queued but not delivered until the process wakes up. If the hardware never responds (e.g., an NFS server is unreachable), the process is stuck in D forever. The only remedy is to fix the underlying hardware/I/O issue or reboot.</p>
+</blockquote>
+
+<p><strong>Q6 — Advanced: How do cgroups v2 differ from cgroups v1?</strong></p>
+
+<blockquote>
+  <p>cgroups v1 allowed a process to be in different hierarchies simultaneously (different cgroup trees for CPU, memory, etc.), which led to complexity and inconsistencies. cgroups v2 provides a <strong>unified single hierarchy</strong> — each process belongs to exactly one cgroup subtree. v2 also improves resource delegation to containers, adds the <code class="language-plaintext highlighter-rouge">memory.oom_group</code> feature, and is the foundation for systemd’s resource management (TransientUnits, CPUQuota, MemoryMax in .service files).</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 1 ps</code></td>
+      <td>Process status manual</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 signal</code></td>
+      <td>Complete signal reference</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 1 strace</code></td>
+      <td>System call tracer</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 5 systemd.service</code></td>
+      <td>Service unit file format</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 cgroups</code></td>
+      <td>Control Groups overview</td>
+    </tr>
+    <tr>
+      <td>Kernel docs — cgroups v2</td>
+      <td><a href="https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html">kernel.org/doc/html/latest/admin-guide/cgroup-v2.html</a></td>
+    </tr>
+    <tr>
+      <td>systemd documentation</td>
+      <td><a href="https://systemd.io">systemd.io</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-terminal"></i>
+        <span>Linux User Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-user/filesystem-navigation/" class="gtn-link ">
+          <i class="fas fa-folder-open"></i> Filesystem Navigation
+        </a>
+        <a href="/linux-user/users-permissions/" class="gtn-link ">
+          <i class="fas fa-user-lock"></i> Users &amp; Permissions
+        </a>
+        <a href="/linux-user/process-management/" class="gtn-link gts-active">
+          <i class="fas fa-microchip"></i> Process Management
+        </a>
+        <a href="/linux-user/package-management/" class="gtn-link ">
+          <i class="fas fa-box"></i> Package Management
+        </a>
+        <a href="/linux-user/networking/" class="gtn-link ">
+          <i class="fas fa-network-wired"></i> Networking Basics
+        </a>
+        <a href="/linux-user/ssh/" class="gtn-link ">
+          <i class="fas fa-lock"></i> SSH &amp; Remote Access
+        </a>
+        <a href="/linux-user/cron/" class="gtn-link ">
+          <i class="fas fa-clock"></i> Cron &amp; Scheduling
+        </a>
+        <a href="/linux-user/bash-scripting/" class="gtn-link ">
+          <i class="fas fa-terminal"></i> Bash Scripting
+        </a>
+        <a href="/linux-user/git/" class="gtn-link ">
+          <i class="fab fa-git-alt"></i> Git Basics
+        </a>
+      </nav>
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-user/users-permissions/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Users & Permissions</span>
+      </a>
+      
+      
+      <a href="/linux-user/package-management/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Package Management</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

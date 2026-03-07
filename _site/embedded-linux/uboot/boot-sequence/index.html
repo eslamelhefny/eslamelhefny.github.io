@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARM SoC Boot Sequence · Eslam Mohamed</title>
+  <meta name="description" content="Understand the complete boot chain from Power-On Reset through BootROM, SPL, and U-Boot proper to the Linux kernel on ARM SoCs." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/embedded-linux/">Embedded Linux Developer</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>ARM SoC Boot Sequence</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 03 — Embedded Linux</span>
+        <span class="guide-stage-pill">Stage 06</span>
+      </div>
+      <h1 class="guide-title">ARM SoC Boot Sequence</h1>
+      <p class="guide-subtitle">Understand the complete boot chain from Power-On Reset through BootROM, SPL, and U-Boot proper to the Linux kernel on ARM SoCs.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="why-the-boot-sequence-matters">Why the Boot Sequence Matters</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>Every time you press the power button on an embedded board, a carefully orchestrated sequence of software stages executes before the Linux kernel ever runs a single line of your application code. Understanding this sequence is not optional for embedded Linux developers — it is the foundation. When your board does not boot, it stops somewhere in this chain, and you must know where to look.</p>
+
+<p>ARM SoCs use a multi-stage boot process because no single program can do everything required to bring a system from cold metal to a running kernel. DRAM is not accessible at power-on. Clocks are not configured. The processor does not know where your software lives. Each stage handles a narrow responsibility, configures a bit more hardware, and then hands off to the next stage.</p>
+
+<hr />
+
+<h3 id="the-five-stages-at-a-glance">The Five Stages at a Glance</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Power-On Reset (POR)
+        |
+        v
+  ┌─────────────┐
+  │   BootROM   │  (burned into SoC silicon, read-only)
+  │  (Stage 0)  │  reads boot media → loads SPL into internal SRAM
+  └─────────────┘
+        |
+        v
+  ┌─────────────┐
+  │     SPL     │  (Secondary Program Loader)
+  │  (Stage 1)  │  initializes DRAM, loads U-Boot proper
+  └─────────────┘
+        |
+        v
+  ┌─────────────┐
+  │  U-Boot     │  (Das U-Boot, "Universal Boot Loader")
+  │  (Stage 2)  │  full-featured bootloader, user interactive shell
+  └─────────────┘
+        |
+        v
+  ┌─────────────┐
+  │ Linux Kernel│  (decompresses itself, mounts rootfs)
+  │  (Stage 3)  │
+  └─────────────┘
+        |
+        v
+  ┌─────────────┐
+  │  init / PID1│  (systemd, BusyBox init, etc.)
+  └─────────────┘
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="stage-0-power-on-reset">Stage 0: Power-On Reset</h3>
+
+<p>When power is applied to an ARM SoC, the processor starts executing code from a fixed address in internal ROM. This is the <strong>Power-On Reset vector</strong>. The processor is in a deterministic initial state: caches off, MMU off, running at a slow clock, executing from internal SRAM or ROM.</p>
+
+<p>The hardware designer programs the boot media selection pins (called <strong>boot mode pins</strong> or <strong>SYSBOOT pins</strong> on TI SoCs) before the chip is manufactured into a board. These pins tell the BootROM where to look for the first stage bootloader.</p>
+
+<hr />
+
+<h3 id="stage-1-bootrom">Stage 1: BootROM</h3>
+
+<p>The <strong>BootROM</strong> is code burned permanently into the silicon of the SoC. You cannot change it. It is the hardware vendor’s code and it runs with full trust.</p>
+
+<p>BootROM responsibilities:</p>
+<ul>
+  <li>Initialize the minimum required clocks (enough to read from boot media)</li>
+  <li>Read the boot mode pins to determine boot source (MMC0, MMC1, SPI flash, NAND, USB, UART)</li>
+  <li>Load the first stage bootloader (SPL) from that boot media into internal SRAM</li>
+  <li>Validate the SPL header (on secure SoCs, verify the signature)</li>
+  <li>Jump to the SPL entry point</li>
+</ul>
+
+<p>BootROM does <strong>not</strong> initialize DRAM. It cannot — there is no DRAM initialization code in ROM, and DRAM requires calibration that is board-specific.</p>
+
+<p><strong>Memory available to BootROM:</strong> Only the SoC’s internal SRAM (typically 64 KB to 256 KB). This is why what BootROM can load is small.</p>
+
+<p>On the <strong>TI AM335x</strong> (BeagleBone Black), BootROM reads an <code class="language-plaintext highlighter-rouge">AM335x_BOOT_HEADER</code> structure at the start of the MLO file. This header tells BootROM the load address and size. BootROM loads MLO (the SPL) into internal SRAM at address <code class="language-plaintext highlighter-rouge">0x402F0400</code>.</p>
+
+<p>On the <strong>NXP i.MX6</strong>, BootROM reads an <strong>IVT (Image Vector Table)</strong> at a specific offset in the boot media. The IVT points to the SPL image and (on HAB-enabled devices) to the CSF (Command Sequence File) for signature verification.</p>
+
+<hr />
+
+<h3 id="stage-2-spl--secondary-program-loader">Stage 2: SPL — Secondary Program Loader</h3>
+
+<p>The <strong>SPL</strong> is the first piece of code that you, as an embedded Linux developer, actually write and maintain. It lives in <code class="language-plaintext highlighter-rouge">arch/arm/cpu/</code> and <code class="language-plaintext highlighter-rouge">board/VENDOR/BOARD/</code> in the U-Boot source tree.</p>
+
+<p>SPL must fit inside the SoC’s internal SRAM — typically under 128 KB. Because of this tight constraint, only essential functionality is compiled into SPL.</p>
+
+<p>SPL responsibilities:</p>
+<ul>
+  <li>Configure PLLs and clocks (the main CPU and DDR clocks)</li>
+  <li>Initialize the DDR/LPDDR DRAM interface</li>
+  <li>Set up the serial console (UART) so you can see debug messages</li>
+  <li>Load U-Boot proper from boot media into DRAM</li>
+  <li>Jump to U-Boot proper</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ minicom -D /dev/ttyUSB0 -b 115200
+
+U-Boot SPL 2023.10 (Oct 15 2023 - 12:34:56 +0000)
+Trying to boot from MMC1
+</code></pre></div></div>
+
+<p>That single line <code class="language-plaintext highlighter-rouge">U-Boot SPL 2023.10</code> is your confirmation that BootROM succeeded and SPL is running.</p>
+
+<hr />
+
+<h3 id="stage-3-u-boot-proper">Stage 3: U-Boot Proper</h3>
+
+<p>Once SPL has initialized DRAM and loaded U-Boot proper into it, U-Boot runs with full DRAM available. U-Boot proper is the fully-featured bootloader.</p>
+
+<p>U-Boot proper responsibilities:</p>
+<ul>
+  <li>Complete hardware initialization (USB, Ethernet, LCD, storage controllers)</li>
+  <li>Present an interactive shell (the <code class="language-plaintext highlighter-rouge">=&gt;</code> prompt)</li>
+  <li>Load the kernel image and Device Tree Blob (DTB) into DRAM</li>
+  <li>Set kernel boot arguments (<code class="language-plaintext highlighter-rouge">bootargs</code> environment variable)</li>
+  <li>Transfer control to the Linux kernel</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>U-Boot 2023.10 (Oct 15 2023 - 12:34:56 +0000)
+
+CPU  : AM335X-GP rev 2.1
+Model: TI AM335x BeagleBone Black
+DRAM : 512 MiB
+Core:  172 devices, 14 uclasses, devicetree: separate
+MMC:   OMAP SD/MMC: 0, OMAP SD/MMC: 1
+Loading Environment from MMC... OK
+Net:   eth0: ethernet@4a100000
+Hit any key to stop autoboot:  3
+=&gt;
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="memory-map-during-boot">Memory Map During Boot</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Stage</th>
+      <th>Executes From</th>
+      <th>Loads Into</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>BootROM</td>
+      <td>Internal ROM</td>
+      <td>Internal SRAM</td>
+    </tr>
+    <tr>
+      <td>SPL</td>
+      <td>Internal SRAM</td>
+      <td>DRAM</td>
+    </tr>
+    <tr>
+      <td>U-Boot</td>
+      <td>DRAM (low address)</td>
+      <td>DRAM</td>
+    </tr>
+    <tr>
+      <td>Linux</td>
+      <td>DRAM</td>
+      <td>DRAM</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>On the AM335x, the SRAM is at <code class="language-plaintext highlighter-rouge">0x402F0400</code> (192 KB usable for SPL). On i.MX6, internal OCRAM is at <code class="language-plaintext highlighter-rouge">0x00907000</code> (256 KB).</p>
+
+<hr />
+
+<h2 class="gc-mid" id="spl-deep-dive-boot-mode-selection-and-falcon-mode">SPL Deep Dive, Boot Mode Selection, and Falcon Mode</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="spl-size-constraints">SPL Size Constraints</h3>
+
+<p>SPL must fit within the SoC’s internal SRAM. You can check the size of your compiled SPL:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-la</span> spl/u-boot-spl.bin
+<span class="nt">-rw-r--r--</span> 1 user user 98304 Oct 15 2023 spl/u-boot-spl.bin
+
+<span class="nv">$ </span>arm-linux-gnueabihf-nm <span class="nt">--size-sort</span> spl/u-boot-spl | <span class="nb">tail</span> <span class="nt">-20</span>
+00000234 T board_init_f
+000004a8 T ddr_init
+00000514 T spl_mmc_load_image
+00000c10 T lowlevel_init
+</code></pre></div></div>
+
+<p>For the AM335x, the hard limit is approximately <strong>109 KB</strong> (the usable portion of internal SRAM after the BootROM stack and stack area). If your SPL exceeds this, the build will fail with a linker error:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>spl/u-boot-spl: section `.bss' will not fit in region `sram'
+region `sram' overflowed by 4096 bytes
+</code></pre></div></div>
+
+<p>Reduce SPL size by disabling unnecessary <code class="language-plaintext highlighter-rouge">CONFIG_SPL_*</code> options in your defconfig.</p>
+
+<hr />
+
+<h3 id="tpl-tertiary-program-loader">TPL: Tertiary Program Loader</h3>
+
+<p>Some SoCs have even less internal SRAM — as little as 20 KB. For these, U-Boot introduced a <strong>TPL (Tertiary Program Loader)</strong>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>BootROM → TPL (20KB SRAM) → SPL (SRAM after TPL enables more) → U-Boot → Kernel
+</code></pre></div></div>
+
+<p>TPL only enables enough memory to load SPL. This is uncommon but used on some Rockchip SoCs.</p>
+
+<hr />
+
+<h3 id="boot-source-selection-boot-mode-pins">Boot Source Selection: Boot Mode Pins</h3>
+
+<p>SoC manufacturers provide hardware pins that determine which boot media BootROM tries first. These are sampled at Power-On Reset.</p>
+
+<p><strong>TI AM335x SYSBOOT pins (SYSBOOT[15:0]):</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>SYSBOOT value</th>
+      <th>Boot Order</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0x0001</td>
+      <td>NAND → MMC0 → USB → UART0</td>
+    </tr>
+    <tr>
+      <td>0x8000</td>
+      <td>SPI0 → MMC0 → USB → UART0</td>
+    </tr>
+    <tr>
+      <td>0x4000</td>
+      <td>MMC0 → USB → UART0 → SPI0</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>On BeagleBone Black, the boot order depends on whether the S2 button is held at power-on:</p>
+<ul>
+  <li><strong>S2 not pressed:</strong> eMMC first (internal flash)</li>
+  <li><strong>S2 pressed:</strong> SD card first</li>
+</ul>
+
+<p><strong>NXP i.MX6 BOOT_MODE pins:</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>BOOT_MODE[1:0]</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>00</td>
+      <td>Boot from fuses (eFUSE config)</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>Internal boot (normal operation)</td>
+    </tr>
+    <tr>
+      <td>01</td>
+      <td>Serial downloader (USB recovery)</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h3 id="falcon-mode-spl-boots-kernel-directly">Falcon Mode: SPL Boots Kernel Directly</h3>
+
+<p>In production systems, you may not want the overhead of U-Boot proper. <strong>Falcon Mode</strong> allows SPL to boot the Linux kernel directly, skipping U-Boot entirely:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>BootROM → SPL → Linux Kernel  (Falcon Mode, no U-Boot proper)
+</code></pre></div></div>
+
+<p>To enable Falcon Mode:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># In U-Boot, prepare the Falcon Mode data</span>
+<span class="o">=&gt;</span> mmc dev 0
+<span class="o">=&gt;</span> fatload mmc 0:1 <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span> zImage
+<span class="o">=&gt;</span> fatload mmc 0:1 <span class="k">${</span><span class="nv">fdt_addr_r</span><span class="k">}</span> am335x-boneblack.dtb
+<span class="o">=&gt;</span> spl <span class="nb">export </span>fdt <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span> - <span class="k">${</span><span class="nv">fdt_addr_r</span><span class="k">}</span>
+Exporting flat device tree...
+Falcon mode data written to MMC
+</code></pre></div></div>
+
+<p>Enable in defconfig:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CONFIG_SPL_OS_BOOT=y
+CONFIG_SPL_FALCON_BOOT_MMCSD=y
+</code></pre></div></div>
+
+<p>Falcon Mode reduces boot time significantly — U-Boot proper can add 500ms to 2 seconds to boot time. The tradeoff is losing the U-Boot interactive shell for debugging.</p>
+
+<hr />
+
+<h3 id="investigating-boot-failures-via-serial-console">Investigating Boot Failures via Serial Console</h3>
+
+<p>The serial console (UART) is your primary debugging tool. Connect a USB-UART adapter to the board’s debug UART and monitor output.</p>
+
+<p><strong>Scenario 1: Nothing appears at all</strong></p>
+<ul>
+  <li>BootROM is not finding a valid SPL. Check:
+    <ul>
+      <li>SD card is in the correct slot</li>
+      <li>SPL file is named correctly (<code class="language-plaintext highlighter-rouge">MLO</code> on FAT for AM335x)</li>
+      <li>Boot mode pins are set correctly</li>
+      <li>SPL binary is not corrupt (reflash)</li>
+    </ul>
+  </li>
+</ul>
+
+<p><strong>Scenario 2: SPL message appears, then hangs</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>U-Boot SPL 2023.10
+Trying to boot from MMC1
+
+(hangs here)
+</code></pre></div></div>
+<p>SPL loaded but DRAM init is failing. Check DDR configuration in <code class="language-plaintext highlighter-rouge">board/ti/am335x/mux.c</code> and the DDR timing parameters.</p>
+
+<p><strong>Scenario 3: U-Boot appears but kernel load fails</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>U-Boot 2023.10
+=&gt; fatload mmc 0:1 0x82000000 zImage
+** File not found zImage **
+</code></pre></div></div>
+<p>U-Boot is running fine, but the kernel image is missing from the FAT partition.</p>
+
+<hr />
+
+<h3 id="reading-the-u-boot-boot-log">Reading the U-Boot Boot Log</h3>
+
+<p>A complete successful boot log looks like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>U-Boot SPL 2023.10 (Oct 15 2023 - 12:34:56 +0000)
+Trying to boot from MMC1
+
+U-Boot 2023.10 (Oct 15 2023 - 12:34:56 +0000)
+
+CPU  : AM335X-GP rev 2.1
+Model: TI AM335x BeagleBone Black
+DRAM : 512 MiB
+Core:  172 devices, 14 uclasses, devicetree: separate
+MMC:   OMAP SD/MMC: 0, OMAP SD/MMC: 1
+Loading Environment from MMC... OK
+Net:   eth0: ethernet@4a100000
+Hit any key to stop autoboot:  0
+switch to partitions #0, OK
+mmc0 is current device
+Scanning mmc 0:1...
+Found /boot/extlinux/extlinux.conf
+Retrieving file: /boot/extlinux/extlinux.conf
+1:      linux
+Retrieving file: /boot/zImage
+Retrieving file: /boot/am335x-boneblack.dtb
+append: console=ttyO0,115200n8 root=/dev/mmcblk0p2 rw rootfstype=ext4
+Kernel image @ 0x82000000 [ 0x000000 - 0x5d4d40 ]
+## Flattened Device Tree blob at 88000000
+   Booting using the fdt blob at 0x88000000
+   Loading Device Tree to 8ffed000, end 8ffff... OK
+
+Starting kernel ...
+</code></pre></div></div>
+
+<p>Key lines to understand:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">DRAM: 512 MiB</code> — SPL successfully initialized DRAM</li>
+  <li><code class="language-plaintext highlighter-rouge">Loading Environment from MMC... OK</code> — Environment variables loaded</li>
+  <li><code class="language-plaintext highlighter-rouge">Found /boot/extlinux/extlinux.conf</code> — distro boot found the config file</li>
+  <li><code class="language-plaintext highlighter-rouge">Starting kernel ...</code> — U-Boot is done; Linux is taking over</li>
+</ul>
+
+<hr />
+
+<h2 class="gc-adv" id="secure-boot-atf-and-soc-specific-boot-internals">Secure Boot, ATF, and SoC-Specific Boot Internals</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="secure-boot-chain">Secure Boot Chain</h3>
+
+<p>In a secure boot configuration, each stage cryptographically validates the next before jumping to it. This prevents an attacker who gains write access to boot media from replacing the bootloader with malicious code.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>BootROM (trusted, in silicon)
+   │ validates signature of SPL using OTP-burned public key
+   ▼
+SPL (signed, authenticated)
+   │ validates signature of U-Boot proper
+   ▼
+U-Boot (signed, authenticated)
+   │ validates signature of kernel (FIT image with signature)
+   ▼
+Linux Kernel (signed, authenticated)
+</code></pre></div></div>
+
+<p>If any signature check fails, the boot chain halts. No interactive shell. No fallback (unless you implement one deliberately).</p>
+
+<hr />
+
+<h3 id="nxp-hab-high-assurance-boot-on-imx6">NXP HAB (High Assurance Boot) on i.MX6</h3>
+
+<p>HAB is NXP’s secure boot implementation for i.MX6/i.MX8 processors. BootROM reads a <strong>CSF (Command Sequence File)</strong> embedded in the image that contains:</p>
+<ul>
+  <li>RSA-2048 or RSA-4096 signature of the image</li>
+  <li>Certificate chain back to a root CA whose public key hash is burned into SoC eFUSEs</li>
+</ul>
+
+<p>Key eFUSEs for HAB:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">SEC_CONFIG[1]</code> fuse: When blown, enables HAB enforcement. <strong>This is a one-time, irreversible operation.</strong></li>
+  <li><code class="language-plaintext highlighter-rouge">SRK_HASH</code> fuses: SHA-256 hash of the Super Root Key(s)</li>
+</ul>
+
+<p>Checking HAB status in U-Boot:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=&gt; hab_status
+
+Secure boot disabled
+
+HAB Configuration: 0xf0, HAB State: 0x66
+No HAB Events Found!
+</code></pre></div></div>
+
+<p>When HAB is enabled and a signature check fails:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=&gt; hab_status
+HAB Configuration: 0xcc, HAB State: 0x99
+
+--------- HAB Event 1 -----------------
+event data:
+0xdb 0x00 0x14 0x43 0x33 0x 11 0xdd 0x00
+0x00 0x00 0x00 0x00 0xf0 0x0f 0x00 0x60
+
+STS = HAB_FAILURE (0x33)
+RSN = HAB_INV_SIGNATURE (0x0f)
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="arm-trusted-firmware-atf--tf-a">ARM Trusted Firmware (ATF / TF-A)</h3>
+
+<p><strong>ARM Trusted Firmware</strong> (now called <strong>Trusted Firmware-A</strong>, or TF-A) is a reference implementation of secure world software for ARMv7 and ARMv8 processors. It implements the ARM Security Architecture.</p>
+
+<p>TF-A inserts a new stage between SPL and U-Boot:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>BootROM → SPL → TF-A (BL2, BL31, BL32) → U-Boot → Kernel
+</code></pre></div></div>
+
+<p>TF-A boot levels:</p>
+<ul>
+  <li><strong>BL1:</strong> First-stage bootloader (in trusted ROM)</li>
+  <li><strong>BL2:</strong> Trusted Boot Firmware (loaded by BL1, validates and loads BL3x)</li>
+  <li><strong>BL31:</strong> EL3 Runtime Firmware (stays resident, handles SMC calls)</li>
+  <li><strong>BL32:</strong> Secure Payload (optional, typically OP-TEE)</li>
+  <li><strong>BL33:</strong> Non-trusted firmware (U-Boot proper)</li>
+</ul>
+
+<p>After BL31 starts, the system is split into:</p>
+<ul>
+  <li><strong>Secure World (EL3/S-EL1):</strong> TF-A + OP-TEE</li>
+  <li><strong>Normal World (EL2/EL1):</strong> U-Boot, then Linux</li>
+</ul>
+
+<p>U-Boot runs at EL2 (hypervisor level) on ARMv8 when ATF is present. It then drops the kernel to EL1.</p>
+
+<p>Building ATF for i.MX8:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>git clone https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git
+<span class="nv">$ </span><span class="nb">cd </span>trusted-firmware-a
+<span class="nv">$ </span>make <span class="nv">CROSS_COMPILE</span><span class="o">=</span>aarch64-linux-gnu- <span class="nv">PLAT</span><span class="o">=</span>imx8mq bl31
+  CC      bl31/bl31_main.c
+  CC      common/context_mgmt.c
+  LD      build/imx8mq/release/bl31/bl31.elf
+  BIN     build/imx8mq/release/bl31.bin
+</code></pre></div></div>
+
+<p>The resulting <code class="language-plaintext highlighter-rouge">bl31.bin</code> is packaged with U-Boot SPL using NXP’s <code class="language-plaintext highlighter-rouge">imx-mkimage</code> tool.</p>
+
+<hr />
+
+<h3 id="op-tee-open-portable-trusted-execution-environment">OP-TEE: Open Portable Trusted Execution Environment</h3>
+
+<p>OP-TEE runs as BL32 in the secure world. It provides:</p>
+<ul>
+  <li>Trusted Application (TA) execution environment</li>
+  <li>Cryptographic services to the normal world via SMC calls</li>
+  <li>Secure storage</li>
+  <li>Hardware key management (device key, RPMB key)</li>
+</ul>
+
+<p>From Linux, the normal world communicates with OP-TEE through the <code class="language-plaintext highlighter-rouge">/dev/tee0</code> device node, which maps to the tee-supplicant daemon.</p>
+
+<hr />
+
+<h3 id="ab-boot-partition-scheme">A/B Boot Partition Scheme</h3>
+
+<p>Robust production devices use an <strong>A/B (redundant) partition scheme</strong> for over-the-air updates:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>┌────────┬────────┬────────────────┐
+│  Boot  │  Boot  │                │
+│  Part A│  Part B│  Data/Rootfs   │
+│(active)│(update)│                │
+└────────┴────────┴────────────────┘
+</code></pre></div></div>
+
+<p>U-Boot selects which partition to boot based on environment variables:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># In U-Boot environment</span>
+<span class="nv">bootslot</span><span class="o">=</span>a
+<span class="nv">boot_a_left</span><span class="o">=</span>3     <span class="c"># retry counter</span>
+<span class="nv">boot_b_left</span><span class="o">=</span>3
+
+<span class="c"># bootcmd logic</span>
+<span class="k">if </span><span class="nb">test</span> <span class="k">${</span><span class="nv">bootslot</span><span class="k">}</span> <span class="o">=</span> <span class="s2">"a"</span><span class="p">;</span> <span class="k">then
+    </span>setenv bootpart 1
+<span class="k">else
+    </span>setenv bootpart 2
+<span class="k">fi</span>
+</code></pre></div></div>
+
+<p>On Android (and Android-derived systems), U-Boot reads BCB (Bootloader Control Block) from a dedicated partition to determine A/B slot selection.</p>
+
+<hr />
+
+<h3 id="measuring-boot-time-at-each-stage">Measuring Boot Time at Each Stage</h3>
+
+<p>To optimize boot time, you need to measure each stage:</p>
+
+<p><strong>In SPL:</strong> Add <code class="language-plaintext highlighter-rouge">printf</code> with timer reads using <code class="language-plaintext highlighter-rouge">timer_get_us()</code>:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* board/ti/am335x/board.c */</span>
+<span class="cp">#include</span> <span class="cpf">&lt;timer.h&gt;</span><span class="cp">
+</span>
+<span class="kt">void</span> <span class="nf">board_init_f</span><span class="p">(</span><span class="n">ulong</span> <span class="n">dummy</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">u64</span> <span class="n">t0</span> <span class="o">=</span> <span class="n">timer_get_us</span><span class="p">();</span>
+    <span class="n">ddr_init</span><span class="p">();</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"SPL: DDR init took %llu us</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">timer_get_us</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">);</span>
+    <span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>In U-Boot:</strong> Use the built-in boot timing:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Enable in defconfig</span>
+<span class="nv">CONFIG_BOOTSTAGE</span><span class="o">=</span>y
+<span class="nv">CONFIG_BOOTSTAGE_REPORT</span><span class="o">=</span>y
+
+<span class="c"># View in U-Boot</span>
+<span class="o">=&gt;</span> bootstage report
+Timer summary <span class="k">in </span>microseconds <span class="o">(</span>16 records<span class="o">)</span>:
+         0: reset
+       185: spl phase 1
+     12450: spl board init <span class="k">done
+     </span>98234: board init <span class="k">done
+    </span>234567: main loop
+    345678: bootm_start
+    456789: bootm_handoff
+
+Accumulated <span class="nb">time</span>:
+              spl_ddr:  12265
+           board_init:  85784
+             main_lp:  136333
+         bootm_total:  222222
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="jtag-debugging-at-bootrom-stage">JTAG Debugging at BootROM Stage</h3>
+
+<p>When BootROM itself is failing (extremely rare, usually board bring-up), you need JTAG:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># OpenOCD with AM335x</span>
+<span class="nv">$ </span>openocd <span class="nt">-f</span> interface/ftdi/olimex-arm-usb-ocd-h.cfg <span class="se">\</span>
+          <span class="nt">-f</span> target/am335x.cfg
+
+Open On-Chip Debugger 0.12.0
+Info : JTAG tap: am335x.jrc tap/device found: 0x2b94402f
+Info : JTAG tap: am335x.cpu tap/device found: 0x4b6d102f
+Info : am335x.cpu: hardware has 6 breakpoints, 4 watchpoints
+
+<span class="c"># Connect GDB</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gdb
+<span class="o">(</span>gdb<span class="o">)</span> target remote :3333
+<span class="o">(</span>gdb<span class="o">)</span> monitor halt
+<span class="o">(</span>gdb<span class="o">)</span> info registers
+pc             0x40030000    &lt;<span class="nt">--</span> BootROM address
+sp             0x4030f7f8
+</code></pre></div></div>
+
+<p>At this point you can single-step through BootROM (though without symbols, you see only disassembly) to see why it is not loading SPL.</p>
+
+<hr />
+
+<h3 id="soc-specific-boot-image-headers">SoC-Specific Boot Image Headers</h3>
+
+<p><strong>AM335x GP Header (non-secure):</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Offset  Size  Field
+0x00    4     Magic (0x00000000 for GP device)
+0x04    4     Image size in bytes
+0x08    4     Load address (destination in SRAM)
+0x0C    4     Reserved
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">MLO</code> file on BeagleBone Black FAT partition is exactly SPL with this header prepended by the U-Boot build system.</p>
+
+<p><strong>i.MX6 IVT (Image Vector Table):</strong></p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">imx_ivt</span> <span class="p">{</span>
+    <span class="n">u8</span>  <span class="n">header</span><span class="p">;</span>        <span class="cm">/* 0xD1 */</span>
+    <span class="n">u16</span> <span class="n">length</span><span class="p">;</span>        <span class="cm">/* 0x0020 */</span>
+    <span class="n">u8</span>  <span class="n">version</span><span class="p">;</span>       <span class="cm">/* 0x40 */</span>
+    <span class="n">u32</span> <span class="n">entry</span><span class="p">;</span>         <span class="cm">/* Entry point of the image */</span>
+    <span class="n">u32</span> <span class="n">reserved1</span><span class="p">;</span>
+    <span class="n">u32</span> <span class="n">dcd_ptr</span><span class="p">;</span>       <span class="cm">/* Pointer to DCD (Device Configuration Data) */</span>
+    <span class="n">u32</span> <span class="n">boot_data_ptr</span><span class="p">;</span> <span class="cm">/* Pointer to boot data structure */</span>
+    <span class="n">u32</span> <span class="n">self_ptr</span><span class="p">;</span>      <span class="cm">/* Address of this IVT */</span>
+    <span class="n">u32</span> <span class="n">csf_ptr</span><span class="p">;</span>       <span class="cm">/* Pointer to CSF (for HAB) */</span>
+    <span class="n">u32</span> <span class="n">reserved2</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>The DCD (Device Configuration Data) contains the DDR initialization register writes — this is how BootROM can initialize DRAM for i.MX6 before jumping to SPL.</p>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-questions">Interview Questions</h2>
+
+<p><strong>1. What is the purpose of SPL? Why not boot U-Boot directly from BootROM?</strong></p>
+
+<p>SPL exists because of SRAM size constraints. BootROM can only load code into the SoC’s internal SRAM, which is typically 64-256 KB. U-Boot proper is several hundred kilobytes to over a megabyte. SPL fits in SRAM, initializes DRAM, and then loads the full U-Boot into DRAM. Without SPL, BootROM would need DRAM to already be working, which requires board-specific initialization that cannot be in ROM.</p>
+
+<p><strong>2. What is Falcon Mode in U-Boot?</strong></p>
+
+<p>Falcon Mode allows SPL to boot the Linux kernel directly, bypassing U-Boot proper entirely. The boot chain becomes <code class="language-plaintext highlighter-rouge">BootROM → SPL → Kernel</code>. SPL stores the kernel load address, DTB address, and boot arguments in a data structure on the boot media. This significantly reduces boot time (saves the 500ms to 2 second U-Boot initialization) at the cost of losing the U-Boot interactive shell. Enabled with <code class="language-plaintext highlighter-rouge">CONFIG_SPL_OS_BOOT=y</code>.</p>
+
+<p><strong>3. Explain the role of BootROM in the boot process.</strong></p>
+
+<p>BootROM is immutable code burned into the SoC silicon by the chip manufacturer. It executes at Power-On Reset from internal ROM with no external memory. It reads boot mode pins to determine the boot source (MMC, NAND, SPI flash, USB), loads the SPL image into internal SRAM, optionally validates its signature (on secure boot devices), and jumps to the SPL entry point. It provides the hardware root of trust in a secure boot chain.</p>
+
+<p><strong>4. What initializations must happen before DRAM can be used?</strong></p>
+
+<p>Before DRAM can be used, the following must occur: PLLs must be configured to provide the required clock frequencies; the DDR controller must be initialized with the correct timing parameters (tRCD, tRP, tRAS, CL, etc.) specific to the DRAM chips on the board; DRAM training (ZQ calibration, read/write leveling) must complete; and the DDR controller address mapping must be set up. All of this is SPL’s primary job.</p>
+
+<p><strong>5. How does secure boot extend the boot chain?</strong></p>
+
+<p>Secure boot adds cryptographic validation at each stage transition. BootROM validates SPL’s signature using a public key hash burned into SoC eFUSEs (one-time programmable). SPL validates U-Boot’s signature. U-Boot validates the kernel image’s signature (via FIT image signing). If any signature check fails, boot halts. The chain of trust is rooted in the immutable BootROM and the one-time-programmable eFUSEs.</p>
+
+<p><strong>6. What is ARM Trusted Firmware (ATF) and where does it fit in the boot sequence?</strong></p>
+
+<p>ATF (now called TF-A, Trusted Firmware-A) is a reference implementation of the ARM Trusted Board Boot Requirements and ARM Security Architecture for ARMv7/ARMv8. It inserts between SPL and U-Boot: <code class="language-plaintext highlighter-rouge">SPL → TF-A BL31 → U-Boot</code>. BL31 runs at EL3 (the highest privilege level) and remains resident throughout the system’s lifetime, handling Secure Monitor Calls (SMC) from both the secure world (OP-TEE) and normal world (Linux). It implements PSCI (Power State Coordination Interface) for CPU power management.</p>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<ul>
+  <li>U-Boot documentation: <code class="language-plaintext highlighter-rouge">doc/README.SPL</code> in the U-Boot source tree</li>
+  <li>“Mastering Embedded Linux Programming” — Chris Simmonds, Chapter 3: All About Bootloaders</li>
+  <li>TI AM335x Sitara Processors Technical Reference Manual — Chapter 26: Initialization</li>
+  <li>ARM Trusted Firmware documentation: <a href="https://trustedfirmware-a.readthedocs.io/">https://trustedfirmware-a.readthedocs.io/</a></li>
+  <li>NXP i.MX 6Solo/6DualLite Applications Processor Reference Manual, Chapter 8: System Boot</li>
+  <li>U-Boot Falcon Mode: <code class="language-plaintext highlighter-rouge">doc/README.falcon</code> in the U-Boot source tree</li>
+  <li>OP-TEE documentation: <a href="https://optee.readthedocs.io/">https://optee.readthedocs.io/</a></li>
+</ul>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-wrench"></i>
+        <span>U-Boot Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/embedded-linux/uboot/boot-sequence/" class="gtn-link gts-active">
+          <i class="fas fa-play"></i> Boot Sequence
+        </a>
+        <a href="/embedded-linux/uboot/uboot-config-build/" class="gtn-link ">
+          <i class="fas fa-wrench"></i> U-Boot Config &amp; Build
+        </a>
+        <a href="/embedded-linux/uboot/uboot-commands/" class="gtn-link ">
+          <i class="fas fa-terminal"></i> U-Boot Commands &amp; Scripting
+        </a>
+        <a href="/embedded-linux/uboot/device-tree/" class="gtn-link ">
+          <i class="fas fa-sitemap"></i> Device Tree (DTS)
+        </a>
+        <a href="/embedded-linux/uboot/board-porting/" class="gtn-link ">
+          <i class="fas fa-puzzle-piece"></i> Board Porting
+        </a>
+        <a href="/embedded-linux/uboot/tftp-boot/" class="gtn-link ">
+          <i class="fas fa-network-wired"></i> TFTP &amp; Network Boot
+        </a>
+      </nav>
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/embedded-linux/cross-compilation/cross-compile-cmake/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Cross-Compiling with CMake</span>
+      </a>
+      
+      
+      <a href="/embedded-linux/uboot/uboot-config-build/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">U-Boot Config & Build</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

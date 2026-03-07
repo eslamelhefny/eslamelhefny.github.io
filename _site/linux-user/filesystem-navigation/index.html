@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Filesystem Navigation · Eslam Mohamed</title>
+  <meta name="description" content="Master the Linux Filesystem Hierarchy Standard, navigate directories with confidence, manage files, and understand how inodes, mounts, and /proc work under the hood." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-user/">Linux User Guide</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Filesystem Navigation</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 01 — Linux User</span>
+        <span class="guide-stage-pill">Stage 01</span>
+      </div>
+      <h1 class="guide-title">Filesystem Navigation</h1>
+      <p class="guide-subtitle">Master the Linux Filesystem Hierarchy Standard, navigate directories with confidence, manage files, and understand how inodes, mounts, and /proc work under the hood.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="the-linux-filesystem-hierarchy-fhs">The Linux Filesystem Hierarchy (FHS)</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>Linux organises every file into a single tree rooted at <code class="language-plaintext highlighter-rouge">/</code>. Unlike Windows drive letters, there is <strong>one unified namespace</strong>. The Filesystem Hierarchy Standard (FHS) defines what belongs where.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Directory</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/</code></td>
+      <td>Root — the top of the entire tree</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/bin</code></td>
+      <td>Essential user binaries (<code class="language-plaintext highlighter-rouge">ls</code>, <code class="language-plaintext highlighter-rouge">cp</code>, <code class="language-plaintext highlighter-rouge">mv</code>)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/sbin</code></td>
+      <td>System administration binaries (<code class="language-plaintext highlighter-rouge">fdisk</code>, <code class="language-plaintext highlighter-rouge">ifconfig</code>)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/etc</code></td>
+      <td>System-wide configuration files</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/home</code></td>
+      <td>User home directories (<code class="language-plaintext highlighter-rouge">/home/eslam</code>)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/root</code></td>
+      <td>Home directory for the root user</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/var</code></td>
+      <td>Variable data: logs, spools, runtime state</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/tmp</code></td>
+      <td>Temporary files (cleared on reboot)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/usr</code></td>
+      <td>Secondary hierarchy: apps, libraries, man pages</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/lib</code></td>
+      <td>Shared libraries needed by <code class="language-plaintext highlighter-rouge">/bin</code> and <code class="language-plaintext highlighter-rouge">/sbin</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/dev</code></td>
+      <td>Device files (block + character devices)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/proc</code></td>
+      <td>Virtual FS exposing kernel/process info</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/sys</code></td>
+      <td>Virtual FS for hardware/device info (sysfs)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/mnt</code></td>
+      <td>Temporary mount point for admins</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/media</code></td>
+      <td>Mount point for removable media</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/opt</code></td>
+      <td>Optional / third-party software</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/boot</code></td>
+      <td>Bootloader files, kernel images, initramfs</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-basic" id="core-navigation-commands">Core Navigation Commands</h2>
+
+<h3 id="pwd--print-working-directory"><code class="language-plaintext highlighter-rouge">pwd</code> — Print Working Directory</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">pwd</span>
+/home/eslam/projects
+</code></pre></div></div>
+
+<h3 id="ls--list-directory-contents"><code class="language-plaintext highlighter-rouge">ls</code> — List Directory Contents</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls
+</span>Documents  Downloads  projects
+
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-l</span>
+total 12
+drwxr-xr-x 2 eslam eslam 4096 Mar  1 09:00 Documents
+drwxr-xr-x 2 eslam eslam 4096 Mar  1 09:00 Downloads
+drwxr-xr-x 3 eslam eslam 4096 Mar  5 14:22 projects
+
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-la</span>          <span class="c"># include hidden files</span>
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-lh</span>          <span class="c"># human-readable sizes</span>
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-lt</span>          <span class="c"># sort by modification time (newest first)</span>
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-lS</span>          <span class="c"># sort by file size (largest first)</span>
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-R</span>           <span class="c"># recursive listing</span>
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">--color</span><span class="o">=</span>auto <span class="c"># coloured output</span>
+</code></pre></div></div>
+
+<p><strong>Permission field breakdown:</strong> <code class="language-plaintext highlighter-rouge">drwxr-xr-x</code></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>d  rwx  r-x  r-x
+│   │    │    └── other: read+execute
+│   │    └─────── group: read+execute
+│   └──────────── owner: read+write+execute
+└──────────────── type: d=dir, -=file, l=symlink, c=char dev, b=block dev
+</code></pre></div></div>
+
+<h3 id="cd--change-directory"><code class="language-plaintext highlighter-rouge">cd</code> — Change Directory</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd</span> /etc                  <span class="c"># absolute path</span>
+<span class="nb">cd </span>projects              <span class="c"># relative path</span>
+<span class="nb">cd</span> ..                    <span class="c"># one level up</span>
+<span class="nb">cd</span> ../..                 <span class="c"># two levels up</span>
+<span class="nb">cd</span> ~                     <span class="c"># go to home directory</span>
+<span class="nb">cd</span> -                     <span class="c"># go back to previous directory</span>
+<span class="nb">cd</span> /var/log/nginx        <span class="c"># multi-level absolute</span>
+</code></pre></div></div>
+
+<h3 id="mkdir--make-directory"><code class="language-plaintext highlighter-rouge">mkdir</code> — Make Directory</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir </span>mydir
+<span class="nb">mkdir</span> <span class="nt">-p</span> parent/child/grandchild   <span class="c"># create entire tree at once</span>
+<span class="nb">mkdir</span> <span class="nt">-m</span> 755 secure_dir            <span class="c"># set permissions on creation</span>
+</code></pre></div></div>
+
+<h3 id="cp--copy-files-and-directories"><code class="language-plaintext highlighter-rouge">cp</code> — Copy Files and Directories</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cp </span>file.txt backup.txt             <span class="c"># copy file</span>
+<span class="nb">cp</span> <span class="nt">-r</span> src_dir/ dst_dir/            <span class="c"># copy directory recursively</span>
+<span class="nb">cp</span> <span class="nt">-p</span> file.txt backup.txt          <span class="c"># preserve timestamps + permissions</span>
+<span class="nb">cp</span> <span class="nt">-u</span> <span class="nb">source</span>/ dest/                <span class="c"># copy only if newer</span>
+<span class="nb">cp</span> <span class="nt">-v</span> file.txt /tmp/               <span class="c"># verbose output</span>
+</code></pre></div></div>
+
+<p><strong>Example with output:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cp</span> <span class="nt">-rv</span> projects/ /tmp/projects_backup/
+<span class="s1">'projects/'</span> -&gt; <span class="s1">'/tmp/projects_backup/'</span>
+<span class="s1">'projects/main.c'</span> -&gt; <span class="s1">'/tmp/projects_backup/main.c'</span>
+<span class="s1">'projects/Makefile'</span> -&gt; <span class="s1">'/tmp/projects_backup/Makefile'</span>
+</code></pre></div></div>
+
+<h3 id="mv--move--rename"><code class="language-plaintext highlighter-rouge">mv</code> — Move / Rename</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mv </span>old_name.txt new_name.txt       <span class="c"># rename</span>
+<span class="nb">mv </span>file.txt /tmp/                  <span class="c"># move to directory</span>
+<span class="nb">mv</span> <span class="nt">-i</span> file.txt dest/               <span class="c"># prompt before overwrite</span>
+<span class="nb">mv</span> <span class="nt">-v</span> <span class="k">*</span>.log /var/log/archive/      <span class="c"># verbose move</span>
+</code></pre></div></div>
+
+<h3 id="rm--remove"><code class="language-plaintext highlighter-rouge">rm</code> — Remove</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">rm </span>file.txt
+<span class="nb">rm</span> <span class="nt">-r</span> directory/         <span class="c"># remove directory and contents</span>
+<span class="nb">rm</span> <span class="nt">-i</span> <span class="k">*</span>.tmp              <span class="c"># prompt before each deletion</span>
+<span class="nb">rm</span> <span class="nt">-f</span> locked_file        <span class="c"># force (ignore missing files)</span>
+<span class="c"># NEVER run: rm -rf /    # destroys the entire system</span>
+</code></pre></div></div>
+
+<h3 id="cat-less-head-tail--view-file-contents"><code class="language-plaintext highlighter-rouge">cat</code>, <code class="language-plaintext highlighter-rouge">less</code>, <code class="language-plaintext highlighter-rouge">head</code>, <code class="language-plaintext highlighter-rouge">tail</code> — View File Contents</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> /etc/os-release            <span class="c"># dump entire file</span>
+less /var/log/syslog           <span class="c"># page through (q to quit, / to search)</span>
+<span class="nb">head</span> <span class="nt">-n</span> 20 /var/log/syslog     <span class="c"># first 20 lines</span>
+<span class="nb">tail</span> <span class="nt">-n</span> 20 /var/log/syslog     <span class="c"># last 20 lines</span>
+<span class="nb">tail</span> <span class="nt">-f</span> /var/log/syslog        <span class="c"># follow live (Ctrl+C to stop)</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="absolute-vs-relative-paths">Absolute vs Relative Paths</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Concept</th>
+      <th>Example</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Absolute</strong></td>
+      <td><code class="language-plaintext highlighter-rouge">/home/eslam/docs/file.txt</code></td>
+      <td>Always starts with <code class="language-plaintext highlighter-rouge">/</code>, unambiguous</td>
+    </tr>
+    <tr>
+      <td><strong>Relative</strong></td>
+      <td><code class="language-plaintext highlighter-rouge">docs/file.txt</code></td>
+      <td>Relative to current directory</td>
+    </tr>
+    <tr>
+      <td><strong><code class="language-plaintext highlighter-rouge">.</code></strong></td>
+      <td><code class="language-plaintext highlighter-rouge">./run.sh</code></td>
+      <td>Current directory</td>
+    </tr>
+    <tr>
+      <td><strong><code class="language-plaintext highlighter-rouge">..</code></strong></td>
+      <td><code class="language-plaintext highlighter-rouge">../lib/</code></td>
+      <td>Parent directory</td>
+    </tr>
+    <tr>
+      <td><strong><code class="language-plaintext highlighter-rouge">~</code></strong></td>
+      <td><code class="language-plaintext highlighter-rouge">~/Downloads</code></td>
+      <td>Your home directory</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-mid" id="intermediate-finding-files">Intermediate: Finding Files</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="find--search-the-filesystem"><code class="language-plaintext highlighter-rouge">find</code> — Search the Filesystem</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Find by name</span>
+find /home <span class="nt">-name</span> <span class="s2">"*.log"</span>
+
+<span class="c"># Find by type (f=file, d=dir, l=symlink)</span>
+find /var <span class="nt">-type</span> f <span class="nt">-name</span> <span class="s2">"*.pid"</span>
+
+<span class="c"># Find by size (&gt; 100 MB)</span>
+find / <span class="nt">-type</span> f <span class="nt">-size</span> +100M 2&gt;/dev/null
+
+<span class="c"># Find modified in the last 7 days</span>
+find /etc <span class="nt">-mtime</span> <span class="nt">-7</span>
+
+<span class="c"># Find and delete (careful!)</span>
+find /tmp <span class="nt">-name</span> <span class="s2">"*.tmp"</span> <span class="nt">-delete</span>
+
+<span class="c"># Find and execute a command on each result</span>
+find <span class="nb">.</span> <span class="nt">-name</span> <span class="s2">"*.c"</span> <span class="nt">-exec</span> <span class="nb">wc</span> <span class="nt">-l</span> <span class="o">{}</span> <span class="se">\;</span>
+
+<span class="c"># Find by permissions</span>
+find /usr/bin <span class="nt">-perm</span> /4000      <span class="c"># files with SUID bit</span>
+</code></pre></div></div>
+
+<p><strong>Output example:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>find /var/log <span class="nt">-name</span> <span class="s2">"*.log"</span> <span class="nt">-size</span> +1M
+/var/log/syslog
+/var/log/kern.log
+/var/log/auth.log
+</code></pre></div></div>
+
+<h3 id="locate--fast-filename-search"><code class="language-plaintext highlighter-rouge">locate</code> — Fast Filename Search</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>updatedb          <span class="c"># update the filename database</span>
+locate nginx.conf      <span class="c"># instant lookup from database</span>
+locate <span class="nt">-i</span> readme       <span class="c"># case-insensitive</span>
+</code></pre></div></div>
+
+<h3 id="which-and-type"><code class="language-plaintext highlighter-rouge">which</code> and <code class="language-plaintext highlighter-rouge">type</code></h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>which python3
+/usr/bin/python3
+
+<span class="nv">$ </span><span class="nb">type ls
+ls </span>is aliased to <span class="sb">`</span><span class="nb">ls</span> <span class="nt">--color</span><span class="o">=</span>auto<span class="s1">'
+
+$ type cd
+cd is a shell builtin
+</span></code></pre></div></div>
+
+<hr />
+
+<h2 id="hard-links-vs-symbolic-links">Hard Links vs Symbolic Links</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Hard link — second name pointing to same inode</span>
+<span class="nb">ln </span>original.txt hardlink.txt
+
+<span class="c"># Symbolic link — a pointer to a path</span>
+<span class="nb">ln</span> <span class="nt">-s</span> /usr/bin/python3 /usr/local/bin/python
+
+<span class="c"># View links</span>
+<span class="nb">ls</span> <span class="nt">-li</span>          <span class="c"># -i shows inode number</span>
+<span class="nb">readlink</span> <span class="nt">-f</span> symlink.txt    <span class="c"># resolve full path</span>
+</code></pre></div></div>
+
+<p><strong>Key differences:</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th>Hard Link</th>
+      <th>Symbolic Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Points to</td>
+      <td>Inode</td>
+      <td>Path string</td>
+    </tr>
+    <tr>
+      <td>Crosses filesystems</td>
+      <td>✗ No</td>
+      <td>✓ Yes</td>
+    </tr>
+    <tr>
+      <td>Works on directories</td>
+      <td>✗ No</td>
+      <td>✓ Yes</td>
+    </tr>
+    <tr>
+      <td>Survives original deletion</td>
+      <td>✓ Yes</td>
+      <td>✗ No (dangling)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">ls -l</code> type char</td>
+      <td><code class="language-plaintext highlighter-rouge">-</code></td>
+      <td><code class="language-plaintext highlighter-rouge">l</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 id="disk-usage-and-space">Disk Usage and Space</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Disk usage of directories</span>
+<span class="nb">du</span> <span class="nt">-sh</span> /var/log          <span class="c"># summary, human-readable</span>
+<span class="nb">du</span> <span class="nt">-sh</span> /<span class="k">*</span>                <span class="c"># top-level usage</span>
+<span class="nb">du</span> <span class="nt">-sh</span> <span class="k">*</span> | <span class="nb">sort</span> <span class="nt">-h</span>       <span class="c"># sorted by size</span>
+
+<span class="c"># Disk free space</span>
+<span class="nb">df</span> <span class="nt">-h</span>                    <span class="c"># all filesystems, human-readable</span>
+<span class="nb">df</span> <span class="nt">-h</span> /home              <span class="c"># specific mount point</span>
+</code></pre></div></div>
+
+<p><strong>Output example:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">df</span> <span class="nt">-h</span>
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1        50G   18G   30G  38% /
+tmpfs           2.0G  1.2M  2.0G   1% /dev/shm
+/dev/sdb1       200G   45G  145G  24% /data
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="wildcards-and-globbing">Wildcards and Globbing</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Pattern</th>
+      <th>Matches</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">*</code></td>
+      <td>Any string (including empty)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">?</code></td>
+      <td>Any single character</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[abc]</code></td>
+      <td>One of a, b, c</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[a-z]</code></td>
+      <td>Any lowercase letter</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[!abc]</code></td>
+      <td>Any character NOT a, b, or c</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">{a,b,c}</code></td>
+      <td>Brace expansion: a, b, or c</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">ls</span> <span class="k">*</span>.c                  <span class="c"># all .c files</span>
+<span class="nb">ls </span>file?.txt            <span class="c"># file1.txt, file2.txt, …</span>
+<span class="nb">rm </span>log[0-9].txt         <span class="c"># log0.txt through log9.txt</span>
+<span class="nb">cp</span> <span class="o">{</span>file1,file2<span class="o">}</span>.c /tmp <span class="c"># copy both files</span>
+<span class="nb">mkdir dir</span><span class="o">{</span>1..5<span class="o">}</span>         <span class="c"># create dir1 dir2 dir3 dir4 dir5</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-inodes-and-the-vfs">Advanced: Inodes and the VFS</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="what-is-an-inode">What is an Inode?</h3>
+
+<p>Every file on a Linux filesystem has an <strong>inode</strong> — a data structure that stores:</p>
+<ul>
+  <li>File type and permissions</li>
+  <li>Owner (UID) and group (GID)</li>
+  <li>File size</li>
+  <li>Timestamps: atime, mtime, ctime</li>
+  <li>Block pointers (where the data is on disk)</li>
+  <li>Link count</li>
+</ul>
+
+<p>The <strong>directory</strong> only stores <code class="language-plaintext highlighter-rouge">(name → inode_number)</code> mappings. The inode number IS the file; the name is just a label.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-li</span> /etc/passwd
+131073 <span class="nt">-rw-r--r--</span> 1 root root 2847 Jan 15 08:00 /etc/passwd
+<span class="c"># ^----^ inode number</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Check inode usage (embedded systems run out of inodes before disk space!)</span>
+<span class="nb">df</span> <span class="nt">-i</span>
+</code></pre></div></div>
+
+<h3 id="the-proc-virtual-filesystem">The <code class="language-plaintext highlighter-rouge">/proc</code> Virtual Filesystem</h3>
+
+<p><code class="language-plaintext highlighter-rouge">/proc</code> is a window into the running kernel — nothing is stored on disk.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> /proc/cpuinfo          <span class="c"># CPU details</span>
+<span class="nb">cat</span> /proc/meminfo          <span class="c"># memory stats</span>
+<span class="nb">cat</span> /proc/version          <span class="c"># kernel version string</span>
+<span class="nb">cat</span> /proc/cmdline          <span class="c"># kernel boot parameters</span>
+<span class="nb">cat</span> /proc/interrupts        <span class="c"># IRQ statistics</span>
+<span class="nb">cat</span> /proc/net/dev           <span class="c"># network interface stats</span>
+
+<span class="c"># Per-process info (replace 1234 with PID)</span>
+<span class="nb">cat</span> /proc/1234/status       <span class="c"># process status</span>
+<span class="nb">cat</span> /proc/1234/cmdline      <span class="c"># command that launched it</span>
+<span class="nb">cat</span> /proc/1234/maps         <span class="c"># memory maps</span>
+<span class="nb">cat</span> /proc/1234/fd/          <span class="c"># open file descriptors</span>
+<span class="nb">ls</span> <span class="nt">-l</span> /proc/1234/exe        <span class="c"># symlink to executable</span>
+</code></pre></div></div>
+
+<h3 id="the-sys-virtual-filesystem-sysfs">The <code class="language-plaintext highlighter-rouge">/sys</code> Virtual Filesystem (sysfs)</h3>
+
+<p><code class="language-plaintext highlighter-rouge">/sys</code> exposes kernel objects, device attributes, and driver information.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">ls</span> /sys/class/net/          <span class="c"># network interfaces</span>
+<span class="nb">cat</span> /sys/class/net/eth0/operstate   <span class="c"># link state: up/down</span>
+<span class="nb">cat</span> /sys/block/sda/size     <span class="c"># disk size in 512-byte sectors</span>
+<span class="nb">ls</span> /sys/bus/i2c/devices/    <span class="c"># I2C devices (useful for embedded!)</span>
+<span class="nb">echo </span>1 <span class="o">&gt;</span> /sys/class/leds/led0/brightness   <span class="c"># turn on LED</span>
+</code></pre></div></div>
+
+<h3 id="mounting-and-etcfstab">Mounting and <code class="language-plaintext highlighter-rouge">/etc/fstab</code></h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Mount a filesystem manually</span>
+mount /dev/sdb1 /mnt/usb
+mount <span class="nt">-t</span> tmpfs <span class="nt">-o</span> <span class="nv">size</span><span class="o">=</span>256m tmpfs /tmp/ramdisk
+mount <span class="nt">-o</span> loop image.iso /mnt/iso
+
+<span class="c"># Unmount</span>
+umount /mnt/usb
+umount <span class="nt">-l</span> /mnt/usb    <span class="c"># lazy unmount (wait for processes to release)</span>
+
+<span class="c"># List all current mounts</span>
+mount | column <span class="nt">-t</span>
+<span class="nb">cat</span> /proc/mounts
+findmnt
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">/etc/fstab</code> format:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># device          mountpoint  type   options          dump pass
+/dev/sda1         /           ext4   errors=remount-ro  0    1
+/dev/sdb1         /data       ext4   defaults           0    2
+UUID=abc123       /boot/efi   vfat   umask=0077         0    1
+tmpfs             /tmp        tmpfs  size=512m,mode=1777 0   0
+</code></pre></div></div>
+
+<h3 id="lsof--list-open-files"><code class="language-plaintext highlighter-rouge">lsof</code> — List Open Files</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lsof /var/log/syslog       <span class="c"># who has this file open?</span>
+lsof <span class="nt">-p</span> 1234               <span class="c"># all files opened by PID 1234</span>
+lsof <span class="nt">-u</span> eslam              <span class="c"># all files opened by user eslam</span>
+lsof <span class="nt">-i</span> :80                <span class="c"># who is listening on port 80?</span>
+lsof +D /home/eslam        <span class="c"># all open files in a directory tree</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">/bin</code> and <code class="language-plaintext highlighter-rouge">/usr/bin</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">/bin</code> contains essential binaries needed during early boot (before <code class="language-plaintext highlighter-rouge">/usr</code> is mounted), such as <code class="language-plaintext highlighter-rouge">sh</code>, <code class="language-plaintext highlighter-rouge">ls</code>, <code class="language-plaintext highlighter-rouge">cp</code>, and <code class="language-plaintext highlighter-rouge">mount</code>. <code class="language-plaintext highlighter-rouge">/usr/bin</code> contains non-essential user programs. On modern systems (Ubuntu 20.04+, Debian Bullseye+), <code class="language-plaintext highlighter-rouge">/bin</code> is a symlink to <code class="language-plaintext highlighter-rouge">/usr/bin</code> under the “UsrMerge” initiative.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: What does the <code class="language-plaintext highlighter-rouge">.</code> and <code class="language-plaintext highlighter-rouge">..</code> entry in a directory represent?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">.</code> is a hard link to the directory itself; <code class="language-plaintext highlighter-rouge">..</code> is a hard link to its parent. That is why <code class="language-plaintext highlighter-rouge">ls -la</code> always shows a link count ≥ 2 for directories (one for the entry in the parent, one for <code class="language-plaintext highlighter-rouge">.</code> inside itself), plus one extra for each subdirectory (because each subdirectory has a <code class="language-plaintext highlighter-rouge">..</code> pointing back).</p>
+</blockquote>
+
+<p><strong>Q3 — Basic: How do you find the 10 largest files under <code class="language-plaintext highlighter-rouge">/var</code>?</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>find /var <span class="nt">-type</span> f <span class="nt">-printf</span> <span class="s1">'%s %p\n'</span> 2&gt;/dev/null | <span class="nb">sort</span> <span class="nt">-rn</span> | <span class="nb">head</span> <span class="nt">-10</span>
+<span class="c"># or</span>
+<span class="nb">du</span> <span class="nt">-ah</span> /var | <span class="nb">sort</span> <span class="nt">-rh</span> | <span class="nb">head</span> <span class="nt">-10</span>
+</code></pre></div></div>
+
+<p><strong>Q4 — Intermediate: What is an inode and what information does it NOT store?</strong></p>
+
+<blockquote>
+  <p>An inode stores metadata: permissions, owner, timestamps, size, and pointers to data blocks. It does <strong>not</strong> store the filename — names live in directory entries. It also does not store the full path.</p>
+</blockquote>
+
+<p><strong>Q5 — Intermediate: How can a filesystem run out of space even when <code class="language-plaintext highlighter-rouge">df -h</code> shows free space?</strong></p>
+
+<blockquote>
+  <p>It can run out of <strong>inodes</strong>. Each file consumes one inode, and the number of inodes is fixed at filesystem creation time. Check with <code class="language-plaintext highlighter-rouge">df -i</code>. This is common on embedded systems with millions of tiny files (e.g., <code class="language-plaintext highlighter-rouge">/tmp</code> or mail spools).</p>
+</blockquote>
+
+<p><strong>Q6 — Intermediate: What is the difference between <code class="language-plaintext highlighter-rouge">mtime</code>, <code class="language-plaintext highlighter-rouge">ctime</code>, and <code class="language-plaintext highlighter-rouge">atime</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">mtime</code> (modification time) — when the file content was last changed.
+<code class="language-plaintext highlighter-rouge">ctime</code> (change time) — when the inode metadata was last changed (permissions, owner, link count). <code class="language-plaintext highlighter-rouge">chmod</code> updates ctime but not mtime.
+<code class="language-plaintext highlighter-rouge">atime</code> (access time) — when the file was last read. Often disabled with <code class="language-plaintext highlighter-rouge">noatime</code> mount option for performance.</p>
+</blockquote>
+
+<p><strong>Q7 — Advanced: Explain what happens when you delete a file that is still open by a process.</strong></p>
+
+<blockquote>
+  <p>In Linux, <code class="language-plaintext highlighter-rouge">unlink()</code> removes the directory entry (name → inode mapping) and decrements the inode’s link count. The inode and its data blocks are only freed when <strong>both</strong> the link count reaches 0 <strong>and</strong> no process has the file open. Until then, the process can still read/write through its open file descriptor. This is why log rotation uses <code class="language-plaintext highlighter-rouge">copytruncate</code> and why deleted files can still consume disk space (<code class="language-plaintext highlighter-rouge">lsof | grep deleted</code>).</p>
+</blockquote>
+
+<p><strong>Q8 — Advanced: What is a bind mount and when would you use it?</strong></p>
+
+<blockquote>
+  <p>A bind mount makes a directory (or file) visible at a second location in the filesystem tree without copying data.</p>
+  <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mount <span class="nt">--bind</span> /home/eslam/code /mnt/code
+</code></pre></div>  </div>
+  <p>Use cases: exposing a host directory inside a chroot/container, overlaying <code class="language-plaintext highlighter-rouge">/tmp</code> with a tmpfs, isolating build environments.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Linux FHS Specification 3.0</td>
+      <td><a href="https://refspecs.linuxfoundation.org/FHS_3.0/fhs/index.html">refspecs.linuxfoundation.org</a></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man hier</code></td>
+      <td><code class="language-plaintext highlighter-rouge">man 7 hier</code> — describes the filesystem hierarchy</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man find</code></td>
+      <td><code class="language-plaintext highlighter-rouge">man 1 find</code> — comprehensive find manual</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man proc</code></td>
+      <td><code class="language-plaintext highlighter-rouge">man 5 proc</code> — /proc filesystem reference</td>
+    </tr>
+    <tr>
+      <td>The Linux Command Line (Shotts)</td>
+      <td>Free book at <a href="https://linuxcommand.org/tlcl.php">linuxcommand.org</a></td>
+    </tr>
+    <tr>
+      <td>Linux Insides — VFS chapter</td>
+      <td><a href="https://github.com/0xAX/linux-insides">github.com/0xAX/linux-insides</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-terminal"></i>
+        <span>Linux User Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-user/filesystem-navigation/" class="gtn-link gts-active">
+          <i class="fas fa-folder-open"></i> Filesystem Navigation
+        </a>
+        <a href="/linux-user/users-permissions/" class="gtn-link ">
+          <i class="fas fa-user-lock"></i> Users &amp; Permissions
+        </a>
+        <a href="/linux-user/process-management/" class="gtn-link ">
+          <i class="fas fa-microchip"></i> Process Management
+        </a>
+        <a href="/linux-user/package-management/" class="gtn-link ">
+          <i class="fas fa-box"></i> Package Management
+        </a>
+        <a href="/linux-user/networking/" class="gtn-link ">
+          <i class="fas fa-network-wired"></i> Networking Basics
+        </a>
+        <a href="/linux-user/ssh/" class="gtn-link ">
+          <i class="fas fa-lock"></i> SSH &amp; Remote Access
+        </a>
+        <a href="/linux-user/cron/" class="gtn-link ">
+          <i class="fas fa-clock"></i> Cron &amp; Scheduling
+        </a>
+        <a href="/linux-user/bash-scripting/" class="gtn-link ">
+          <i class="fas fa-terminal"></i> Bash Scripting
+        </a>
+        <a href="/linux-user/git/" class="gtn-link ">
+          <i class="fab fa-git-alt"></i> Git Basics
+        </a>
+      </nav>
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      <div></div>
+      
+      <a href="/linux-user/users-permissions/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Users & Permissions</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pthreads · Eslam Mohamed</title>
+  <meta name="description" content="Master POSIX threads — pthread_create/join/detach, thread attributes, stack size, CPU affinity, cancellation, thread-local storage, and thread safety patterns." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/posix/">POSIX APIs & Concurrency</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Pthreads</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 04</span>
+      </div>
+      <h1 class="guide-title">Pthreads</h1>
+      <p class="guide-subtitle">Master POSIX threads — pthread_create/join/detach, thread attributes, stack size, CPU affinity, cancellation, thread-local storage, and thread safety patterns.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="creating-and-joining-threads">Creating and Joining Threads</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>Threads share the same process address space (code, heap, global data) but each has its own stack and registers.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;pthread.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span>
+<span class="c1">// Link with -lpthread</span>
+
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="kt">int</span>   <span class="n">id</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">value</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">SensorArgs</span><span class="p">;</span>
+
+<span class="k">static</span> <span class="kt">void</span><span class="o">*</span> <span class="nf">sensor_thread</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">SensorArgs</span><span class="o">*</span> <span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="n">SensorArgs</span><span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">;</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Thread %d: reading sensor, value=%.2f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">a</span><span class="o">-&gt;</span><span class="n">id</span><span class="p">,</span> <span class="n">a</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">);</span>
+
+    <span class="c1">// Return a value through heap allocation (caller must free)</span>
+    <span class="kt">float</span><span class="o">*</span> <span class="n">result</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">));</span>
+    <span class="o">*</span><span class="n">result</span> <span class="o">=</span> <span class="n">a</span><span class="o">-&gt;</span><span class="n">value</span> <span class="o">*</span> <span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">;</span>   <span class="c1">// returned as void* via pthread_join</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">pthread_t</span> <span class="n">tid</span><span class="p">;</span>
+    <span class="n">SensorArgs</span> <span class="n">args</span> <span class="o">=</span> <span class="p">{</span> <span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="p">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">23</span><span class="p">.</span><span class="mi">5</span><span class="n">f</span> <span class="p">};</span>
+
+    <span class="c1">// Create thread</span>
+    <span class="kt">int</span> <span class="n">err</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">sensor_thread</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">args</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">"pthread_create: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">strerror</span><span class="p">(</span><span class="n">err</span><span class="p">));</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Wait for thread to finish and get return value</span>
+    <span class="kt">void</span><span class="o">*</span> <span class="n">retval</span><span class="p">;</span>
+    <span class="n">pthread_join</span><span class="p">(</span><span class="n">tid</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">retval</span><span class="p">);</span>
+
+    <span class="kt">float</span><span class="o">*</span> <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="kt">float</span><span class="o">*</span><span class="p">)</span><span class="n">retval</span><span class="p">;</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Thread returned: %.2f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="o">*</span><span class="n">result</span><span class="p">);</span>
+    <span class="n">free</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="thread-state-transitions">Thread State Transitions</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pthread_create() → RUNNING → exits or pthread_cancel() → ZOMBIE
+                                                             ↓
+                                                     pthread_join() → resources freed
+</code></pre></div></div>
+
+<p>A <strong>joinable</strong> thread remains as a zombie after exit until <code class="language-plaintext highlighter-rouge">pthread_join()</code> is called. A <strong>detached</strong> thread’s resources are freed automatically on exit.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Detach immediately (fire-and-forget)</span>
+<span class="n">pthread_detach</span><span class="p">(</span><span class="n">tid</span><span class="p">);</span>
+
+<span class="c1">// Or create as detached from the start</span>
+<span class="n">pthread_attr_t</span> <span class="n">attr</span><span class="p">;</span>
+<span class="n">pthread_attr_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
+<span class="n">pthread_attr_setdetachstate</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">,</span> <span class="n">PTHREAD_CREATE_DETACHED</span><span class="p">);</span>
+<span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">attr</span><span class="p">,</span> <span class="n">thread_func</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+<span class="n">pthread_attr_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="thread-attributes">Thread Attributes</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pthread_attr_t</span> <span class="n">attr</span><span class="p">;</span>
+<span class="n">pthread_attr_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
+
+<span class="c1">// Stack size (default is usually 8MB per thread)</span>
+<span class="n">pthread_attr_setstacksize</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">,</span> <span class="mi">64</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">);</span>  <span class="c1">// 64KB for small embedded threads</span>
+
+<span class="c1">// Scheduling policy (needs root or CAP_SYS_NICE)</span>
+<span class="k">struct</span> <span class="n">sched_param</span> <span class="n">sp</span> <span class="o">=</span> <span class="p">{</span> <span class="p">.</span><span class="n">sched_priority</span> <span class="o">=</span> <span class="mi">50</span> <span class="p">};</span>
+<span class="n">pthread_attr_setschedpolicy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">,</span> <span class="n">SCHED_FIFO</span><span class="p">);</span>    <span class="c1">// real-time FIFO</span>
+<span class="n">pthread_attr_setschedparam</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sp</span><span class="p">);</span>
+<span class="n">pthread_attr_setinheritsched</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">,</span> <span class="n">PTHREAD_EXPLICIT_SCHED</span><span class="p">);</span>
+
+<span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">attr</span><span class="p">,</span> <span class="n">thread_func</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+<span class="n">pthread_attr_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>  <span class="c1">// always destroy after use</span>
+</code></pre></div></div>
+
+<h3 id="scheduling-policies">Scheduling Policies</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Policy</th>
+      <th>Description</th>
+      <th>Priority Range</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SCHED_OTHER</code></td>
+      <td>Default CFS (fair share)</td>
+      <td>0 (nice -20..+19)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SCHED_FIFO</code></td>
+      <td>Real-time FIFO</td>
+      <td>1–99</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SCHED_RR</code></td>
+      <td>Real-time round-robin</td>
+      <td>1–99</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SCHED_DEADLINE</code></td>
+      <td>EDF with deadlines</td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-mid" id="cpu-affinity">CPU Affinity</h2>
+
+<p>Bind a thread to specific CPU cores to reduce cache thrashing and improve determinism.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#define _GNU_SOURCE
+#include</span> <span class="cpf">&lt;sched.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;pthread.h&gt;</span><span class="cp">
+</span>
+<span class="c1">// Bind the current thread to CPU 0</span>
+<span class="n">cpu_set_t</span> <span class="n">cpuset</span><span class="p">;</span>
+<span class="n">CPU_ZERO</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpuset</span><span class="p">);</span>
+<span class="n">CPU_SET</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">cpuset</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="n">err</span> <span class="o">=</span> <span class="n">pthread_setaffinity_np</span><span class="p">(</span><span class="n">pthread_self</span><span class="p">(),</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">cpuset</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">cpuset</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">"setaffinity: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">strerror</span><span class="p">(</span><span class="n">err</span><span class="p">));</span>
+
+<span class="c1">// Verify</span>
+<span class="n">CPU_ZERO</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpuset</span><span class="p">);</span>
+<span class="n">pthread_getaffinity_np</span><span class="p">(</span><span class="n">pthread_self</span><span class="p">(),</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">cpuset</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">cpuset</span><span class="p">);</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">CPU_SETSIZE</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">CPU_ISSET</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">cpuset</span><span class="p">))</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"Bound to CPU %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+
+<span class="c1">// Using sched_setaffinity for the process</span>
+<span class="n">pid_t</span> <span class="n">tid</span> <span class="o">=</span> <span class="n">gettid</span><span class="p">();</span>
+<span class="n">sched_setaffinity</span><span class="p">(</span><span class="n">tid</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">cpuset</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">cpuset</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="thread-local-storage-tls">Thread-Local Storage (TLS)</h2>
+
+<p>Each thread gets its own copy of thread-local variables — no sharing, no locking needed.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// C11 thread-local storage</span>
+<span class="k">_Thread_local</span> <span class="kt">int</span> <span class="n">errno_copy</span><span class="p">;</span>
+<span class="k">_Thread_local</span> <span class="kt">char</span> <span class="n">last_error</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
+
+<span class="c1">// GCC extension (older code)</span>
+<span class="kr">__thread</span> <span class="kt">int</span> <span class="n">tls_var</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="c1">// POSIX keys — dynamic TLS (useful in libraries)</span>
+<span class="k">static</span> <span class="n">pthread_key_t</span> <span class="n">tls_key</span><span class="p">;</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="nf">tls_destructor</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">free</span><span class="p">(</span><span class="n">val</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">init_tls</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">pthread_key_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tls_key</span><span class="p">,</span> <span class="n">tls_destructor</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="o">*</span> <span class="nf">get_thread_buffer</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">void</span><span class="o">*</span> <span class="n">buf</span> <span class="o">=</span> <span class="n">pthread_getspecific</span><span class="p">(</span><span class="n">tls_key</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">buf</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">buf</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="mi">1024</span><span class="p">);</span>
+        <span class="n">pthread_setspecific</span><span class="p">(</span><span class="n">tls_key</span><span class="p">,</span> <span class="n">buf</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">buf</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="thread-cancellation">Thread Cancellation</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Request cancellation of a thread</span>
+<span class="n">pthread_cancel</span><span class="p">(</span><span class="n">tid</span><span class="p">);</span>   <span class="c1">// asynchronous request</span>
+
+<span class="c1">// Thread should have cancellation points (blocking syscalls)</span>
+<span class="c1">// OR set cancellation type to PTHREAD_CANCEL_ASYNCHRONOUS (dangerous)</span>
+
+<span class="c1">// Control cancellation</span>
+<span class="n">pthread_setcancelstate</span><span class="p">(</span><span class="n">PTHREAD_CANCEL_DISABLE</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>  <span class="c1">// disable in critical section</span>
+<span class="c1">// ... critical work ...</span>
+<span class="n">pthread_setcancelstate</span><span class="p">(</span><span class="n">PTHREAD_CANCEL_ENABLE</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>   <span class="c1">// re-enable</span>
+
+<span class="c1">// Cancellation cleanup handlers</span>
+<span class="n">pthread_cleanup_push</span><span class="p">(</span><span class="n">cleanup_func</span><span class="p">,</span> <span class="n">arg</span><span class="p">);</span>
+<span class="c1">// ... code that might be cancelled ...</span>
+<span class="n">pthread_cleanup_pop</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>   <span class="c1">// 1 = execute handler; 0 = pop without executing</span>
+</code></pre></div></div>
+
+<p><strong>Cancellation points</strong> include: <code class="language-plaintext highlighter-rouge">read()</code>, <code class="language-plaintext highlighter-rouge">write()</code>, <code class="language-plaintext highlighter-rouge">sleep()</code>, <code class="language-plaintext highlighter-rouge">pthread_cond_wait()</code>, <code class="language-plaintext highlighter-rouge">sem_wait()</code>. If a thread is cancelled while blocked in one of these, the cleanup handlers run.</p>
+
+<hr />
+
+<h2 id="thread-pool-pattern">Thread Pool Pattern</h2>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;pthread.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;semaphore.h&gt;</span><span class="cp">
+</span>
+<span class="cp">#define POOL_SIZE 4
+#define QUEUE_SIZE 64
+</span>
+<span class="k">typedef</span> <span class="nf">void</span> <span class="p">(</span><span class="o">*</span><span class="n">task_fn</span><span class="p">)(</span><span class="kt">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">);</span>
+
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span> <span class="n">task_fn</span> <span class="n">fn</span><span class="p">;</span> <span class="kt">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">;</span> <span class="p">}</span> <span class="n">Task</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="n">pthread_t</span>   <span class="n">threads</span><span class="p">[</span><span class="n">POOL_SIZE</span><span class="p">];</span>
+    <span class="n">Task</span>        <span class="n">queue</span><span class="p">[</span><span class="n">QUEUE_SIZE</span><span class="p">];</span>
+    <span class="kt">int</span>         <span class="n">head</span><span class="p">,</span> <span class="n">tail</span><span class="p">,</span> <span class="n">count</span><span class="p">;</span>
+    <span class="n">pthread_mutex_t</span> <span class="n">lock</span><span class="p">;</span>
+    <span class="n">pthread_cond_t</span>  <span class="n">not_empty</span><span class="p">;</span>
+    <span class="kt">int</span>         <span class="n">running</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">ThreadPool</span><span class="p">;</span>
+
+<span class="k">static</span> <span class="kt">void</span><span class="o">*</span> <span class="nf">worker</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">ThreadPool</span><span class="o">*</span> <span class="n">pool</span> <span class="o">=</span> <span class="n">p</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">);</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">count</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">pool</span><span class="o">-&gt;</span><span class="n">running</span><span class="p">)</span>
+            <span class="n">pthread_cond_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">not_empty</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">running</span> <span class="o">&amp;&amp;</span> <span class="n">pool</span><span class="o">-&gt;</span><span class="n">count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">);</span>
+            <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">Task</span> <span class="n">t</span> <span class="o">=</span> <span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">[</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">head</span><span class="o">++</span><span class="p">];</span>
+        <span class="n">pool</span><span class="o">-&gt;</span><span class="n">head</span> <span class="o">%=</span> <span class="n">QUEUE_SIZE</span><span class="p">;</span>
+        <span class="n">pool</span><span class="o">-&gt;</span><span class="n">count</span><span class="o">--</span><span class="p">;</span>
+        <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">);</span>
+        <span class="n">t</span><span class="p">.</span><span class="n">fn</span><span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">arg</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">pool_submit</span><span class="p">(</span><span class="n">ThreadPool</span><span class="o">*</span> <span class="n">pool</span><span class="p">,</span> <span class="n">task_fn</span> <span class="n">fn</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">);</span>
+    <span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">[</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">tail</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">Task</span><span class="p">){</span> <span class="n">fn</span><span class="p">,</span> <span class="n">arg</span> <span class="p">};</span>
+    <span class="n">pool</span><span class="o">-&gt;</span><span class="n">tail</span> <span class="o">%=</span> <span class="n">QUEUE_SIZE</span><span class="p">;</span>
+    <span class="n">pool</span><span class="o">-&gt;</span><span class="n">count</span><span class="o">++</span><span class="p">;</span>
+    <span class="n">pthread_cond_signal</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">not_empty</span><span class="p">);</span>
+    <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What resources do threads share and what do they have independently?</strong></p>
+
+<blockquote>
+  <p>Threads within a process <strong>share</strong>: virtual address space (code, heap, global variables, mmap regions), file descriptor table, signal handlers, and working directory. Each thread has its <strong>own</strong>: stack, stack pointer, program counter, CPU registers, signal mask, thread ID (<code class="language-plaintext highlighter-rouge">pthread_t</code>), errno, and thread-local storage. Because threads share heap and globals, concurrent access to shared data requires synchronisation.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">pthread_join()</code> and <code class="language-plaintext highlighter-rouge">pthread_detach()</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">pthread_join()</code> blocks the calling thread until the target thread exits, then frees its resources and retrieves its return value. The target must be joinable (the default). <code class="language-plaintext highlighter-rouge">pthread_detach()</code> marks a thread as detached — its resources are freed automatically when it exits, but you cannot join it or get its return value. Use join when you need to wait for a result or ensure cleanup before proceeding. Use detach for fire-and-forget threads (background logging, periodic tasks).</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: What is thread-local storage and when do you need it?</strong></p>
+
+<blockquote>
+  <p>Thread-local storage (TLS) gives each thread its own independent copy of a variable. Without TLS, a global like <code class="language-plaintext highlighter-rouge">errno</code> would be a race condition — one thread could overwrite another’s error code. TLS is needed for per-thread state that shouldn’t be shared: error codes, random number generator state, per-thread buffers, or connection handles in a thread-pool server. Declare with <code class="language-plaintext highlighter-rouge">_Thread_local</code> (C11/C++11) or use POSIX <code class="language-plaintext highlighter-rouge">pthread_key_create</code>.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: How do you set a thread’s real-time scheduling priority and why might you need it?</strong></p>
+
+<blockquote>
+  <p>Create a <code class="language-plaintext highlighter-rouge">pthread_attr_t</code>, set <code class="language-plaintext highlighter-rouge">PTHREAD_EXPLICIT_SCHED</code>, policy <code class="language-plaintext highlighter-rouge">SCHED_FIFO</code> or <code class="language-plaintext highlighter-rouge">SCHED_RR</code>, and priority (1–99) via <code class="language-plaintext highlighter-rouge">pthread_attr_setschedparam</code>. This requires <code class="language-plaintext highlighter-rouge">CAP_SYS_NICE</code> or running as root. Real-time scheduling is needed when a thread must respond to hardware events within a bounded latency — e.g. a thread handling CAN bus messages or SPI sensor interrupts in an embedded system. <code class="language-plaintext highlighter-rouge">SCHED_FIFO</code> preempts all <code class="language-plaintext highlighter-rouge">SCHED_OTHER</code> threads and won’t be preempted by a lower-priority real-time thread unless it blocks.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 pthreads</code></td>
+      <td>POSIX thread overview</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 3 pthread_create</code></td>
+      <td>Thread creation</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 3 pthread_attr_init</code></td>
+      <td>Thread attributes</td>
+    </tr>
+    <tr>
+      <td>TLPI Chapters 29–33</td>
+      <td>Comprehensive pthreads coverage</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 2 sched_setaffinity</code></td>
+      <td>CPU affinity</td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-network-wired"></i>
+        <span>POSIX &amp; Concurrency</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/posix/file-io/" class="gtn-link ">
+          <i class="fas fa-file-code"></i> POSIX File I/O
+        </a>
+        <a href="/linux-developer/posix/processes-fork/" class="gtn-link ">
+          <i class="fas fa-sitemap"></i> Processes &amp; fork()
+        </a>
+        <a href="/linux-developer/posix/signals/" class="gtn-link ">
+          <i class="fas fa-bolt"></i> Signals
+        </a>
+        <a href="/linux-developer/posix/unix-sockets/" class="gtn-link ">
+          <i class="fas fa-plug"></i> UNIX Sockets
+        </a>
+        <a href="/linux-developer/posix/pthreads/" class="gtn-link gts-active">
+          <i class="fas fa-microchip"></i> Pthreads
+        </a>
+        <a href="/linux-developer/posix/mutexes-semaphores/" class="gtn-link ">
+          <i class="fas fa-lock"></i> Mutexes &amp; Semaphores
+        </a>
+        <a href="/linux-developer/posix/pipes-ipc/" class="gtn-link ">
+          <i class="fas fa-arrows-left-right"></i> Pipes &amp; Shared Memory
+        </a>
+      </nav>
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/posix/unix-sockets/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">UNIX Sockets</span>
+      </a>
+      
+      
+      <a href="/linux-developer/posix/mutexes-semaphores/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Mutexes & Semaphores</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

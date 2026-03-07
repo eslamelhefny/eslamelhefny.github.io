@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Embedded Linux Diploma — Lab 03: Writing Your First Kernel Module · Eslam Mohamed</title>
+  <meta name="description" content="Research & Teaching Assistant · Embedded Linux Engineer · MSc CS Researcher" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link active">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <article class="post-page">
+  <div class="post-hero">
+    <div class="post-hero-content">
+      <div class="post-meta-top">
+        <a href="/blog" class="back-link"><i class="fas fa-arrow-left"></i> All Posts</a>
+        
+        <span class="post-category">linux</span>
+        
+      </div>
+      <h1 class="post-title">Embedded Linux Diploma — Lab 03: Writing Your First Kernel Module</h1>
+      
+      <p class="post-subtitle">Hands-on guide to writing, compiling, and loading Linux kernel modules. Covers module lifecycle, parameters, proc filesystem, and basic character drivers.</p>
+      
+      <div class="post-info">
+        <span><i class="fas fa-calendar-alt"></i> February 20, 2024</span>
+        <span><i class="fas fa-clock"></i> 8 min read</span>
+        
+        <span><i class="fas fa-tags"></i> kernel, modules, drivers, c</span>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="post-body">
+    <div class="post-toc" id="toc">
+      <h3><i class="fas fa-list"></i> Contents</h3>
+      <div id="toc-list"></div>
+    </div>
+
+    <div class="post-content markdown-body">
+      <h2 id="what-is-a-kernel-module">What is a Kernel Module?</h2>
+
+<p>A <strong>Loadable Kernel Module (LKM)</strong> is object code that can be inserted into the running kernel without rebooting. This is how Linux device drivers work in the real world.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Module management commands</span>
+lsmod           <span class="c"># List loaded modules</span>
+insmod mod.ko   <span class="c"># Insert module</span>
+rmmod mod       <span class="c"># Remove module</span>
+modinfo mod.ko  <span class="c"># Module information</span>
+modprobe mod    <span class="c"># Insert with dependencies</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="1-minimal-kernel-module">1. Minimal Kernel Module</h2>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* hello_module.c */</span>
+<span class="cp">#include</span> <span class="cpf">&lt;linux/module.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/kernel.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/init.h&gt;</span><span class="cp">
+</span>
+<span class="n">MODULE_LICENSE</span><span class="p">(</span><span class="s">"GPL"</span><span class="p">);</span>
+<span class="n">MODULE_AUTHOR</span><span class="p">(</span><span class="s">"Eslam Mohamed"</span><span class="p">);</span>
+<span class="n">MODULE_DESCRIPTION</span><span class="p">(</span><span class="s">"Hello World Kernel Module"</span><span class="p">);</span>
+<span class="n">MODULE_VERSION</span><span class="p">(</span><span class="s">"1.0"</span><span class="p">);</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="n">__init</span> <span class="nf">hello_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">printk</span><span class="p">(</span><span class="n">KERN_INFO</span> <span class="s">"Hello from kernel space!</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>  <span class="cm">/* 0 = success, negative = error */</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="n">__exit</span> <span class="nf">hello_exit</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">printk</span><span class="p">(</span><span class="n">KERN_INFO</span> <span class="s">"Goodbye from kernel space!</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">module_init</span><span class="p">(</span><span class="n">hello_init</span><span class="p">);</span>
+<span class="n">module_exit</span><span class="p">(</span><span class="n">hello_exit</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="makefile">Makefile</h3>
+
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Makefile
+</span><span class="nv">obj-m</span> <span class="o">+=</span> hello_module.o
+
+<span class="nv">KDIR</span> <span class="o">:=</span> /lib/modules/<span class="nf">$(</span><span class="nb">shell</span> <span class="nb">uname</span> <span class="nt">-r</span><span class="nf">)</span>/build
+
+<span class="nl">all</span><span class="o">:</span>
+	<span class="nv">$(MAKE)</span> <span class="nt">-C</span> <span class="nv">$(KDIR)</span> <span class="nv">M</span><span class="o">=</span><span class="nv">$(PWD)</span> modules
+
+<span class="nl">clean</span><span class="o">:</span>
+	<span class="nv">$(MAKE)</span> <span class="nt">-C</span> <span class="nv">$(KDIR)</span> <span class="nv">M</span><span class="o">=</span><span class="nv">$(PWD)</span> clean
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>make
+<span class="nb">sudo </span>insmod hello_module.ko
+dmesg | <span class="nb">tail</span> <span class="nt">-5</span>    <span class="c"># See: Hello from kernel space!</span>
+<span class="nb">sudo </span>rmmod hello_module
+dmesg | <span class="nb">tail</span> <span class="nt">-5</span>    <span class="c"># See: Goodbye from kernel space!</span>
+</code></pre></div></div>
+
+<h2 id="2-module-parameters">2. Module Parameters</h2>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;linux/module.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/moduleparam.h&gt;</span><span class="cp">
+</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="n">num_devices</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="k">static</span> <span class="kt">char</span> <span class="o">*</span><span class="n">device_name</span> <span class="o">=</span> <span class="s">"mydev"</span><span class="p">;</span>
+
+<span class="n">module_param</span><span class="p">(</span><span class="n">num_devices</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="n">S_IRUGO</span><span class="p">);</span>
+<span class="n">MODULE_PARM_DESC</span><span class="p">(</span><span class="n">num_devices</span><span class="p">,</span> <span class="s">"Number of devices (default: 1)"</span><span class="p">);</span>
+
+<span class="n">module_param</span><span class="p">(</span><span class="n">device_name</span><span class="p">,</span> <span class="n">charp</span><span class="p">,</span> <span class="n">S_IRUGO</span><span class="p">);</span>
+<span class="n">MODULE_PARM_DESC</span><span class="p">(</span><span class="n">device_name</span><span class="p">,</span> <span class="s">"Device name (default: mydev)"</span><span class="p">);</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="n">__init</span> <span class="nf">param_module_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">pr_info</span><span class="p">(</span><span class="s">"Initializing %d device(s) named '%s'</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> 
+            <span class="n">num_devices</span><span class="p">,</span> <span class="n">device_name</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Pass parameters at load time</span>
+<span class="nb">sudo </span>insmod param_module.ko <span class="nv">num_devices</span><span class="o">=</span>3 <span class="nv">device_name</span><span class="o">=</span><span class="s2">"sensor"</span>
+
+<span class="c"># Or via modprobe</span>
+<span class="nb">sudo </span>modprobe param_module <span class="nv">num_devices</span><span class="o">=</span>3
+</code></pre></div></div>
+
+<h2 id="3-proc-filesystem-interface">3. /proc Filesystem Interface</h2>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;linux/proc_fs.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/seq_file.h&gt;</span><span class="cp">
+</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">proc_show</span><span class="p">(</span><span class="k">struct</span> <span class="n">seq_file</span> <span class="o">*</span><span class="n">m</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">v</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">seq_printf</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s">"Module: embedded_lab</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="n">seq_printf</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s">"Version: 1.0</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="n">seq_printf</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s">"Author: Eslam Mohamed</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">proc_open</span><span class="p">(</span><span class="k">struct</span> <span class="n">inode</span> <span class="o">*</span><span class="n">inode</span><span class="p">,</span> <span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="n">file</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="n">single_open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">proc_show</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">proc_ops</span> <span class="n">proc_fops</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">proc_open</span>    <span class="o">=</span> <span class="n">proc_open</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">proc_read</span>    <span class="o">=</span> <span class="n">seq_read</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">proc_lseek</span>   <span class="o">=</span> <span class="n">seq_lseek</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">proc_release</span> <span class="o">=</span> <span class="n">single_release</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="k">struct</span> <span class="n">proc_dir_entry</span> <span class="o">*</span><span class="n">proc_entry</span><span class="p">;</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="n">__init</span> <span class="nf">proc_module_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">proc_entry</span> <span class="o">=</span> <span class="n">proc_create</span><span class="p">(</span><span class="s">"embedded_lab"</span><span class="p">,</span> <span class="mo">0444</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">proc_fops</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">proc_entry</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pr_err</span><span class="p">(</span><span class="s">"Failed to create /proc/embedded_lab</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">ENOMEM</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">pr_info</span><span class="p">(</span><span class="s">"/proc/embedded_lab created</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="n">__exit</span> <span class="nf">proc_module_exit</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">proc_remove</span><span class="p">(</span><span class="n">proc_entry</span><span class="p">);</span>
+    <span class="n">pr_info</span><span class="p">(</span><span class="s">"/proc/embedded_lab removed</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> /proc/embedded_lab
+<span class="c"># Module: embedded_lab</span>
+<span class="c"># Version: 1.0</span>
+<span class="c"># Author: Eslam Mohamed</span>
+</code></pre></div></div>
+
+<h2 id="4-character-device-driver">4. Character Device Driver</h2>
+
+<p>A character device is the most common type — it transfers data character by character.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;linux/cdev.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/device.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/fs.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/uaccess.h&gt;</span><span class="cp">
+</span>
+<span class="cp">#define DEVICE_NAME "chardev"
+#define BUFFER_SIZE 256
+</span>
+<span class="k">static</span> <span class="kt">int</span>    <span class="n">major_number</span><span class="p">;</span>
+<span class="k">static</span> <span class="kt">char</span>   <span class="n">message</span><span class="p">[</span><span class="n">BUFFER_SIZE</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+<span class="k">static</span> <span class="kt">int</span>    <span class="n">message_size</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="k">static</span> <span class="k">struct</span> <span class="n">class</span>  <span class="o">*</span><span class="n">chardev_class</span><span class="p">;</span>
+<span class="k">static</span> <span class="k">struct</span> <span class="n">device</span> <span class="o">*</span><span class="n">chardev_device</span><span class="p">;</span>
+<span class="k">static</span> <span class="k">struct</span> <span class="n">cdev</span>    <span class="n">chardev_cdev</span><span class="p">;</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">device_open</span><span class="p">(</span><span class="k">struct</span> <span class="n">inode</span> <span class="o">*</span><span class="n">inode</span><span class="p">,</span> <span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="n">file</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">pr_info</span><span class="p">(</span><span class="s">"chardev: opened</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">device_release</span><span class="p">(</span><span class="k">struct</span> <span class="n">inode</span> <span class="o">*</span><span class="n">inode</span><span class="p">,</span> <span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="n">file</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">pr_info</span><span class="p">(</span><span class="s">"chardev: released</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">ssize_t</span> <span class="nf">device_read</span><span class="p">(</span><span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="n">file</span><span class="p">,</span> <span class="kt">char</span> <span class="n">__user</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> 
+                            <span class="kt">size_t</span> <span class="n">len</span><span class="p">,</span> <span class="n">loff_t</span> <span class="o">*</span><span class="n">offset</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">bytes_read</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    
+    <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">offset</span> <span class="o">&gt;=</span> <span class="n">message_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    
+    <span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">&gt;</span> <span class="n">message_size</span> <span class="o">-</span> <span class="o">*</span><span class="n">offset</span><span class="p">)</span>
+        <span class="n">len</span> <span class="o">=</span> <span class="n">message_size</span> <span class="o">-</span> <span class="o">*</span><span class="n">offset</span><span class="p">;</span>
+    
+    <span class="k">if</span> <span class="p">(</span><span class="n">copy_to_user</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">message</span> <span class="o">+</span> <span class="o">*</span><span class="n">offset</span><span class="p">,</span> <span class="n">len</span><span class="p">))</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span>
+    
+    <span class="o">*</span><span class="n">offset</span> <span class="o">+=</span> <span class="n">len</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">len</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">ssize_t</span> <span class="nf">device_write</span><span class="p">(</span><span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="n">file</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">__user</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> 
+                              <span class="kt">size_t</span> <span class="n">len</span><span class="p">,</span> <span class="n">loff_t</span> <span class="o">*</span><span class="n">offset</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">&gt;</span> <span class="n">BUFFER_SIZE</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">len</span> <span class="o">=</span> <span class="n">BUFFER_SIZE</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+    
+    <span class="k">if</span> <span class="p">(</span><span class="n">copy_from_user</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">len</span><span class="p">))</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span>
+    
+    <span class="n">message_size</span> <span class="o">=</span> <span class="n">len</span><span class="p">;</span>
+    <span class="n">message</span><span class="p">[</span><span class="n">len</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'\0'</span><span class="p">;</span>
+    <span class="n">pr_info</span><span class="p">(</span><span class="s">"chardev: received '%s'</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">message</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">len</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">file_operations</span> <span class="n">fops</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">owner</span>   <span class="o">=</span> <span class="n">THIS_MODULE</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">open</span>    <span class="o">=</span> <span class="n">device_open</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">release</span> <span class="o">=</span> <span class="n">device_release</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">read</span>    <span class="o">=</span> <span class="n">device_read</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">write</span>   <span class="o">=</span> <span class="n">device_write</span><span class="p">,</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<h2 id="5-kernel-log-levels">5. Kernel Log Levels</h2>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pr_emerg</span><span class="p">(</span><span class="s">"System is unusable</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>        <span class="cm">/* KERN_EMERG   */</span>
+<span class="n">pr_alert</span><span class="p">(</span><span class="s">"Action must be taken!</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>     <span class="cm">/* KERN_ALERT   */</span>
+<span class="n">pr_crit</span><span class="p">(</span><span class="s">"Critical condition</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>         <span class="cm">/* KERN_CRIT    */</span>
+<span class="n">pr_err</span><span class="p">(</span><span class="s">"Error condition</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>             <span class="cm">/* KERN_ERR     */</span>
+<span class="n">pr_warn</span><span class="p">(</span><span class="s">"Warning condition</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>          <span class="cm">/* KERN_WARNING */</span>
+<span class="n">pr_notice</span><span class="p">(</span><span class="s">"Normal but significant</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>   <span class="cm">/* KERN_NOTICE  */</span>
+<span class="n">pr_info</span><span class="p">(</span><span class="s">"Informational</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>              <span class="cm">/* KERN_INFO    */</span>
+<span class="n">pr_debug</span><span class="p">(</span><span class="s">"Debug-level message</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>       <span class="cm">/* KERN_DEBUG   */</span>
+</code></pre></div></div>
+
+<h2 id="lab-exercises">Lab Exercises</h2>
+
+<ol>
+  <li>Write a kernel module that creates <code class="language-plaintext highlighter-rouge">/proc/student_info</code> showing your name and ID</li>
+  <li>Add module parameters: <code class="language-plaintext highlighter-rouge">author_name</code> and <code class="language-plaintext highlighter-rouge">lab_number</code></li>
+  <li>Implement a character device that acts as a simple FIFO buffer</li>
+  <li>Write a module that uses <code class="language-plaintext highlighter-rouge">ktime_get()</code> to measure and log the time between <code class="language-plaintext highlighter-rouge">open()</code> and <code class="language-plaintext highlighter-rouge">release()</code> calls</li>
+</ol>
+
+<hr />
+
+<blockquote>
+  <p>⚠️ <strong>Warning:</strong> Kernel bugs cause system crashes. Always develop in a VM or use QEMU. Never test untested kernel modules on your main machine.</p>
+</blockquote>
+
+<h2 id="key-takeaways">Key Takeaways</h2>
+
+<ul>
+  <li>Every kernel module needs <code class="language-plaintext highlighter-rouge">module_init()</code> and <code class="language-plaintext highlighter-rouge">module_exit()</code> functions</li>
+  <li>Use <code class="language-plaintext highlighter-rouge">pr_info()</code> family instead of <code class="language-plaintext highlighter-rouge">printk()</code> for cleaner code</li>
+  <li>Always release resources in your <code class="language-plaintext highlighter-rouge">exit</code> function — kernel memory leaks are serious</li>
+  <li><code class="language-plaintext highlighter-rouge">copy_to_user()</code> and <code class="language-plaintext highlighter-rouge">copy_from_user()</code> are <strong>mandatory</strong> for kernel ↔ userspace data transfer</li>
+</ul>
+
+<h2 id="next-lab">Next Lab</h2>
+
+<p><strong>Lab 04</strong> covers <strong>Device Drivers &amp; the Linux Device Model</strong> — <code class="language-plaintext highlighter-rouge">platform_device</code>, <code class="language-plaintext highlighter-rouge">platform_driver</code>, and the sysfs interface.</p>
+
+    </div>
+  </div>
+
+  <div class="post-nav">
+    
+    <a href="/blog/2024/02/01/lab02-uboot-boot-process/" class="post-nav-item prev">
+      <span class="nav-label"><i class="fas fa-arrow-left"></i> Previous</span>
+      <span class="nav-title">Embedded Linux Diploma — Lab 02: Linux Boot Process & U-Boot</span>
+    </a>
+    
+
+    
+    <a href="/blog/2025/02/01/lab4-c++/" class="post-nav-item next">
+      <span class="nav-label">Next <i class="fas fa-arrow-right"></i></span>
+      <span class="nav-title">Lab4 C++</span>
+    </a>
+    
+  </div>
+</article>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

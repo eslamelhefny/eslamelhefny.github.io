@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>U-Boot Commands & Scripting · Eslam Mohamed</title>
+  <meta name="description" content="Master the U-Boot shell: environment variables, memory commands, boot commands, TFTP and MMC loading, and scripting complex boot logic for automated and production use." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/embedded-linux/">Embedded Linux Developer</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>U-Boot Commands & Scripting</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 03 — Embedded Linux</span>
+        <span class="guide-stage-pill">Stage 06</span>
+      </div>
+      <h1 class="guide-title">U-Boot Commands & Scripting</h1>
+      <p class="guide-subtitle">Master the U-Boot shell: environment variables, memory commands, boot commands, TFTP and MMC loading, and scripting complex boot logic for automated and production use.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="the-u-boot-shell-first-commands-and-environment-variables">The U-Boot Shell: First Commands and Environment Variables</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>When U-Boot starts, it counts down an autoboot timer. If you press any key during the countdown, you drop into the interactive shell. This is your primary tool for diagnosing boot problems, manually loading images, and adjusting boot configuration.</p>
+
+<h3 id="the-autoboot-countdown-and-shell-prompt">The Autoboot Countdown and Shell Prompt</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>U-Boot 2023.10 (Oct 15 2023 - 12:34:56 +0000)
+
+CPU  : AM335X-GP rev 2.1
+Model: TI AM335x BeagleBone Black
+DRAM : 512 MiB
+MMC:   OMAP SD/MMC: 0, OMAP SD/MMC: 1
+Loading Environment from MMC... OK
+Net:   eth0: ethernet@4a100000
+Hit any key to stop autoboot:  3  2  1  0
+
+(press Enter to interrupt)
+
+=&gt;
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">=&gt;</code> is the U-Boot prompt. On some boards it may differ (e.g., <code class="language-plaintext highlighter-rouge">BeagleBone#</code> if <code class="language-plaintext highlighter-rouge">CONFIG_SYS_PROMPT</code> was customized).</p>
+
+<p>The countdown duration is set by <code class="language-plaintext highlighter-rouge">CONFIG_BOOTDELAY</code> (default 2 seconds) and the <code class="language-plaintext highlighter-rouge">bootdelay</code> environment variable:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">=&gt;</span> <span class="nb">printenv </span>bootdelay
+<span class="nv">bootdelay</span><span class="o">=</span>2
+
+<span class="c"># Change to 5 seconds</span>
+<span class="o">=&gt;</span> setenv bootdelay 5
+<span class="o">=&gt;</span> saveenv
+Saving Environment to MMC... Writing to MMC<span class="o">(</span>0<span class="o">)</span>... OK
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="the-help-command">The help Command</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># List all available commands</span>
+<span class="o">=&gt;</span> <span class="nb">help</span>
+?         - <span class="nb">alias </span><span class="k">for</span> <span class="s1">'help'</span>
+base      - print or <span class="nb">set </span>address offset
+bdinfo    - print Board Info structure
+boot      - boot default, i.e., run <span class="s1">'bootcmd'</span>
+bootd     - boot default, i.e., run <span class="s1">'bootcmd'</span>
+bootm     - boot application image from memory
+bootp     - boot image via network using BOOTP/TFTP protocol
+bootz     - boot Linux zImage image from memory
+booti     - boot Linux kernel Image from memory
+clocks    - display clocks
+cmp       - memory compare
+<span class="nb">cp</span>        - memory copy
+crc32     - checksum calculation
+dhcp      - boot image via network using DHCP/TFTP protocol
+<span class="nb">echo</span>      - <span class="nb">echo </span>args to console
+<span class="nb">env</span>       - environment handling commands
+<span class="nb">exit</span>      - <span class="nb">exit </span>script
+ext4load  - load binary file from a Ext4 filesystem
+ext4ls    - list files <span class="k">in </span>a directory <span class="o">(</span>default /<span class="o">)</span>
+fatinfo   - print information about filesystem
+fatload   - load binary file from a dos filesystem
+fatls     - list files <span class="k">in </span>a directory <span class="o">(</span>default /<span class="o">)</span>
+fdt       - flattened device tree utility commands
+go        - start application at address <span class="s1">'addr'</span>
+<span class="nb">help</span>      - print <span class="nb">command </span>description/usage
+i2c       - I2C sub-system
+loadb     - load binary file over serial line <span class="o">(</span>kermit mode<span class="o">)</span>
+loads     - load S-Record file over serial line
+loadx     - load binary file over serial line <span class="o">(</span>xmodem mode<span class="o">)</span>
+loady     - load binary file over serial line <span class="o">(</span>ymodem mode<span class="o">)</span>
+md        - memory display
+mm        - memory modify <span class="o">(</span>auto-incrementing address<span class="o">)</span>
+mmc       - MMC sub-system
+mmcinfo   - display MMC info
+mw        - memory write <span class="o">(</span>fill<span class="o">)</span>
+net       - NET sub-system
+nfs       - boot image via network using NFS protocol
+nm        - memory modify <span class="o">(</span>constant address<span class="o">)</span>
+ping      - send ICMP ECHO_REQUEST to network host
+<span class="nb">printenv</span>  - print environment variables
+reset     - Perform RESET of the CPU
+run       - run commands <span class="k">in </span>an environment variable
+saveenv   - save environment variables to persistent storage
+setenv    - <span class="nb">set </span>environment variables
+sf        - SPI flash sub-system
+size      - determine a file<span class="s1">'s size
+sleep     - delay execution for some time
+source    - run script from memory
+tftp      - load file using TFTP protocol
+usb       - USB sub-system
+version   - print monitor, compiler and linker version
+
+# Get help on a specific command
+=&gt; help fatload
+fatload - load binary file from a dos filesystem
+
+Usage:
+fatload &lt;interface&gt; [&lt;dev[:part]&gt; [&lt;addr&gt; [&lt;filename&gt; [bytes [pos]]]]]
+    - Load binary file '</span>filename<span class="s1">' from '</span>dev<span class="s1">' on '</span>interface<span class="s1">'
+      to address '</span>addr<span class="s1">' from dos filesystem.
+      '</span>pos<span class="s1">' gives the file position to start loading from.
+      If '</span>pos<span class="s1">' is omitted, 0 is assumed. size is returned in variable filesize.
+</span></code></pre></div></div>
+
+<hr />
+
+<h3 id="environment-variables-printenv-setenv-saveenv">Environment Variables: printenv, setenv, saveenv</h3>
+
+<p>The U-Boot environment is a persistent key=value store. Environment variables control boot behavior.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Print all environment variables</span>
+<span class="o">=&gt;</span> <span class="nb">printenv
+arch</span><span class="o">=</span>arm
+<span class="nv">baudrate</span><span class="o">=</span>115200
+<span class="nv">board</span><span class="o">=</span>am335x
+<span class="nv">board_name</span><span class="o">=</span>A335BNLT
+<span class="nv">bootcmd</span><span class="o">=</span>run findfdt<span class="p">;</span> run distro_bootcmd
+<span class="nv">bootdelay</span><span class="o">=</span>2
+<span class="nv">bootfile</span><span class="o">=</span>zImage
+<span class="nv">cpu</span><span class="o">=</span>armv7
+<span class="nv">ethaddr</span><span class="o">=</span>c8:a0:30:b1:c2:d3
+<span class="nv">fdt_addr_r</span><span class="o">=</span>0x88000000
+<span class="nv">fdtcontroladdr</span><span class="o">=</span>8ef7ef10
+<span class="nv">fdtfile</span><span class="o">=</span>am335x-boneblack.dtb
+<span class="nv">ipaddr</span><span class="o">=</span>192.168.1.100
+<span class="nv">kernel_addr_r</span><span class="o">=</span>0x82000000
+<span class="nv">ramdisk_addr_r</span><span class="o">=</span>0x88080000
+<span class="nv">serverip</span><span class="o">=</span>192.168.1.1
+<span class="nv">soc</span><span class="o">=</span>am33xx
+<span class="nv">vendor</span><span class="o">=</span>ti
+Environment size: 812/131068 bytes
+
+<span class="c"># Print a single variable</span>
+<span class="o">=&gt;</span> <span class="nb">printenv </span>bootcmd
+<span class="nv">bootcmd</span><span class="o">=</span>run findfdt<span class="p">;</span> run distro_bootcmd
+
+<span class="c"># Set a variable</span>
+<span class="o">=&gt;</span> setenv myvar hello_world
+<span class="o">=&gt;</span> <span class="nb">printenv </span>myvar
+<span class="nv">myvar</span><span class="o">=</span>hello_world
+
+<span class="c"># Set a variable with spaces (use quotes)</span>
+<span class="o">=&gt;</span> setenv bootargs <span class="s2">"console=ttyO0,115200n8 root=/dev/mmcblk0p2 rw"</span>
+<span class="o">=&gt;</span> <span class="nb">printenv </span>bootargs
+<span class="nv">bootargs</span><span class="o">=</span><span class="nv">console</span><span class="o">=</span>ttyO0,115200n8 <span class="nv">root</span><span class="o">=</span>/dev/mmcblk0p2 rw
+
+<span class="c"># Delete a variable</span>
+<span class="o">=&gt;</span> setenv myvar
+<span class="o">=&gt;</span> <span class="nb">printenv </span>myvar
+<span class="c">## Error: "myvar" not defined</span>
+
+<span class="c"># Save environment to flash</span>
+<span class="o">=&gt;</span> saveenv
+Saving Environment to MMC... Writing to MMC<span class="o">(</span>0<span class="o">)</span>... OK
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="memory-commands-md-mw-cp">Memory Commands: md, mw, cp</h3>
+
+<p>These commands let you read and write physical memory directly — essential for debugging hardware registers.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Memory display (md) — display memory in hex+ASCII</span>
+<span class="c"># md[.b|.w|.l|.q] address [count]</span>
+<span class="c"># .b = byte, .w = word (16-bit), .l = long (32-bit), .q = quadword (64-bit)</span>
+
+<span class="o">=&gt;</span> md.l 0x44e09000 8
+44e09000: 00004000 00000000 00000000 00000000    .@..............
+44e09010: 00000000 00000000 00000000 00000000    ................
+
+<span class="c"># UART0 base on AM335x is 0x44E09000</span>
+<span class="c"># Read UART LSR (Line Status Register) at offset 0x14</span>
+<span class="o">=&gt;</span> md.l 0x44e09014 1
+44e09014: 00000060    <span class="sb">`</span>...
+<span class="c"># Bit 5 = 1: TX holding register empty</span>
+<span class="c"># Bit 6 = 1: TX shift register empty</span>
+
+<span class="c"># Memory write (mw) — write a value to memory</span>
+<span class="c"># mw[.b|.w|.l] address value [count]</span>
+<span class="o">=&gt;</span> mw.l 0x82000000 0xdeadbeef
+<span class="o">=&gt;</span> md.l 0x82000000 1
+82000000: deadbeef    ....
+
+<span class="c"># Fill 16 bytes with 0</span>
+<span class="o">=&gt;</span> mw.b 0x82000000 0x00 16
+<span class="o">=&gt;</span> md.b 0x82000000 16
+82000000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+
+<span class="c"># Memory copy (cp)</span>
+<span class="c"># cp[.b|.w|.l] source destination count</span>
+<span class="o">=&gt;</span> cp.l 0x82000000 0x83000000 0x100000
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="loading-files-fatload-and-ext4load">Loading Files: fatload and ext4load</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># fatload: load a file from a FAT partition</span>
+<span class="c"># fatload &lt;interface&gt; &lt;dev:part&gt; &lt;load_addr&gt; &lt;filename&gt;</span>
+
+<span class="c"># Load kernel from MMC device 0, partition 1, FAT filesystem</span>
+<span class="o">=&gt;</span> fatload mmc 0:1 0x82000000 zImage
+reading zImage
+6016704 bytes <span class="nb">read </span><span class="k">in </span>428 ms <span class="o">(</span>13.4 MiB/s<span class="o">)</span>
+
+<span class="c"># Load DTB</span>
+<span class="o">=&gt;</span> fatload mmc 0:1 0x88000000 am335x-boneblack.dtb
+reading am335x-boneblack.dtb
+43056 bytes <span class="nb">read </span><span class="k">in </span>9 ms <span class="o">(</span>4.6 MiB/s<span class="o">)</span>
+
+<span class="c"># List files on FAT partition</span>
+<span class="o">=&gt;</span> fatls mmc 0:1
+ 6016704   zImage
+   43056   am335x-boneblack.dtb
+   20480   extlinux/extlinux.conf
+
+<span class="c"># ext4load: load from ext4 partition</span>
+<span class="c"># ext4load &lt;interface&gt; &lt;dev:part&gt; &lt;addr&gt; &lt;filename&gt;</span>
+<span class="o">=&gt;</span> ext4load mmc 0:2 0x82000000 /boot/zImage
+6016704 bytes <span class="nb">read </span><span class="k">in </span>445 ms <span class="o">(</span>12.9 MiB/s<span class="o">)</span>
+
+<span class="c"># List ext4 directory</span>
+<span class="o">=&gt;</span> ext4ls mmc 0:2 /boot
+&lt;DIR&gt;       4096 <span class="nb">.</span>
+&lt;DIR&gt;       4096 ..
+            6016704 zImage
+              43056 am335x-boneblack.dtb
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="the-bdinfo-command">The bdinfo Command</h3>
+
+<p><code class="language-plaintext highlighter-rouge">bdinfo</code> (board info) displays the board’s memory map and boot parameters as U-Boot sees them:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">=&gt;</span> bdinfo
+boot_params <span class="o">=</span> 0x80000100
+DRAM bank   <span class="o">=</span> 0x00000000
+-&gt; start    <span class="o">=</span> 0x80000000
+-&gt; size     <span class="o">=</span> 0x20000000
+flashstart  <span class="o">=</span> 0x00000000
+flashsize   <span class="o">=</span> 0x00000000
+flashoffset <span class="o">=</span> 0x00000000
+baudrate    <span class="o">=</span> 115200 bps
+relocaddr   <span class="o">=</span> 0x8ff08000
+reloc off   <span class="o">=</span> 0x0f708000
+Build       <span class="o">=</span> 32-bit
+current eth <span class="o">=</span> ethernet@4a100000
+ethaddr     <span class="o">=</span> c8:a0:30:b1:c2:d3
+IP addr     <span class="o">=</span> 192.168.1.100
+fdt_blob    <span class="o">=</span> 0x8ef7ef10
+new_fdt     <span class="o">=</span> 0x00000000
+fdt_size    <span class="o">=</span> 0x00000000
+lmb_dump_all:
+ memory.cnt <span class="o">=</span> 0x1
+ memory[0]  <span class="o">[</span>0x80000000-0x9fffffff], 0x20000000 bytes flags: 0
+ reserved.cnt <span class="o">=</span> 0x1
+ reserved[0] <span class="o">[</span>0x8ef7e8f0-0x9fffffff], 0x11081710 bytes flags: 0
+</code></pre></div></div>
+
+<p>This shows: total DRAM is <code class="language-plaintext highlighter-rouge">0x20000000</code> = 512 MB; U-Boot relocated itself to <code class="language-plaintext highlighter-rouge">0x8ff08000</code>; available memory for loading is from <code class="language-plaintext highlighter-rouge">0x80000000</code> to <code class="language-plaintext highlighter-rouge">0x8ef7e8ef</code>.</p>
+
+<hr />
+
+<h3 id="basic-manual-boot-sequence">Basic Manual Boot Sequence</h3>
+
+<p>Here is a complete manual boot from SD card, step by step:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Step 1: Verify MMC is available</span>
+<span class="o">=&gt;</span> mmc list
+OMAP SD/MMC: 0 <span class="o">(</span>SD<span class="o">)</span>
+OMAP SD/MMC: 1 <span class="o">(</span>eMMC<span class="o">)</span>
+
+<span class="c"># Step 2: Load kernel image into DRAM</span>
+<span class="o">=&gt;</span> fatload mmc 0:1 0x82000000 zImage
+6016704 bytes <span class="nb">read </span><span class="k">in </span>428 ms <span class="o">(</span>13.4 MiB/s<span class="o">)</span>
+
+<span class="c"># Step 3: Load the Device Tree Blob</span>
+<span class="o">=&gt;</span> fatload mmc 0:1 0x88000000 am335x-boneblack.dtb
+43056 bytes <span class="nb">read </span><span class="k">in </span>9 ms <span class="o">(</span>4.6 MiB/s<span class="o">)</span>
+
+<span class="c"># Step 4: Set kernel boot arguments</span>
+<span class="o">=&gt;</span> setenv bootargs <span class="s2">"console=ttyO0,115200n8 root=/dev/mmcblk0p2 rw rootfstype=ext4 rootwait"</span>
+
+<span class="c"># Step 5: Boot the kernel (bootz for zImage)</span>
+<span class="o">=&gt;</span> bootz 0x82000000 - 0x88000000
+Kernel image @ 0x82000000 <span class="o">[</span> 0x000000 - 0x5bfe00 <span class="o">]</span>
+<span class="c">## Flattened Device Tree blob at 88000000</span>
+   Booting using the fdt blob at 0x88000000
+   Loading Device Tree to 8ffed000, end 8ffff... OK
+
+Starting kernel ...
+
+<span class="o">[</span>    0.000000] Booting Linux on physical CPU 0x0
+<span class="o">[</span>    0.000000] Linux version 6.1.46 <span class="o">(</span>gcc version 12.3.0<span class="o">)</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">-</code> in <code class="language-plaintext highlighter-rouge">bootz 0x82000000 - 0x88000000</code> means “no initrd”.</p>
+
+<hr />
+
+<h2 class="gc-mid" id="mmc-boot-tftp-scripting-and-boot-commands">MMC Boot, TFTP, Scripting, and Boot Commands</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="mmc-commands-in-detail">MMC Commands in Detail</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># List all MMC devices</span>
+<span class="o">=&gt;</span> mmc list
+OMAP SD/MMC: 0 <span class="o">(</span>SD<span class="o">)</span>
+OMAP SD/MMC: 1 <span class="o">(</span>eMMC<span class="o">)</span>
+
+<span class="c"># Select MMC device 0 (SD card)</span>
+<span class="o">=&gt;</span> mmc dev 0
+switch to partitions <span class="c">#0, OK</span>
+mmc0<span class="o">(</span>part 0<span class="o">)</span> is current device
+
+<span class="c"># Select device 1 partition 1 (eMMC boot partition)</span>
+<span class="o">=&gt;</span> mmc dev 1 1
+switch to partitions <span class="c">#1, OK</span>
+mmc1<span class="o">(</span>part 1<span class="o">)</span> is current device
+
+<span class="c"># Display MMC info</span>
+<span class="o">=&gt;</span> mmc info
+Device: OMAP SD/MMC
+Manufacturer ID: 03
+OEM: 5344
+Name: SB16G
+Bus Speed: 50000000
+Mode: SD High Speed <span class="o">(</span>50MHz<span class="o">)</span>
+Rd Block Len: 512
+SD version 3.0
+High Capacity: Yes
+Capacity: 14.8 GiB
+Bus Width: 4-bit
+Erase Group Size: 512 Bytes
+
+<span class="c"># Read raw sector from MMC (for debugging partition tables)</span>
+<span class="o">=&gt;</span> mmc <span class="nb">read </span>0x82000000 0 1
+MMC <span class="nb">read</span>: dev <span class="c"># 0, block # 0, count 1 ... 1 blocks read: OK</span>
+
+<span class="c"># Display the MBR</span>
+<span class="o">=&gt;</span> md.b 0x82000000 512
+82000000: eb 58 90 4d 53 44 4f 53 35 2e 30 00 02 08 26 00    .X.MSDOS5.0...&amp;.
+...
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="tftp-boot-loading-kernel-over-network">TFTP Boot: Loading Kernel Over Network</h3>
+
+<p>TFTP (Trivial File Transfer Protocol) is the standard way to load a kernel during development — faster than reflashing SD cards constantly.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Step 1: Configure network</span>
+<span class="o">=&gt;</span> setenv ethaddr c8:a0:30:b1:c2:d3    <span class="c"># MAC address (if not set from EEPROM)</span>
+<span class="o">=&gt;</span> setenv ipaddr 192.168.1.100          <span class="c"># Board's IP address</span>
+<span class="o">=&gt;</span> setenv serverip 192.168.1.1          <span class="c"># Development host running TFTP server</span>
+<span class="o">=&gt;</span> setenv gatewayip 192.168.1.1
+<span class="o">=&gt;</span> setenv netmask 255.255.255.0
+
+<span class="c"># Step 2: Test network connectivity</span>
+<span class="o">=&gt;</span> ping 192.168.1.1
+Using ethernet@4a100000 device
+host 192.168.1.1 is alive
+
+<span class="c"># Step 3: Load kernel via TFTP</span>
+<span class="o">=&gt;</span> tftp <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span> zImage
+Using ethernet@4a100000 device
+TFTP from server 192.168.1.1<span class="p">;</span> our IP address is 192.168.1.100
+Filename <span class="s1">'zImage'</span><span class="nb">.</span>
+Load address: 0x82000000
+Loading: <span class="c">#################################################################</span>
+         <span class="c">#################################################################</span>
+         <span class="c">#################################################################</span>
+         <span class="c">#################################################################</span>
+         7.8 MiB/s
+<span class="k">done
+</span>Bytes transferred <span class="o">=</span> 6016704 <span class="o">(</span>5bfe00 hex<span class="o">)</span>
+
+<span class="c"># Step 4: Load DTB</span>
+<span class="o">=&gt;</span> tftp <span class="k">${</span><span class="nv">fdt_addr_r</span><span class="k">}</span> am335x-boneblack.dtb
+Bytes transferred <span class="o">=</span> 43056 <span class="o">(</span>a830 hex<span class="o">)</span>
+
+<span class="c"># Step 5: Set bootargs and boot</span>
+<span class="o">=&gt;</span> setenv bootargs <span class="s2">"console=ttyO0,115200n8 root=/dev/mmcblk0p2 rw rootwait"</span>
+<span class="o">=&gt;</span> bootz <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span> - <span class="k">${</span><span class="nv">fdt_addr_r</span><span class="k">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="dhcp-vs-static-ip">DHCP vs Static IP</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># DHCP: let the server assign an IP automatically</span>
+<span class="o">=&gt;</span> dhcp
+Using ethernet@4a100000 device
+DHCP client bound to address 192.168.1.105 <span class="o">(</span>52 ms<span class="o">)</span>
+TFTP from server 192.168.1.1<span class="p">;</span> our IP address is 192.168.1.105
+Filename <span class="s1">'zImage'</span><span class="nb">.</span>
+Load address: 0x82000000
+...
+
+<span class="c"># The dhcp command both gets an IP AND loads a file if bootfile is set</span>
+<span class="o">=&gt;</span> setenv bootfile zImage
+<span class="o">=&gt;</span> dhcp <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span>
+<span class="c"># This gets IP via DHCP and then downloads the file via TFTP from dhcpserver</span>
+
+<span class="c"># Static IP (more deterministic, better for production debugging)</span>
+<span class="o">=&gt;</span> setenv ipaddr 192.168.1.100
+<span class="o">=&gt;</span> setenv serverip 192.168.1.1
+<span class="o">=&gt;</span> tftp <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span> zImage
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="scripting-with-test-if-then-else">Scripting with test, if, then, else</h3>
+
+<p>U-Boot has a basic scripting language. The <code class="language-plaintext highlighter-rouge">test</code> command evaluates conditions.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Test if a variable is set</span>
+<span class="o">=&gt;</span> <span class="k">if </span><span class="nb">test</span> <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">myvar</span><span class="k">}</span><span class="s2">"</span><span class="p">;</span> <span class="k">then </span><span class="nb">echo</span> <span class="s2">"myvar is set"</span><span class="p">;</span> <span class="k">else </span><span class="nb">echo</span> <span class="s2">"myvar not set"</span><span class="p">;</span> <span class="k">fi
+</span>myvar not <span class="nb">set</span>
+
+<span class="o">=&gt;</span> setenv myvar hello
+<span class="o">=&gt;</span> <span class="k">if </span><span class="nb">test</span> <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">myvar</span><span class="k">}</span><span class="s2">"</span><span class="p">;</span> <span class="k">then </span><span class="nb">echo</span> <span class="s2">"myvar is set"</span><span class="p">;</span> <span class="k">else </span><span class="nb">echo</span> <span class="s2">"myvar not set"</span><span class="p">;</span> <span class="k">fi
+</span>myvar is <span class="nb">set</span>
+
+<span class="c"># Test string equality</span>
+<span class="o">=&gt;</span> setenv bootslot a
+<span class="o">=&gt;</span> <span class="k">if </span><span class="nb">test</span> <span class="s2">"</span><span class="k">${</span><span class="nv">bootslot</span><span class="k">}</span><span class="s2">"</span> <span class="o">=</span> <span class="s2">"a"</span><span class="p">;</span> <span class="k">then </span><span class="nb">echo</span> <span class="s2">"booting slot A"</span><span class="p">;</span> <span class="k">fi
+</span>booting slot A
+
+<span class="c"># Test numeric comparison (-eq, -ne, -lt, -gt, -le, -ge)</span>
+<span class="o">=&gt;</span> setenv retry 3
+<span class="o">=&gt;</span> <span class="k">if </span><span class="nb">test</span> <span class="k">${</span><span class="nv">retry</span><span class="k">}</span> <span class="nt">-gt</span> 0<span class="p">;</span> <span class="k">then </span><span class="nb">echo</span> <span class="s2">"retries left"</span><span class="p">;</span> <span class="k">fi
+</span>retries left
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="the-run-command-and-bootcmd">The run Command and bootcmd</h3>
+
+<p><code class="language-plaintext highlighter-rouge">run</code> executes the content of an environment variable as a command. This is how <code class="language-plaintext highlighter-rouge">bootcmd</code> works:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># bootcmd is executed automatically after autoboot countdown</span>
+<span class="o">=&gt;</span> <span class="nb">printenv </span>bootcmd
+<span class="nv">bootcmd</span><span class="o">=</span>run findfdt<span class="p">;</span> run distro_bootcmd
+
+<span class="c"># findfdt is another variable that detects the board variant</span>
+<span class="o">=&gt;</span> <span class="nb">printenv </span>findfdt
+<span class="nv">findfdt</span><span class="o">=</span><span class="k">if </span><span class="nb">test</span> <span class="nv">$board_name</span> <span class="o">=</span> A335BNLT<span class="p">;</span> <span class="k">then </span>setenv fdtfile am335x-boneblack.dtb<span class="p">;</span> <span class="k">fi</span><span class="p">;</span> ...
+
+<span class="c"># Run manually</span>
+<span class="o">=&gt;</span> run findfdt
+<span class="o">=&gt;</span> <span class="nb">printenv </span>fdtfile
+<span class="nv">fdtfile</span><span class="o">=</span>am335x-boneblack.dtb
+
+<span class="c"># Create your own boot script in an env variable</span>
+<span class="o">=&gt;</span> setenv myboot <span class="s2">"tftp </span><span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span><span class="s2"> zImage; tftp </span><span class="k">${</span><span class="nv">fdt_addr_r</span><span class="k">}</span><span class="s2"> </span><span class="k">${</span><span class="nv">fdtfile</span><span class="k">}</span><span class="s2">; bootz </span><span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span><span class="s2"> - </span><span class="k">${</span><span class="nv">fdt_addr_r</span><span class="k">}</span><span class="s2">"</span>
+<span class="o">=&gt;</span> run myboot
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="bootm-vs-bootz-vs-booti">bootm vs bootz vs booti</h3>
+
+<p>These three commands boot a Linux kernel but handle different kernel image formats:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Command</th>
+      <th>Image Type</th>
+      <th>Typical Filename</th>
+      <th>Architecture</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">bootm</code></td>
+      <td>Legacy uImage (mkimage-wrapped)</td>
+      <td><code class="language-plaintext highlighter-rouge">uImage</code></td>
+      <td>ARMv5/v6, MIPS, PowerPC</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">bootz</code></td>
+      <td>Compressed zImage (self-decompressing)</td>
+      <td><code class="language-plaintext highlighter-rouge">zImage</code></td>
+      <td>ARM 32-bit</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">booti</code></td>
+      <td>Uncompressed raw Image</td>
+      <td><code class="language-plaintext highlighter-rouge">Image</code></td>
+      <td>ARM64 (AArch64)</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># bootm syntax: bootm kernel_addr [initrd_addr] [fdt_addr]</span>
+<span class="o">=&gt;</span> bootm 0x82000000 - 0x88000000
+
+<span class="c"># bootz syntax: bootz kernel_addr [initrd_addr:size] [fdt_addr]</span>
+<span class="o">=&gt;</span> bootz 0x82000000 - 0x88000000
+
+<span class="c"># booti syntax: booti kernel_addr [initrd_addr:size] [fdt_addr]</span>
+<span class="o">=&gt;</span> booti 0x40200000 - 0x40000000   <span class="c"># AArch64 typical addresses</span>
+
+<span class="c"># With initrd (ramdisk)</span>
+<span class="o">=&gt;</span> bootz 0x82000000 0x88080000:0x1000000 0x88000000
+</code></pre></div></div>
+
+<p>For modern 32-bit ARM systems, <code class="language-plaintext highlighter-rouge">bootz</code> with <code class="language-plaintext highlighter-rouge">zImage</code> is standard. For 64-bit ARM (Cortex-A53, Cortex-A72, etc.), <code class="language-plaintext highlighter-rouge">booti</code> with <code class="language-plaintext highlighter-rouge">Image</code> is standard.</p>
+
+<hr />
+
+<h3 id="nfs-root-kernel-via-tftp-root-filesystem-via-nfs">NFS Root: Kernel via TFTP, Root Filesystem via NFS</h3>
+
+<p>The most powerful development setup: kernel loaded fresh via TFTP at every boot, root filesystem served over NFS from your development machine (no SD card reflashing ever):</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Full NFS root setup in bootargs</span>
+<span class="o">=&gt;</span> setenv bootargs <span class="s2">"console=ttyO0,115200n8 </span><span class="se">\</span><span class="s2">
+    root=/dev/nfs </span><span class="se">\</span><span class="s2">
+    nfsroot=192.168.1.1:/export/rootfs,v3,tcp </span><span class="se">\</span><span class="s2">
+    rw </span><span class="se">\</span><span class="s2">
+    ip=192.168.1.100:192.168.1.1:192.168.1.1:255.255.255.0:bbb:eth0:off </span><span class="se">\</span><span class="s2">
+    rootwait"</span>
+
+<span class="c"># Or simpler with DHCP and NFS autoconfig</span>
+<span class="o">=&gt;</span> setenv bootargs <span class="s2">"console=ttyO0,115200n8 </span><span class="se">\</span><span class="s2">
+    root=/dev/nfs </span><span class="se">\</span><span class="s2">
+    nfsroot=192.168.1.1:/export/rootfs </span><span class="se">\</span><span class="s2">
+    rw ip=dhcp rootwait"</span>
+
+<span class="c"># Load and boot</span>
+<span class="o">=&gt;</span> tftp <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span> zImage
+<span class="o">=&gt;</span> tftp <span class="k">${</span><span class="nv">fdt_addr_r</span><span class="k">}</span> am335x-boneblack.dtb
+<span class="o">=&gt;</span> bootz <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span> - <span class="k">${</span><span class="nv">fdt_addr_r</span><span class="k">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">ip=</code> parameter format is: <code class="language-plaintext highlighter-rouge">client:server:gateway:netmask:hostname:device:autoconf</code></p>
+
+<hr />
+
+<h3 id="mmcboot-and-netboot-helper-scripts">mmcboot and netboot Helper Scripts</h3>
+
+<p>U-Boot defconfigs often define helper scripts for common boot scenarios:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Print all scripts defined in environment</span>
+<span class="o">=&gt;</span> <span class="nb">printenv </span>mmcboot
+<span class="nv">mmcboot</span><span class="o">=</span>mmc dev <span class="k">${</span><span class="nv">mmcdev</span><span class="k">}</span><span class="p">;</span> <span class="k">if </span>mmc rescan<span class="p">;</span> <span class="k">then</span> <span class="se">\</span>
+    <span class="nb">echo </span>SD/MMC found on device <span class="k">${</span><span class="nv">mmcdev</span><span class="k">}</span><span class="p">;</span> <span class="se">\</span>
+    <span class="k">if </span>run loadimage<span class="p">;</span> <span class="k">then</span> <span class="se">\</span>
+        <span class="k">if </span>run loadfdt<span class="p">;</span> <span class="k">then</span> <span class="se">\</span>
+            <span class="nb">echo </span>Booting from mmc ...<span class="p">;</span> <span class="se">\</span>
+            run mmcargs<span class="p">;</span> bootz <span class="k">${</span><span class="nv">loadaddr</span><span class="k">}</span> - <span class="k">${</span><span class="nv">fdtaddr</span><span class="k">}</span><span class="p">;</span> <span class="se">\</span>
+        <span class="k">fi</span><span class="p">;</span> <span class="se">\</span>
+    <span class="k">fi</span><span class="p">;</span> <span class="se">\</span>
+<span class="k">fi</span>
+
+<span class="o">=&gt;</span> <span class="nb">printenv </span>netboot
+<span class="nv">netboot</span><span class="o">=</span><span class="nb">echo </span>Booting from net ...<span class="p">;</span> <span class="se">\</span>
+    setenv ipaddr 192.168.1.100<span class="p">;</span> <span class="se">\</span>
+    tftp <span class="k">${</span><span class="nv">loadaddr</span><span class="k">}</span> <span class="k">${</span><span class="nv">bootfile</span><span class="k">}</span><span class="p">;</span> <span class="se">\</span>
+    tftp <span class="k">${</span><span class="nv">fdtaddr</span><span class="k">}</span> <span class="k">${</span><span class="nv">fdtfile</span><span class="k">}</span><span class="p">;</span> <span class="se">\</span>
+    run netargs<span class="p">;</span> bootz <span class="k">${</span><span class="nv">loadaddr</span><span class="k">}</span> - <span class="k">${</span><span class="nv">fdtaddr</span><span class="k">}</span>
+
+<span class="c"># Execute them</span>
+<span class="o">=&gt;</span> run mmcboot
+<span class="o">=&gt;</span> run netboot
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="fit-boot-nand-commands-usb-advanced-scripting-and-distro_bootcmd">FIT Boot, NAND Commands, USB, Advanced Scripting, and distro_bootcmd</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="fit-image-boot">FIT Image Boot</h3>
+
+<p>A FIT image is booted with <code class="language-plaintext highlighter-rouge">bootm</code> and a configuration selector:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Load FIT image</span>
+<span class="o">=&gt;</span> tftp <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span> kernel.itb
+Bytes transferred <span class="o">=</span> 6063104 <span class="o">(</span>5c8c00 hex<span class="o">)</span>
+
+<span class="c"># List available configurations in the FIT image</span>
+<span class="o">=&gt;</span> iminfo <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span>
+<span class="c">## Checking Image at 82000000 ...</span>
+   FIT image found
+   FIT description: Linux kernel and FDT blob <span class="k">for </span>BeagleBone Black
+   Created:         Sun Oct 15 12:34:56 2023
+    Image 0 <span class="o">(</span>kernel<span class="o">)</span>
+     Description:  Linux kernel
+     Type:         Kernel Image
+     Compression:  uncompressed
+     Load Address: 0x82000000
+     Entry Point:  0x82000000
+     Hash algo:    sha256
+     Hash value:   a3f8c9e2...  check OK
+    Image 1 <span class="o">(</span>fdt-1<span class="o">)</span>
+     Description:  BeagleBone Black DTB
+     Hash algo:    sha256
+     Hash value:   b7d4e1f9...  check OK
+   Default Configuration: <span class="s1">'conf-1'</span>
+   Configuration 0 <span class="o">(</span>conf-1<span class="o">)</span>
+    Description:  BeagleBone Black
+    Kernel:       kernel
+    FDT:          fdt-1
+
+<span class="c"># Boot the default configuration</span>
+<span class="o">=&gt;</span> bootm <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span>
+
+<span class="c"># Boot a specific configuration</span>
+<span class="o">=&gt;</span> bootm <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span><span class="c">#conf-1</span>
+
+<span class="c"># Boot with a custom DTB from the FIT, overriding with a separate DTB</span>
+<span class="o">=&gt;</span> bootm <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span><span class="c">#conf-1 - ${fdt_addr_r}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="usb-commands">USB Commands</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Initialize USB subsystem</span>
+<span class="o">=&gt;</span> usb start
+starting USB...
+Bus ehci@47401100: USB EHCI 1.00
+scanning bus ehci@47401100 <span class="k">for </span>devices...
+2 USB Device<span class="o">(</span>s<span class="o">)</span> found
+       scanning usb <span class="k">for </span>storage devices... 1 Storage Device<span class="o">(</span>s<span class="o">)</span> found
+
+<span class="c"># Get detailed USB device info</span>
+<span class="o">=&gt;</span> usb info
+1: Hub,  USB Revision 2.0
+   - 0:0: vendor name, etc.
+2: Mass Storage,  USB Revision 2.0
+   - Kingston DataTraveler
+
+<span class="c"># List USB storage devices</span>
+<span class="o">=&gt;</span> usb storage
+  Device 0: Vendor: Kingston Rev: 1.00 Prod: DataTraveler
+            Type: Removable Hard Disk
+            Capacity: 15.3 GB <span class="o">=</span> 15728 MB <span class="o">(</span>32243712 x 512<span class="o">)</span>
+
+<span class="c"># Load from USB drive</span>
+<span class="o">=&gt;</span> fatls usb 0:1
+ 6016704   zImage
+   43056   am335x-boneblack.dtb
+
+<span class="o">=&gt;</span> fatload usb 0:1 <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span> zImage
+6016704 bytes <span class="nb">read </span><span class="k">in </span>1245 ms <span class="o">(</span>4.6 MiB/s<span class="o">)</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="nand-commands">NAND Commands</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Get NAND flash info</span>
+<span class="o">=&gt;</span> nand info
+
+Device 0: nand0, sector size 128 KiB
+  Page size       2048 b
+  OOB size          64 b
+  Erase size    131072 b
+  subpagesize    2048 b
+  options     0x40004200
+  bbt options 0x00000000
+
+<span class="c"># Read from NAND: nand read addr offset size</span>
+<span class="c"># Load U-Boot environment stored at offset 0x200000</span>
+<span class="o">=&gt;</span> nand <span class="nb">read </span>0x82000000 0x200000 0x400000
+NAND <span class="nb">read</span>: device 0 offset 0x200000, size 0x400000
+ 4194304 bytes <span class="nb">read</span>: OK
+
+<span class="c"># Erase a NAND region (must be erase-block aligned)</span>
+<span class="o">=&gt;</span> nand erase 0x200000 0x100000
+NAND erase: device 0 offset 0x200000, size 0x100000
+Erasing at 0x280000 <span class="nt">--</span> 100% complete.
+OK
+
+<span class="c"># Write to NAND: nand write addr offset size</span>
+<span class="o">=&gt;</span> nand write 0x82000000 0x200000 0x100000
+NAND write: device 0 offset 0x200000, size 0x100000
+ 1048576 bytes written: OK
+
+<span class="c"># Write with ECC (for NAND that uses hardware ECC)</span>
+<span class="o">=&gt;</span> nand write.oob 0x82000000 0x200000 0x100000
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="advanced-boot-scripting-counter-and-retry-logic">Advanced Boot Scripting: Counter and Retry Logic</h3>
+
+<p>Production systems need robust scripting. Here is an A/B boot retry mechanism:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># A/B boot with retry counter</span>
+<span class="c"># Store this in bootcmd via setenv then saveenv</span>
+
+<span class="o">=&gt;</span> setenv bootcmd <span class="s1">'
+if test ${boot_a_left} -gt 0; then
+    setenv boot_a_left $(( ${boot_a_left} - 1 ));
+    saveenv;
+    echo "Trying slot A (retries left: ${boot_a_left})";
+    setenv bootpart 1;
+    if fatload mmc 0:${bootpart} ${kernel_addr_r} zImage; then
+        if fatload mmc 0:${bootpart} ${fdt_addr_r} ${fdtfile}; then
+            bootz ${kernel_addr_r} - ${fdt_addr_r};
+        fi;
+    fi;
+fi;
+if test ${boot_b_left} -gt 0; then
+    setenv boot_b_left $(( ${boot_b_left} - 1 ));
+    saveenv;
+    echo "Trying slot B (retries left: ${boot_b_left})";
+    setenv bootpart 3;
+    if fatload mmc 0:${bootpart} ${kernel_addr_r} zImage; then
+        if fatload mmc 0:${bootpart} ${fdt_addr_r} ${fdtfile}; then
+            bootz ${kernel_addr_r} - ${fdt_addr_r};
+        fi;
+    fi;
+fi;
+echo "All boot slots exhausted, entering recovery";
+run recovery_bootcmd'</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="creating-a-u-boot-boot-menu">Creating a U-Boot Boot Menu</h3>
+
+<p>U-Boot supports an interactive boot menu using <code class="language-plaintext highlighter-rouge">CONFIG_MENU</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Define menu in environment</span>
+<span class="o">=&gt;</span> setenv menu_1 <span class="s2">"Boot from SD card"</span>
+<span class="o">=&gt;</span> setenv menu_2 <span class="s2">"Boot from eMMC"</span>
+<span class="o">=&gt;</span> setenv menu_3 <span class="s2">"Boot via TFTP"</span>
+<span class="o">=&gt;</span> setenv menu_4 <span class="s2">"U-Boot shell"</span>
+
+<span class="o">=&gt;</span> setenv bootcmd <span class="s1">'
+echo "";
+echo "  *** BOOT MENU ***";
+echo "  1. Boot from SD card";
+echo "  2. Boot from eMMC";
+echo "  3. Boot via TFTP";
+echo "  4. U-Boot shell";
+echo "";
+if askenv choice "Enter choice [1-4]: " 5; then
+    if test "${choice}" = "1"; then run sdboot; fi;
+    if test "${choice}" = "2"; then run emmcboot; fi;
+    if test "${choice}" = "3"; then run netboot; fi;
+    if test "${choice}" = "4"; then; fi;
+else
+    echo "Timeout — booting default";
+    run sdboot;
+fi'</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="distro_bootcmd-the-standard-boot-mechanism">distro_bootcmd: The Standard Boot Mechanism</h3>
+
+<p>Modern U-Boot defconfigs use <code class="language-plaintext highlighter-rouge">distro_bootcmd</code>, a standardized boot sequence that tries multiple boot sources and methods automatically:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">=&gt;</span> <span class="nb">printenv </span>distro_bootcmd
+<span class="nv">distro_bootcmd</span><span class="o">=</span><span class="k">for </span>target <span class="k">in</span> <span class="k">${</span><span class="nv">boot_targets</span><span class="k">}</span><span class="p">;</span> <span class="k">do </span>run bootcmd_<span class="k">${</span><span class="nv">target</span><span class="k">}</span><span class="p">;</span> <span class="k">done</span>
+
+<span class="o">=&gt;</span> <span class="nb">printenv </span>boot_targets
+<span class="nv">boot_targets</span><span class="o">=</span>mmc0 mmc1 usb0 pxe dhcp
+
+<span class="c"># U-Boot tries each target in order:</span>
+<span class="c"># 1. mmc0: looks for extlinux.conf or EFI on MMC device 0</span>
+<span class="c"># 2. mmc1: same for MMC device 1 (eMMC)</span>
+<span class="c"># 3. usb0: same for USB drive</span>
+<span class="c"># 4. pxe: PXE network boot</span>
+<span class="c"># 5. dhcp: DHCP+TFTP boot</span>
+
+<span class="c"># extlinux.conf format (Syslinux-compatible)</span>
+<span class="c"># /boot/extlinux/extlinux.conf on the FAT or ext4 partition:</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DEFAULT linux
+PROMPT 0
+TIMEOUT 10
+
+LABEL linux
+    LINUX ../zImage
+    FDT ../am335x-boneblack.dtb
+    APPEND console=ttyO0,115200n8 root=/dev/mmcblk0p2 rw rootwait
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="u-boot-python-test-framework">U-Boot Python Test Framework</h3>
+
+<p>U-Boot includes a pytest-based framework for automated testing. Tests run against the U-Boot sandbox or real hardware via serial connection:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Run tests using the sandbox (no hardware)</span>
+<span class="nv">$ </span><span class="nb">cd </span>u-boot
+<span class="nv">$ </span>./test/py/test.py <span class="nt">--bd</span> sandbox <span class="nt">--build-dir</span> build-sandbox <span class="nt">-v</span>
+
+<span class="c"># Run tests against real hardware via serial</span>
+<span class="nv">$ </span>./test/py/test.py <span class="nt">--bd</span> am335x_evm <span class="se">\</span>
+    <span class="nt">--build-dir</span> build-am335x <span class="se">\</span>
+    <span class="nt">--serial-port</span> /dev/ttyUSB0 <span class="se">\</span>
+    <span class="nt">-v</span> <span class="nt">-k</span> <span class="s2">"test_env or test_mmc"</span>
+
+<span class="c"># Example output</span>
+PASSED tests/test_env.py::test_env_set[0]
+PASSED tests/test_env.py::test_env_save[0]
+PASSED tests/test_mmc.py::test_mmc_list[0]
+PASSED tests/test_mmc.py::test_mmc_fatls[0]
+</code></pre></div></div>
+
+<p>Writing a custom test:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># test/py/tests/test_myboot.py
+</span><span class="kn">import</span> <span class="nn">pytest</span>
+<span class="kn">import</span> <span class="nn">u_boot_utils</span>
+
+<span class="o">@</span><span class="n">pytest</span><span class="p">.</span><span class="n">mark</span><span class="p">.</span><span class="n">boardspec</span><span class="p">(</span><span class="s">'am335x_evm'</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">test_my_tftp_boot</span><span class="p">(</span><span class="n">u_boot_console</span><span class="p">):</span>
+    <span class="s">"""Test TFTP boot sequence"""</span>
+    <span class="n">u_boot_console</span><span class="p">.</span><span class="n">run_command</span><span class="p">(</span><span class="s">'setenv ipaddr 192.168.1.100'</span><span class="p">)</span>
+    <span class="n">u_boot_console</span><span class="p">.</span><span class="n">run_command</span><span class="p">(</span><span class="s">'setenv serverip 192.168.1.1'</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">u_boot_console</span><span class="p">.</span><span class="n">run_command</span><span class="p">(</span><span class="s">'ping 192.168.1.1'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="s">'is alive'</span> <span class="ow">in</span> <span class="n">output</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">u_boot_console</span><span class="p">.</span><span class="n">run_command</span><span class="p">(</span><span class="s">'tftp ${kernel_addr_r} zImage'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="s">'bytes read'</span> <span class="ow">in</span> <span class="n">output</span> <span class="ow">or</span> <span class="s">'bytes transferred'</span> <span class="ow">in</span> <span class="n">output</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-questions">Interview Questions</h2>
+
+<p><strong>1. What is the bootcmd environment variable?</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">bootcmd</code> is the U-Boot environment variable that contains the boot command string executed automatically after the autoboot countdown expires. It is executed by <code class="language-plaintext highlighter-rouge">run bootcmd</code>. Typically it is a script that determines the boot source and loads and boots the kernel. Example: <code class="language-plaintext highlighter-rouge">bootcmd=run findfdt; run distro_bootcmd</code>. You can override it with <code class="language-plaintext highlighter-rouge">setenv bootcmd "your_commands"</code> followed by <code class="language-plaintext highlighter-rouge">saveenv</code> to change the default boot behavior persistently.</p>
+
+<p><strong>2. What is the difference between bootm, bootz, and booti?</strong></p>
+
+<p>All three boot a Linux kernel but handle different image formats. <code class="language-plaintext highlighter-rouge">bootm</code> handles the legacy uImage format created by <code class="language-plaintext highlighter-rouge">mkimage -A arm -T kernel -C none</code>, as well as FIT images — it is the oldest and most general. <code class="language-plaintext highlighter-rouge">bootz</code> handles ARM 32-bit <code class="language-plaintext highlighter-rouge">zImage</code> (a self-decompressing kernel), the standard format for 32-bit ARM systems. <code class="language-plaintext highlighter-rouge">booti</code> handles the uncompressed flat <code class="language-plaintext highlighter-rouge">Image</code> format used on ARM64 (AArch64) systems. The choice is determined by how the kernel was compiled.</p>
+
+<p><strong>3. How do you change the default boot arguments (bootargs) permanently?</strong></p>
+
+<p>Set the <code class="language-plaintext highlighter-rouge">bootargs</code> environment variable and save it: <code class="language-plaintext highlighter-rouge">setenv bootargs "console=ttyO0,115200n8 root=/dev/mmcblk0p2 rw rootwait"</code> then <code class="language-plaintext highlighter-rouge">saveenv</code>. On next boot, U-Boot reads the environment from flash and uses your <code class="language-plaintext highlighter-rouge">bootargs</code>. Alternatively, on systems using <code class="language-plaintext highlighter-rouge">distro_bootcmd</code>, the boot arguments may come from the <code class="language-plaintext highlighter-rouge">extlinux.conf</code> file’s <code class="language-plaintext highlighter-rouge">APPEND</code> line, in which case you edit that file rather than the U-Boot environment.</p>
+
+<p><strong>4. How do you create an automated boot script in U-Boot?</strong></p>
+
+<p>Create a script file, convert it to a U-Boot script image with <code class="language-plaintext highlighter-rouge">mkimage</code>, store it on the boot media, and load+execute it from <code class="language-plaintext highlighter-rouge">bootcmd</code>. Example: write <code class="language-plaintext highlighter-rouge">boot.scr.uimg</code> using <code class="language-plaintext highlighter-rouge">mkimage -T script -C none -n boot -d boot.cmd boot.scr.uimg</code>. In <code class="language-plaintext highlighter-rouge">bootcmd</code>, add: <code class="language-plaintext highlighter-rouge">fatload mmc 0:1 0x80200000 boot.scr.uimg; source 0x80200000</code>. The <code class="language-plaintext highlighter-rouge">source</code> command executes a U-Boot script image from memory. Alternatively, store scripts directly as environment variables and use <code class="language-plaintext highlighter-rouge">run script_name</code>.</p>
+
+<p><strong>5. How do you boot a kernel from NAND flash in U-Boot?</strong></p>
+
+<p>Use <code class="language-plaintext highlighter-rouge">nand read</code> to copy the kernel from NAND into DRAM, then boot it. Example sequence: <code class="language-plaintext highlighter-rouge">nand read ${kernel_addr_r} 0x00280000 0x00600000</code> reads 6 MB from NAND offset 0x280000 into DRAM. Then <code class="language-plaintext highlighter-rouge">bootm ${kernel_addr_r}</code> if it is a uImage, or <code class="language-plaintext highlighter-rouge">bootz ${kernel_addr_r} - ${fdt_addr_r}</code> if it is a zImage with a separately loaded DTB. The NAND offsets and sizes must match your flash partition layout, typically defined in your kernel’s MTD partition table or U-Boot’s <code class="language-plaintext highlighter-rouge">CONFIG_MTDPARTS_DEFAULT</code>.</p>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<ul>
+  <li>U-Boot command reference: <a href="https://u-boot.readthedocs.io/en/latest/usage/">https://u-boot.readthedocs.io/en/latest/usage/</a></li>
+  <li>“Mastering Embedded Linux Programming” — Chris Simmonds, Chapter 3</li>
+  <li>BeagleBone Black U-Boot boot sequence guide: <a href="https://elinux.org/Beagleboard:U-boot">https://elinux.org/Beagleboard:U-boot</a></li>
+  <li>Das U-Boot Environment Variables documentation: <code class="language-plaintext highlighter-rouge">doc/usage/environment.rst</code></li>
+  <li>U-Boot distro boot specification: <code class="language-plaintext highlighter-rouge">doc/README.distro</code></li>
+  <li>U-Boot pytest documentation: <code class="language-plaintext highlighter-rouge">test/py/README.md</code></li>
+</ul>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-wrench"></i>
+        <span>U-Boot Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/embedded-linux/uboot/boot-sequence/" class="gtn-link ">
+          <i class="fas fa-play"></i> Boot Sequence
+        </a>
+        <a href="/embedded-linux/uboot/uboot-config-build/" class="gtn-link ">
+          <i class="fas fa-wrench"></i> U-Boot Config &amp; Build
+        </a>
+        <a href="/embedded-linux/uboot/uboot-commands/" class="gtn-link gts-active">
+          <i class="fas fa-terminal"></i> U-Boot Commands &amp; Scripting
+        </a>
+        <a href="/embedded-linux/uboot/device-tree/" class="gtn-link ">
+          <i class="fas fa-sitemap"></i> Device Tree (DTS)
+        </a>
+        <a href="/embedded-linux/uboot/board-porting/" class="gtn-link ">
+          <i class="fas fa-puzzle-piece"></i> Board Porting
+        </a>
+        <a href="/embedded-linux/uboot/tftp-boot/" class="gtn-link ">
+          <i class="fas fa-network-wired"></i> TFTP &amp; Network Boot
+        </a>
+      </nav>
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/embedded-linux/uboot/uboot-config-build/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">U-Boot Config & Build</span>
+      </a>
+      
+      
+      <a href="/embedded-linux/uboot/device-tree/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Device Tree (DTS)</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

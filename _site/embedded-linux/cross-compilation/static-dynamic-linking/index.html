@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Static vs Dynamic Linking · Eslam Mohamed</title>
+  <meta name="description" content="Comparing static and dynamic linking strategies for embedded Linux: binary size trade-offs, deployment requirements, RPATH, soname versioning, and PIC internals." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/embedded-linux/">Embedded Linux Developer</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Static vs Dynamic Linking</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 03 — Embedded Linux</span>
+        <span class="guide-stage-pill">Stage 05</span>
+      </div>
+      <h1 class="guide-title">Static vs Dynamic Linking</h1>
+      <p class="guide-subtitle">Comparing static and dynamic linking strategies for embedded Linux: binary size trade-offs, deployment requirements, RPATH, soname versioning, and PIC internals.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="static-vs-dynamic-linking-fundamentals">Static vs Dynamic Linking Fundamentals</h2>
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>When a C program calls <code class="language-plaintext highlighter-rouge">printf()</code>, <code class="language-plaintext highlighter-rouge">malloc()</code>, or <code class="language-plaintext highlighter-rouge">socket()</code>, those functions live in a library. The linker must connect your object file to those functions at some point. The question is <em>when</em>: at build time (static) or at runtime (dynamic).</p>
+
+<h3 id="static-linking">Static Linking</h3>
+
+<p>With <strong>static linking</strong> (<code class="language-plaintext highlighter-rouge">-static</code> flag), the linker copies the machine code of every library function your program uses directly into the final executable. The resulting binary is self-contained — it carries everything it needs inside itself.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># hello.c</span>
+<span class="c"># #include &lt;stdio.h&gt;</span>
+<span class="c"># int main(void) { printf("Hello\n"); return 0; }</span>
+
+<span class="c"># Compile and link STATICALLY</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="nt">-static</span> <span class="nt">-o</span> hello_static hello.c
+
+<span class="c"># Compile and link DYNAMICALLY (default)</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="nt">-o</span> hello_dynamic hello.c
+</code></pre></div></div>
+
+<h3 id="size-comparison">Size Comparison</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-lh</span> hello_static hello_dynamic
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-rwxr-xr-x 1 user user 583K Mar  7 10:22 hello_static
+-rwxr-xr-x 1 user user 8.0K Mar  7 10:22 hello_dynamic
+</code></pre></div></div>
+
+<p>The static binary is ~72x larger because it includes all of glibc’s code. The dynamic binary only stores a reference to the C library.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Check shared library dependencies with ldd</span>
+<span class="nv">$ </span>ldd hello_dynamic
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        linux-vdso.so.1 (0x00000000)
+        libc.so.6 =&gt; /lib/arm-linux-gnueabihf/libc.so.6 (0xb6d2a000)
+        /lib/ld-linux-armhf.so.3 (0xb6efc000)
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ldd hello_static
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        not a dynamic executable
+</code></pre></div></div>
+
+<p>The static binary has zero runtime dependencies and requires no additional files on the target.</p>
+
+<h3 id="what-needs-to-be-deployed-with-a-dynamic-binary">What Needs to Be Deployed With a Dynamic Binary</h3>
+
+<p>When copying a dynamically-linked binary to an embedded target, you must ensure all its dependencies are present on the target:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Check what myapp needs</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-readelf <span class="nt">-d</span> myapp | <span class="nb">grep </span>NEEDED
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 0x00000001 (NEEDED)    Shared library: [libssl.so.1.1]
+ 0x00000001 (NEEDED)    Shared library: [libcrypto.so.1.1]
+ 0x00000001 (NEEDED)    Shared library: [libc.so.6]
+</code></pre></div></div>
+
+<p>Deployment checklist for a dynamic binary:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Location on Target</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>The binary itself</td>
+      <td><code class="language-plaintext highlighter-rouge">/usr/bin/myapp</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">libssl.so.1.1</code></td>
+      <td><code class="language-plaintext highlighter-rouge">/lib/arm-linux-gnueabihf/</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">libcrypto.so.1.1</code></td>
+      <td><code class="language-plaintext highlighter-rouge">/lib/arm-linux-gnueabihf/</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">libc.so.6</code></td>
+      <td><code class="language-plaintext highlighter-rouge">/lib/arm-linux-gnueabihf/</code> (usually pre-installed)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">ld-linux-armhf.so.3</code></td>
+      <td><code class="language-plaintext highlighter-rouge">/lib/ld-linux-armhf.so.3</code> (dynamic linker, must exist)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="static-vs-dynamic-when-to-choose-what">Static vs Dynamic: When to Choose What</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Criterion</th>
+      <th>Static</th>
+      <th>Dynamic</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Deployment simplicity</td>
+      <td>Simple (one file)</td>
+      <td>Complex (must ship libraries)</td>
+    </tr>
+    <tr>
+      <td>Binary size</td>
+      <td>Large</td>
+      <td>Small</td>
+    </tr>
+    <tr>
+      <td>Memory sharing</td>
+      <td>No sharing</td>
+      <td>Multiple processes share one copy of <code class="language-plaintext highlighter-rouge">.so</code> in RAM</td>
+    </tr>
+    <tr>
+      <td>Security patching</td>
+      <td>Must recompile + redeploy app</td>
+      <td>Replace <code class="language-plaintext highlighter-rouge">.so</code> file, all apps get the fix</td>
+    </tr>
+    <tr>
+      <td>Startup time</td>
+      <td>Faster (no dynamic linking step)</td>
+      <td>Slightly slower</td>
+    </tr>
+    <tr>
+      <td>Embedded minimal rootfs</td>
+      <td>Excellent choice</td>
+      <td>Requires rootfs with libraries</td>
+    </tr>
+    <tr>
+      <td>License compliance</td>
+      <td>Static linking with LGPL libs can be tricky</td>
+      <td>LGPL shared library is safe</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-mid" id="dynamic-linker-rpath-and-deployment">Dynamic Linker, RPATH, and Deployment</h2>
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="the-dynamic-linker--loader">The Dynamic Linker / Loader</h3>
+
+<p>When you run a dynamically-linked ARM binary on the target, the kernel does not load the program directly. Instead it hands control to the <strong>dynamic linker</strong> (also called the <em>program interpreter</em>), which is embedded in the binary’s ELF header:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>arm-linux-gnueabihf-readelf <span class="nt">-l</span> hello_dynamic | <span class="nb">grep </span>interpreter
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>      [Requesting program interpreter: /lib/ld-linux-armhf.so.3]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">ld-linux-armhf.so.3</code> is itself a shared library, but the kernel can load it directly. It then:</p>
+
+<ol>
+  <li>Reads the binary’s <code class="language-plaintext highlighter-rouge">NEEDED</code> entries to find all required libraries</li>
+  <li>Searches for those libraries in: RPATH/RUNPATH, <code class="language-plaintext highlighter-rouge">LD_LIBRARY_PATH</code>, <code class="language-plaintext highlighter-rouge">/etc/ld.so.cache</code>, default paths</li>
+  <li>Maps each library into the process address space</li>
+  <li>Resolves all dynamic symbols (patches the PLT/GOT)</li>
+  <li>Calls the program’s <code class="language-plaintext highlighter-rouge">_start</code> entry point</li>
+</ol>
+
+<h3 id="ld_library_path">LD_LIBRARY_PATH</h3>
+
+<p><code class="language-plaintext highlighter-rouge">LD_LIBRARY_PATH</code> is an environment variable listing directories to search for shared libraries, checked before the default paths:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Run myapp with libraries in a non-standard path</span>
+<span class="nv">$ LD_LIBRARY_PATH</span><span class="o">=</span>/opt/myapp/lib ./myapp
+
+<span class="c"># Add to the existing LD_LIBRARY_PATH</span>
+<span class="nv">$ </span><span class="nb">export </span><span class="nv">LD_LIBRARY_PATH</span><span class="o">=</span>/opt/myapp/lib:<span class="nv">$LD_LIBRARY_PATH</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">LD_LIBRARY_PATH</code> is useful for development and testing but problematic for production because it affects all dynamic linking for that process and its children, and it can interfere with system libraries. For production, use RPATH instead.</p>
+
+<h3 id="ldconfig-and-etcldsocache">ldconfig and /etc/ld.so.cache</h3>
+
+<p><code class="language-plaintext highlighter-rouge">ldconfig</code> scans standard library directories, updates the library name → file path cache (<code class="language-plaintext highlighter-rouge">/etc/ld.so.cache</code>), and creates or updates symlinks:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># On the target: add a new library directory</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"/opt/myapp/lib"</span> <span class="o">&gt;&gt;</span> /etc/ld.so.conf.d/myapp.conf
+<span class="nv">$ </span>ldconfig
+
+<span class="c"># Check the cache</span>
+<span class="nv">$ </span>ldconfig <span class="nt">-p</span> | <span class="nb">grep </span>libssl
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        libssl.so.1.1 (libc6,hard-float) =&gt; /lib/arm-linux-gnueabihf/libssl.so.1.1
+        libssl.so (libc6,hard-float) =&gt; /usr/lib/arm-linux-gnueabihf/libssl.so
+</code></pre></div></div>
+
+<p>On embedded systems with read-only rootfs, running <code class="language-plaintext highlighter-rouge">ldconfig</code> at startup from an init script or pre-generating the cache is common practice.</p>
+
+<h3 id="embedding-rpath-with--wl-rpath">Embedding RPATH with -Wl,-rpath</h3>
+
+<p>RPATH is a list of directories embedded inside the binary itself that the dynamic linker searches when loading that binary:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Embed /opt/myapp/lib as a runtime library search path</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="se">\</span>
+    <span class="nt">--sysroot</span><span class="o">=</span>/opt/rpi4-sysroot <span class="se">\</span>
+    <span class="nt">-Wl</span>,-rpath,/opt/myapp/lib <span class="se">\</span>
+    <span class="nt">-o</span> myapp main.c <span class="nt">-lssl</span>
+
+<span class="c"># Verify it was embedded</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-readelf <span class="nt">-d</span> myapp | <span class="nb">grep</span> <span class="nt">-E</span> <span class="s2">"RPATH|RUNPATH"</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 0x0000000f (RPATH)    Library rpath: [/opt/myapp/lib]
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Use $ORIGIN for a path relative to the binary's own directory</span>
+<span class="c"># This makes the binary portable regardless of installation path</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="se">\</span>
+    <span class="nt">--sysroot</span><span class="o">=</span>/opt/rpi4-sysroot <span class="se">\</span>
+    <span class="s1">'-Wl,-rpath,$ORIGIN/../lib'</span> <span class="se">\</span>
+    <span class="nt">-o</span> bin/myapp main.c <span class="nt">-lssl</span>
+
+<span class="nv">$ </span>arm-linux-gnueabihf-readelf <span class="nt">-d</span> bin/myapp | <span class="nb">grep </span>RPATH
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 0x0000000f (RPATH)    Library rpath: [$ORIGIN/../lib]
+</code></pre></div></div>
+
+<p>With <code class="language-plaintext highlighter-rouge">$ORIGIN</code>, the binary finds libraries in <code class="language-plaintext highlighter-rouge">../lib</code> relative to wherever the binary itself lives — ideal for self-contained application bundles.</p>
+
+<h3 id="partial-static-linking">Partial Static Linking</h3>
+
+<p>You can link some libraries statically and others dynamically in the same binary:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Link libssl and libcrypto statically, but keep libc dynamic</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="se">\</span>
+    <span class="nt">--sysroot</span><span class="o">=</span>/opt/rpi4-sysroot <span class="se">\</span>
+    <span class="nt">-o</span> myapp main.c <span class="se">\</span>
+    <span class="nt">-Wl</span>,-Bstatic <span class="nt">-lssl</span> <span class="nt">-lcrypto</span> <span class="se">\</span>
+    <span class="nt">-Wl</span>,-Bdynamic <span class="nt">-lc</span>
+
+<span class="nv">$ </span>ldd myapp
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        linux-vdso.so.1 (0x00000000)
+        libc.so.6 =&gt; /lib/arm-linux-gnueabihf/libc.so.6 (0xb6d2a000)
+        /lib/ld-linux-armhf.so.3 (0xb6efc000)
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">libssl</code> and <code class="language-plaintext highlighter-rouge">libcrypto</code> are now baked in; only <code class="language-plaintext highlighter-rouge">libc</code> is dynamically loaded.</p>
+
+<h3 id="inspecting-dynamic-information-with-readelf--d">Inspecting Dynamic Information with readelf -d</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>arm-linux-gnueabihf-readelf <span class="nt">-d</span> myapp
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Dynamic section at offset 0x2f14 contains 28 entries:
+  Tag        Type                         Name/Value
+ 0x00000001 (NEEDED)                     Shared library: [libssl.so.1.1]
+ 0x00000001 (NEEDED)                     Shared library: [libcrypto.so.1.1]
+ 0x00000001 (NEEDED)                     Shared library: [libc.so.6]
+ 0x0000000f (RPATH)                      Library rpath: [$ORIGIN/../lib]
+ 0x0000000c (INIT)                       0x10574
+ 0x0000000d (FINI)                       0x10ae8
+ 0x00000019 (INIT_ARRAY)                 0x20ef4
+ 0x0000001b (INIT_ARRAYSZ)               4 (bytes)
+ 0x0000001a (FINI_ARRAY)                 0x20ef8
+ 0x0000001c (FINI_ARRAYSZ)               4 (bytes)
+ 0x00000005 (STRTAB)                     0x105a8
+ 0x00000006 (SYMTAB)                     0x10488
+ 0x0000000a (STRSZ)                      218 (bytes)
+ 0x0000000b (SYMENT)                     16 (bytes)
+ 0x00000015 (DEBUG)                      0x0
+ 0x00000003 (PLTGOT)                     0x21000
+ 0x00000002 (PLTRELSZ)                   64 (bytes)
+ 0x00000014 (PLTREL)                     REL
+ 0x00000017 (JMPREL)                     0x10694
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="shared-libraries-versioning-pic-got-and-plt">Shared Libraries: Versioning, PIC, GOT, and PLT</h2>
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="library-soname-versioning">Library Soname Versioning</h3>
+
+<p>Shared libraries use a three-level versioning scheme to allow multiple versions to coexist and ensure ABI compatibility:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>libfoo.so.1.2.3
+         │ │ │
+         │ │ └── Patch version (bug fixes, no ABI change)
+         │ └──── Minor version (new APIs, backward compatible)
+         └────── Major version (ABI break — incompatible change)
+</code></pre></div></div>
+
+<p>Three file names are involved:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Purpose</th>
+      <th>Who Sets It</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">libfoo.so</code></td>
+      <td>Linker name — what <code class="language-plaintext highlighter-rouge">-lfoo</code> resolves to</td>
+      <td>Symlink, created by installer</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">libfoo.so.1</code></td>
+      <td>Soname — stored in ELF, used by dynamic linker at runtime</td>
+      <td>Set with <code class="language-plaintext highlighter-rouge">-Wl,-soname,libfoo.so.1</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">libfoo.so.1.2.3</code></td>
+      <td>Real name — actual file on disk</td>
+      <td>Actual built file</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Build a shared library with proper soname</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="se">\</span>
+    <span class="nt">-shared</span> <span class="se">\</span>
+    <span class="nt">-fPIC</span> <span class="se">\</span>
+    <span class="nt">-Wl</span>,-soname,libfoo.so.1 <span class="se">\</span>
+    <span class="nt">-o</span> libfoo.so.1.2.3 <span class="se">\</span>
+    foo.c
+
+<span class="c"># Create the symlinks (ldconfig does this automatically)</span>
+<span class="nv">$ </span><span class="nb">ln</span> <span class="nt">-s</span> libfoo.so.1.2.3 libfoo.so.1
+<span class="nv">$ </span><span class="nb">ln</span> <span class="nt">-s</span> libfoo.so.1     libfoo.so
+
+<span class="c"># Verify the soname embedded in the library</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-readelf <span class="nt">-d</span> libfoo.so.1.2.3 | <span class="nb">grep </span>SONAME
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 0x0000000e (SONAME)    Library soname: [libfoo.so.1]
+</code></pre></div></div>
+
+<p>When you upgrade to <code class="language-plaintext highlighter-rouge">libfoo.so.1.3.0</code> (backward-compatible), you only update the real file and re-point <code class="language-plaintext highlighter-rouge">libfoo.so.1</code>. All existing binaries that reference <code class="language-plaintext highlighter-rouge">libfoo.so.1</code> (the soname) automatically use the new version. When the ABI breaks, you release <code class="language-plaintext highlighter-rouge">libfoo.so.2.0.0</code> and create a new <code class="language-plaintext highlighter-rouge">libfoo.so.2</code> symlink — both versions coexist.</p>
+
+<h3 id="position-independent-code-pic">Position-Independent Code (PIC)</h3>
+
+<p>Shared libraries must be compiled with <code class="language-plaintext highlighter-rouge">-fPIC</code> (Position-Independent Code). This allows the library to be loaded at any virtual address without requiring relocation of code.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Compile object files as PIC</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="nt">-fPIC</span> <span class="nt">-c</span> foo.c <span class="nt">-o</span> foo.o
+
+<span class="c"># Link into shared library</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="nt">-shared</span> <span class="nt">-fPIC</span> <span class="nt">-o</span> libfoo.so foo.o
+</code></pre></div></div>
+
+<p>Without PIC, a shared library would contain absolute addresses that would need to be patched every time the library is loaded at a different address — a process called <em>text relocation</em> which prevents sharing the code pages between processes.</p>
+
+<p>With PIC, all data accesses go through the <strong>Global Offset Table (GOT)</strong> and all function calls go through the <strong>Procedure Linkage Table (PLT)</strong>, both of which contain addresses that can be fixed up per-process without touching the shared code pages.</p>
+
+<h3 id="global-offset-table-got-and-procedure-linkage-table-plt">Global Offset Table (GOT) and Procedure Linkage Table (PLT)</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Call from myapp to printf()
+─────────────────────────────────────────────────────
+myapp .text:
+    bl  printf@plt          ← branch to PLT stub
+
+PLT stub (in myapp):
+    ldr  pc, [pc, #0]       ← load address from GOT entry
+    .word  _printf_got_entry ← points into GOT
+
+GOT entry (writable per-process):
+    Initially: points to PLT resolver
+    After first call: updated to actual printf() address in libc
+
+Dynamic linker (ld-linux-armhf.so.3):
+    On first call: resolves printf → libc address → patches GOT
+    On subsequent calls: GOT already points to printf directly (fast path)
+</code></pre></div></div>
+
+<p>This lazy binding (resolving symbols only on first call) is the default behavior. It can be disabled with <code class="language-plaintext highlighter-rouge">LD_BIND_NOW=1</code> (or link flag <code class="language-plaintext highlighter-rouge">-Wl,-z,now</code>) to resolve all symbols at startup — preferred for security-sensitive applications.</p>
+
+<h3 id="musl-libc-for-static-builds">musl libc for Static Builds</h3>
+
+<p><code class="language-plaintext highlighter-rouge">musl</code> is a lightweight C library designed to produce clean, small static binaries:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install musl cross-compiler</span>
+<span class="nv">$ </span><span class="nb">sudo </span>apt <span class="nb">install </span>musl-tools
+
+<span class="c"># Or use a musl-based toolchain from Crosstool-NG:</span>
+<span class="c"># ct-ng sample: arm-unknown-linux-musleabihf</span>
+
+<span class="c"># Compile a fully static binary with musl</span>
+<span class="nv">$ </span>arm-linux-musleabihf-gcc <span class="se">\</span>
+    <span class="nt">-static</span> <span class="se">\</span>
+    <span class="nt">-Os</span> <span class="se">\</span>
+    <span class="nt">-o</span> myapp_musl main.c
+
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-lh</span> myapp_musl
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-rwxr-xr-x 1 user user 24K Mar  7 10:45 myapp_musl
+</code></pre></div></div>
+
+<p>Compare with glibc static:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="nt">-static</span> <span class="nt">-Os</span> <span class="nt">-o</span> myapp_glibc main.c
+
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-lh</span> myapp_glibc myapp_musl
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-rwxr-xr-x 1 user user 543K Mar  7 10:45 myapp_glibc
+-rwxr-xr-x 1 user user  24K Mar  7 10:45 myapp_musl
+</code></pre></div></div>
+
+<p>musl produces a ~22x smaller static binary because it was designed for static linking from the start, with minimal internal dependencies and no per-thread storage overhead.</p>
+
+<h3 id="link-time-optimization-lto-and-shared-libraries">Link-Time Optimization (LTO) and Shared Libraries</h3>
+
+<p>LTO (<code class="language-plaintext highlighter-rouge">-flto</code>) allows the compiler to perform optimizations across translation unit boundaries. With dynamic libraries it requires care:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Build with LTO (both compile and link steps need -flto)</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="se">\</span>
+    <span class="nt">-flto</span> <span class="se">\</span>
+    <span class="nt">-O2</span> <span class="se">\</span>
+    <span class="nt">-fPIC</span> <span class="se">\</span>
+    <span class="nt">-shared</span> <span class="se">\</span>
+    <span class="nt">-o</span> libfoo.so.1 <span class="se">\</span>
+    foo.c bar.c
+
+<span class="c"># For static libraries with LTO, use gcc-ar instead of ar</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc-ar rcs libfoo.a foo.o bar.o
+</code></pre></div></div>
+
+<p>LTO can cause link failures with mixed-compiler object files (e.g., objects from different GCC versions), so all objects in a link step must be from the same compiler when LTO is enabled.</p>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-questions">Interview Questions</h2>
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q: When would you use static linking in an embedded system?</strong></p>
+
+<p>Static linking makes sense in embedded systems when: (1) the rootfs is extremely minimal and there is no room for shared libraries, (2) you want a self-contained single-file deployment (copy one binary, done), (3) the system uses a read-only rootfs where installing new <code class="language-plaintext highlighter-rouge">.so</code> files is not possible, (4) startup time is critical and you want to avoid the dynamic linking overhead, (5) you are using musl libc and want the small static binary size advantage. The trade-offs are larger binaries, no shared memory between processes for library code, and the need to recompile and redeploy the entire binary to update a library (e.g., to patch an OpenSSL vulnerability).</p>
+
+<p><strong>Q: What is RPATH and how does it differ from LD_LIBRARY_PATH?</strong></p>
+
+<p>RPATH is a list of directories embedded inside the ELF binary itself (in the dynamic section) that the dynamic linker searches when loading that specific binary. It is set at compile time with <code class="language-plaintext highlighter-rouge">-Wl,-rpath,/some/path</code> and affects only the binary it is embedded in. <code class="language-plaintext highlighter-rouge">LD_LIBRARY_PATH</code> is an environment variable that the dynamic linker checks before RPATH, and it affects all binaries loaded by the dynamic linker in that process session. RPATH is preferred in production because it is per-binary and not affected by the runtime environment; <code class="language-plaintext highlighter-rouge">LD_LIBRARY_PATH</code> is convenient for testing but can cause unexpected library conflicts if set globally. RUNPATH is like RPATH but searched after <code class="language-plaintext highlighter-rouge">LD_LIBRARY_PATH</code> (set with <code class="language-plaintext highlighter-rouge">-Wl,--enable-new-dtags</code>).</p>
+
+<p><strong>Q: Explain soname versioning and why it matters.</strong></p>
+
+<p>Soname versioning (<code class="language-plaintext highlighter-rouge">libfoo.so.1</code>, <code class="language-plaintext highlighter-rouge">libfoo.so.1.2.3</code>) allows multiple ABI-incompatible versions of a library to coexist on a system and ensures that binaries always find the correct version at runtime. The soname is embedded in the library ELF (<code class="language-plaintext highlighter-rouge">SONAME</code> entry) and is what the binary records when it links against <code class="language-plaintext highlighter-rouge">-lfoo</code>. The dynamic linker at runtime searches for a file matching the soname, not the full version number. This means upgrading from <code class="language-plaintext highlighter-rouge">libfoo.so.1.2.3</code> to <code class="language-plaintext highlighter-rouge">libfoo.so.1.3.0</code> just involves updating the <code class="language-plaintext highlighter-rouge">libfoo.so.1</code> symlink — existing binaries pick up the new version automatically. When the ABI breaks, the major version is bumped to 2, both <code class="language-plaintext highlighter-rouge">libfoo.so.1</code> and <code class="language-plaintext highlighter-rouge">libfoo.so.2</code> exist, old and new binaries each use their respective version.</p>
+
+<p><strong>Q: What is position-independent code and why is it required for shared libraries?</strong></p>
+
+<p>Position-independent code (PIC) is machine code that works correctly regardless of the address at which it is loaded into memory. It achieves this by accessing global data through the Global Offset Table (GOT) — a per-process table of absolute addresses — rather than using hardcoded addresses. PIC is required for shared libraries because multiple processes may load the same shared library at different virtual addresses (depending on what other libraries are loaded first and ASLR). If the library code contained hardcoded absolute addresses, each process would need its own private copy with patched addresses (text relocation), defeating the purpose of sharing. With PIC, the read-only code pages are shared across all processes; only the writable GOT is per-process.</p>
+
+<p><strong>Q: How do you deploy a dynamically-linked application to a minimal embedded rootfs?</strong></p>
+
+<p>Use <code class="language-plaintext highlighter-rouge">readelf -d mybinary | grep NEEDED</code> to list all required shared libraries. Copy each <code class="language-plaintext highlighter-rouge">.so</code> to the appropriate directory on the target (<code class="language-plaintext highlighter-rouge">/lib/arm-linux-gnueabihf/</code> on Debian-based systems). Follow the dependency chain recursively — each library may itself depend on other libraries. Copy the dynamic linker (<code class="language-plaintext highlighter-rouge">ld-linux-armhf.so.3</code>) if it is not already present. Ensure all symlinks (e.g., <code class="language-plaintext highlighter-rouge">libssl.so.1.1 -&gt; libssl.so.1.1.1f</code>) are correct. Run <code class="language-plaintext highlighter-rouge">ldconfig</code> on the target (or pre-generate <code class="language-plaintext highlighter-rouge">/etc/ld.so.cache</code>). If storage is a concern, strip debug symbols from the <code class="language-plaintext highlighter-rouge">.so</code> files with <code class="language-plaintext highlighter-rouge">arm-linux-gnueabihf-strip --strip-unneeded libfoo.so</code>. Test by running <code class="language-plaintext highlighter-rouge">ldd mybinary</code> on the target to confirm all libraries are found.</p>
+
+<p><strong>Q: What is the role of ld-linux.so?</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">ld-linux.so</code> (e.g., <code class="language-plaintext highlighter-rouge">ld-linux-armhf.so.3</code> on ARM) is the dynamic linker/loader. Unlike all other shared libraries, it is not loaded by another loader — the kernel loads it directly when executing a dynamically-linked binary. The ELF binary header stores its path in the <code class="language-plaintext highlighter-rouge">PT_INTERP</code> program header. The dynamic linker’s responsibilities are: (1) reading the binary’s <code class="language-plaintext highlighter-rouge">NEEDED</code> entries to find required shared libraries, (2) searching for those libraries in RPATH, <code class="language-plaintext highlighter-rouge">LD_LIBRARY_PATH</code>, and the <code class="language-plaintext highlighter-rouge">ld.so.cache</code>, (3) mapping all required <code class="language-plaintext highlighter-rouge">.so</code> files into the process address space, (4) resolving all symbol references — patching GOT/PLT entries so that function calls and data accesses point to the correct addresses, (5) calling any initialization functions (<code class="language-plaintext highlighter-rouge">.init</code> sections, <code class="language-plaintext highlighter-rouge">__attribute__((constructor))</code>), and (6) transferring control to the program’s <code class="language-plaintext highlighter-rouge">main()</code>.</p>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<ul>
+  <li><strong>“Linkers and Loaders”</strong> — John R. Levine — the definitive reference for ELF linking, dynamic loading, GOT/PLT mechanics</li>
+  <li><strong>Linux man pages: ld.so(8), ldd(1), ldconfig(8)</strong> — detailed documentation for the dynamic linker ecosystem (https://man7.org/linux/man-pages/)</li>
+  <li><strong>“Mastering Embedded Linux Programming”</strong> — Chris Simmonds — Chapter 5: Building a Root Filesystem, covers dynamic library deployment</li>
+  <li><strong>Ulrich Drepper: “How to Write Shared Libraries”</strong> — comprehensive guide to shared library design and versioning (https://www.akkadia.org/drepper/dsohowto.pdf)</li>
+  <li><strong>musl libc</strong> — lightweight C library excellent for static embedded builds (https://musl.libc.org/)</li>
+  <li><strong>“Understanding ELF”</strong> — free tutorial on ELF structure, sections, and dynamic linking internals (https://linux-audit.com/elf-binaries-on-linux-understanding-and-analysis/)</li>
+</ul>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-gears"></i>
+        <span>Cross-Compilation Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/embedded-linux/cross-compilation/gnu-toolchain/" class="gtn-link ">
+          <i class="fas fa-gears"></i> GNU Toolchain
+        </a>
+        <a href="/embedded-linux/cross-compilation/sysroot-libraries/" class="gtn-link ">
+          <i class="fas fa-folder-tree"></i> Sysroot &amp; Libraries
+        </a>
+        <a href="/embedded-linux/cross-compilation/static-dynamic-linking/" class="gtn-link gts-active">
+          <i class="fas fa-link"></i> Static vs Dynamic Linking
+        </a>
+        <a href="/embedded-linux/cross-compilation/qemu-emulation/" class="gtn-link ">
+          <i class="fas fa-computer"></i> QEMU Emulation
+        </a>
+        <a href="/embedded-linux/cross-compilation/binary-analysis/" class="gtn-link ">
+          <i class="fas fa-magnifying-glass-chart"></i> readelf / objdump / nm
+        </a>
+        <a href="/embedded-linux/cross-compilation/cross-compile-cmake/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> Cross-Compiling with CMake
+        </a>
+      </nav>
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/embedded-linux/cross-compilation/sysroot-libraries/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Sysroot & Libraries</span>
+      </a>
+      
+      
+      <a href="/embedded-linux/cross-compilation/qemu-emulation/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">QEMU Emulation</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

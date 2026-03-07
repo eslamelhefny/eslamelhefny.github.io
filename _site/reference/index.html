@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Embedded Linux Reference · Eslam Mohamed</title>
+  <meta name="description" content="Quick-reference commands, boot sequence, and essential concepts for Embedded Linux engineers." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link active">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="ref-page">
+
+  <div class="ref-page-header">
+    <div class="section-eyebrow">cheat sheet</div>
+    <h1 class="section-title">Embedded Linux Reference</h1>
+    <p class="section-sub">Essential commands, concepts, and workflows — everything you reach for daily as an embedded Linux engineer.</p>
+  </div>
+
+  <div class="ref-page-grid">
+
+    <!-- Boot Sequence -->
+    <div class="ref-card fade-up ref-card--wide">
+      <div class="ref-card-title"><i class="fas fa-bolt"></i> Boot Sequence</div>
+      <div class="ref-boot-seq ref-boot-seq--lg">
+        <div class="ref-boot-block">
+          <span class="ref-boot-step-lg">ROM / BootROM</span>
+          <span class="ref-boot-desc">Runs from mask ROM, initialises minimal hardware</span>
+        </div>
+        <i class="fas fa-chevron-right ref-arrow-lg"></i>
+        <div class="ref-boot-block">
+          <span class="ref-boot-step-lg">SPL / MLO</span>
+          <span class="ref-boot-desc">Secondary Program Loader — fits in SRAM, loads U-Boot</span>
+        </div>
+        <i class="fas fa-chevron-right ref-arrow-lg"></i>
+        <div class="ref-boot-block">
+          <span class="ref-boot-step-lg">U-Boot</span>
+          <span class="ref-boot-desc">Full bootloader — sets up DDR, loads kernel + DTB</span>
+        </div>
+        <i class="fas fa-chevron-right ref-arrow-lg"></i>
+        <div class="ref-boot-block">
+          <span class="ref-boot-step-lg">Linux Kernel</span>
+          <span class="ref-boot-desc">Decompresses, probes hardware via DT, mounts rootfs</span>
+        </div>
+        <i class="fas fa-chevron-right ref-arrow-lg"></i>
+        <div class="ref-boot-block accent">
+          <span class="ref-boot-step-lg">Init (systemd)</span>
+          <span class="ref-boot-desc">PID 1 — starts user-space services</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolchain -->
+    <div class="ref-card fade-up">
+      <div class="ref-card-title"><i class="fas fa-gears"></i> Toolchain</div>
+      <div class="ref-cmds">
+        <div class="ref-cmd"><code>arm-linux-gnueabihf-gcc -o app app.c</code></div>
+        <div class="ref-cmd"><code>arm-linux-gnueabihf-gcc -march=armv7-a -mfpu=neon -O2 -o app app.c</code></div>
+        <div class="ref-cmd"><code>file binary</code><span class="ref-hint">check arch</span></div>
+        <div class="ref-cmd"><code>readelf -a binary</code><span class="ref-hint">ELF headers</span></div>
+        <div class="ref-cmd"><code>objdump -d binary | less</code><span class="ref-hint">disassemble</span></div>
+        <div class="ref-cmd"><code>nm -C binary</code><span class="ref-hint">symbols</span></div>
+        <div class="ref-cmd"><code>arm-linux-gnueabihf-strip binary</code><span class="ref-hint">reduce size</span></div>
+        <div class="ref-cmd"><code>ldd binary</code><span class="ref-hint">shared libs</span></div>
+      </div>
+    </div>
+
+    <!-- Kernel Build -->
+    <div class="ref-card fade-up">
+      <div class="ref-card-title"><i class="fab fa-linux"></i> Kernel Build</div>
+      <div class="ref-cmds">
+        <div class="ref-cmd"><code>make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- menuconfig</code></div>
+        <div class="ref-cmd"><code>make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- zImage dtbs modules -j$(nproc)</code></div>
+        <div class="ref-cmd"><code>make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- modules_install INSTALL_MOD_PATH=/rootfs</code></div>
+        <div class="ref-cmd"><code>make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- dtbs</code></div>
+        <div class="ref-cmd"><code>make ARCH=arm mrproper</code><span class="ref-hint">clean all</span></div>
+        <div class="ref-cmd"><code>scripts/config --enable CONFIG_DEBUG_INFO</code></div>
+        <div class="ref-cmd"><code>make ARCH=arm savedefconfig</code></div>
+      </div>
+    </div>
+
+    <!-- U-Boot -->
+    <div class="ref-card fade-up">
+      <div class="ref-card-title"><i class="fas fa-wrench"></i> U-Boot</div>
+      <div class="ref-cmds">
+        <div class="ref-cmd"><code>make CROSS_COMPILE=arm-linux-gnueabihf- &lt;board&gt;_defconfig</code></div>
+        <div class="ref-cmd"><code>make CROSS_COMPILE=arm-linux-gnueabihf- -j$(nproc)</code></div>
+        <div class="ref-cmd"><code>setenv bootargs "console=ttyS0,115200 root=/dev/mmcblk0p2 rw"</code></div>
+        <div class="ref-cmd"><code>setenv bootcmd "tftp 0x80000000 zImage; bootz 0x80000000"</code></div>
+        <div class="ref-cmd"><code>tftp 0x80000000 zImage</code><span class="ref-hint">load over network</span></div>
+        <div class="ref-cmd"><code>bootz 0x80000000 - 0x88000000</code><span class="ref-hint">kernel - dtb</span></div>
+        <div class="ref-cmd"><code>saveenv</code></div>
+        <div class="ref-cmd"><code>printenv</code></div>
+      </div>
+    </div>
+
+    <!-- Kernel Modules -->
+    <div class="ref-card fade-up">
+      <div class="ref-card-title"><i class="fas fa-puzzle-piece"></i> Kernel Modules</div>
+      <div class="ref-cmds">
+        <div class="ref-cmd"><code>insmod module.ko</code></div>
+        <div class="ref-cmd"><code>rmmod module</code></div>
+        <div class="ref-cmd"><code>modprobe module</code><span class="ref-hint">auto deps</span></div>
+        <div class="ref-cmd"><code>modinfo module.ko</code></div>
+        <div class="ref-cmd"><code>lsmod</code></div>
+        <div class="ref-cmd"><code>dmesg | tail -30</code></div>
+        <div class="ref-cmd"><code>cat /proc/devices</code></div>
+        <div class="ref-cmd"><code>ls /sys/class/&lt;subsystem&gt;</code></div>
+        <div class="ref-cmd"><code>echo 7 > /proc/sys/kernel/printk</code><span class="ref-hint">verbose log</span></div>
+      </div>
+    </div>
+
+    <!-- Device Tree -->
+    <div class="ref-card fade-up">
+      <div class="ref-card-title"><i class="fas fa-sitemap"></i> Device Tree</div>
+      <div class="ref-cmds">
+        <div class="ref-cmd"><code>dtc -I dts -O dtb -o out.dtb board.dts</code><span class="ref-hint">compile</span></div>
+        <div class="ref-cmd"><code>dtc -I dtb -O dts -o out.dts board.dtb</code><span class="ref-hint">decompile</span></div>
+        <div class="ref-cmd"><code>fdtdump board.dtb</code></div>
+        <div class="ref-cmd"><code>cat /proc/device-tree/compatible</code></div>
+        <div class="ref-cmd"><code>ls /sys/firmware/devicetree/base/</code></div>
+        <div class="ref-cmd"><code>dtc -I fs /sys/firmware/devicetree/base</code><span class="ref-hint">live DT</span></div>
+      </div>
+    </div>
+
+    <!-- Yocto / Buildroot -->
+    <div class="ref-card fade-up">
+      <div class="ref-card-title"><i class="fas fa-layer-group"></i> Yocto / Buildroot</div>
+      <div class="ref-cmds">
+        <div class="ref-cmd"><code>source oe-init-build-env [build-dir]</code></div>
+        <div class="ref-cmd"><code>bitbake core-image-minimal</code></div>
+        <div class="ref-cmd"><code>bitbake -c devshell &lt;recipe&gt;</code></div>
+        <div class="ref-cmd"><code>bitbake -c cleansstate &lt;recipe&gt;</code></div>
+        <div class="ref-cmd"><code>bitbake-layers show-layers</code></div>
+        <div class="ref-cmd"><code>bitbake-layers add-layer ../meta-custom</code></div>
+        <div class="ref-cmd"><code>make menuconfig</code><span class="ref-hint">Buildroot</span></div>
+        <div class="ref-cmd"><code>make &lt;board&gt;_defconfig</code><span class="ref-hint">Buildroot</span></div>
+        <div class="ref-cmd"><code>make sdk</code><span class="ref-hint">generate SDK</span></div>
+      </div>
+    </div>
+
+    <!-- Debugging -->
+    <div class="ref-card fade-up">
+      <div class="ref-card-title"><i class="fas fa-bug"></i> Debugging</div>
+      <div class="ref-cmds">
+        <div class="ref-cmd"><code>gdbserver :1234 ./app</code><span class="ref-hint">on target</span></div>
+        <div class="ref-cmd"><code>arm-linux-gnueabihf-gdb app</code><span class="ref-hint">on host</span></div>
+        <div class="ref-cmd"><code>(gdb) target remote &lt;ip&gt;:1234</code></div>
+        <div class="ref-cmd"><code>strace -e trace=file ./app</code></div>
+        <div class="ref-cmd"><code>ltrace -l libc.so.6 ./app</code></div>
+        <div class="ref-cmd"><code>perf stat -e cache-misses,cache-references ./app</code></div>
+        <div class="ref-cmd"><code>perf record -g ./app && perf report</code></div>
+        <div class="ref-cmd"><code>valgrind --leak-check=full --track-origins=yes ./app</code></div>
+        <div class="ref-cmd"><code>echo 1 > /proc/sys/kernel/sysrq</code></div>
+      </div>
+    </div>
+
+    <!-- Filesystem -->
+    <div class="ref-card fade-up">
+      <div class="ref-card-title"><i class="fas fa-folder-open"></i> Filesystem</div>
+      <div class="ref-cmds">
+        <div class="ref-cmd"><code>mkfs.ext4 /dev/mmcblk0p2</code></div>
+        <div class="ref-cmd"><code>mount -t ext4 /dev/mmcblk0p2 /mnt</code></div>
+        <div class="ref-cmd"><code>mount -t nfs -o nolock &lt;host&gt;:/rootfs /mnt</code></div>
+        <div class="ref-cmd"><code>mknod /dev/mem c 1 1</code><span class="ref-hint">create node</span></div>
+        <div class="ref-cmd"><code>df -h</code><span class="ref-hint">disk usage</span></div>
+        <div class="ref-cmd"><code>du -sh *</code></div>
+        <div class="ref-cmd"><code>find /lib -name "*.so" | xargs arm-linux-gnueabihf-strip</code></div>
+      </div>
+    </div>
+
+    <!-- systemd -->
+    <div class="ref-card fade-up">
+      <div class="ref-card-title"><i class="fas fa-server"></i> systemd</div>
+      <div class="ref-cmds">
+        <div class="ref-cmd"><code>systemctl status &lt;service&gt;</code></div>
+        <div class="ref-cmd"><code>systemctl enable --now &lt;service&gt;</code></div>
+        <div class="ref-cmd"><code>journalctl -u &lt;service&gt; -f</code></div>
+        <div class="ref-cmd"><code>systemd-analyze blame</code><span class="ref-hint">boot time</span></div>
+        <div class="ref-cmd"><code>systemd-cgls</code><span class="ref-hint">cgroup tree</span></div>
+        <div class="ref-cmd"><code>loginctl list-sessions</code></div>
+      </div>
+    </div>
+
+    <!-- Serial / UART -->
+    <div class="ref-card fade-up">
+      <div class="ref-card-title"><i class="fas fa-plug"></i> Serial / UART</div>
+      <div class="ref-cmds">
+        <div class="ref-cmd"><code>minicom -D /dev/ttyUSB0 -b 115200</code></div>
+        <div class="ref-cmd"><code>screen /dev/ttyUSB0 115200</code></div>
+        <div class="ref-cmd"><code>stty -F /dev/ttyUSB0 115200 cs8 -cstopb -parenb</code></div>
+        <div class="ref-cmd"><code>cat /dev/ttyUSB0</code></div>
+        <div class="ref-cmd"><code>dmesg | grep tty</code><span class="ref-hint">find port</span></div>
+      </div>
+    </div>
+
+    <!-- QEMU -->
+    <div class="ref-card fade-up">
+      <div class="ref-card-title"><i class="fas fa-desktop"></i> QEMU</div>
+      <div class="ref-cmds">
+        <div class="ref-cmd"><code>qemu-system-arm -M vexpress-a9 -m 512M -kernel zImage -dtb vexpress-v2p-ca9.dtb -nographic -append "console=ttyAMA0"</code></div>
+        <div class="ref-cmd"><code>qemu-system-arm -M versatilepb -kernel zImage -initrd rootfs.cpio.gz -nographic</code></div>
+        <div class="ref-cmd"><code>qemu-arm ./app</code><span class="ref-hint">user-mode emulation</span></div>
+      </div>
+    </div>
+
+  </div><!-- /ref-page-grid -->
+</div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

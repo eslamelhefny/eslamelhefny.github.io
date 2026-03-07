@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kernel Developer Guide — Phase 04 · Eslam Mohamed</title>
+  <meta name="description" content="Write Linux device drivers, build root filesystems, and automate production-grade embedded images with Yocto and Buildroot." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <style>
+.kd-hero {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(163,113,247,0.08) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 4rem 2rem 3rem;
+  text-align: center;
+}
+.kd-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .75rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: #a371f7;
+  background: rgba(163,113,247,.1); border: 1px solid rgba(163,113,247,.25);
+  border-radius: 2rem; padding: .3rem 1rem; margin-bottom: 1.2rem;
+}
+.kd-hero h1 { font-size: clamp(1.8rem,4vw,2.8rem); font-weight: 800; margin: 0 0 1rem; }
+.kd-hero p  { font-size: 1.05rem; color: var(--text-muted); max-width: 680px; margin: 0 auto 2rem; }
+.kd-hero-meta {
+  display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;
+  font-size: .85rem; color: var(--text-muted);
+}
+.kd-hero-meta span { display: flex; align-items: center; gap: .4rem; }
+.kd-hero-meta i { color: #a371f7; }
+
+/* Stage sections */
+.kd-wrap { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+.kd-stage-block { margin-bottom: 3.5rem; }
+.kd-stage-header {
+  display: flex; align-items: center; gap: 1rem;
+  margin-bottom: 1.5rem; padding-bottom: .75rem;
+  border-bottom: 1px solid var(--border);
+}
+.kd-stage-num {
+  font-size: .7rem; font-weight: 800; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--kd-color);
+  background: color-mix(in srgb, var(--kd-color) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--kd-color) 30%, transparent);
+  border-radius: 20px; padding: .25rem .8rem;
+}
+.kd-stage-title { font-size: 1.15rem; font-weight: 700; margin: 0; }
+.kd-stage-sub   { font-size: .85rem; color: var(--text-muted); margin: .2rem 0 0; }
+.kd-stage-link  {
+  margin-left: auto; font-size: .78rem; font-weight: 700;
+  color: var(--kd-color); text-decoration: none;
+  display: flex; align-items: center; gap: .35rem;
+  padding: .3rem .8rem; border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--kd-color) 30%, transparent);
+  background: color-mix(in srgb, var(--kd-color) 8%, transparent);
+  transition: background .2s, transform .2s;
+}
+.kd-stage-link:hover { background: color-mix(in srgb, var(--kd-color) 18%, transparent); transform: translateX(3px); text-decoration: none; }
+
+/* Topic grid */
+.kd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
+  gap: 1rem;
+}
+.kd-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.3rem;
+  text-decoration: none; color: inherit;
+  display: flex; flex-direction: column; gap: .6rem;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.kd-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--kd-color); border-radius: 12px 12px 0 0;
+}
+.kd-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--kd-color);
+  box-shadow: 0 6px 24px rgba(0,0,0,.25);
+  text-decoration: none;
+}
+.kd-card-top { display: flex; align-items: center; gap: .75rem; }
+.kd-card-icon {
+  width: 38px; height: 38px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
+  background: color-mix(in srgb, var(--kd-color) 12%, transparent);
+  color: var(--kd-color);
+}
+.kd-card h3 { font-size: .95rem; font-weight: 700; margin: 0; }
+.kd-card p  { font-size: .82rem; color: var(--text-muted); margin: 0; line-height: 1.55; }
+.kd-card-arrow {
+  margin-top: auto; padding-top: .4rem;
+  font-size: .78rem; font-weight: 600;
+  color: var(--kd-color); display: flex; align-items: center; gap: .3rem;
+}
+
+/* Stage color tokens */
+.kd-c8  { --kd-color: #a371f7; }
+.kd-c9  { --kd-color: #f472b6; }
+.kd-c10 { --kd-color: #38bdf8; }
+
+@media (max-width: 600px) {
+  .kd-grid { grid-template-columns: 1fr; }
+  .kd-hero-meta { gap: 1rem; }
+  .kd-stage-link { display: none; }
+}
+</style>
+
+<div class="kd-hero">
+  <div class="kd-hero-eyebrow"><i class="fas fa-puzzle-piece"></i> Phase 04</div>
+  <h1>Kernel Developer Guide</h1>
+  <p>Write Linux device drivers, build minimal root filesystems, and automate production-grade embedded images with Yocto and Buildroot.</p>
+  <div class="kd-hero-meta">
+    <span><i class="fas fa-layer-group"></i> 3 Stages</span>
+    <span><i class="fas fa-book-open"></i> 19 Topics</span>
+    <span><i class="fas fa-seedling"></i> Intermediate → Advanced</span>
+    <span><i class="fas fa-circle-question"></i> Interview Q&amp;A Included</span>
+  </div>
+</div>
+
+<div class="kd-wrap">
+
+  <!-- ── Stage 08: Device Drivers ── -->
+  <div class="kd-stage-block kd-c8">
+    <div class="kd-stage-header">
+      <div>
+        <div class="kd-stage-num">Stage 08</div>
+        <h2 class="kd-stage-title">Device Drivers &amp; Kernel Modules</h2>
+        <p class="kd-stage-sub">Write code that runs inside the kernel — character drivers, platform drivers, and hardware interfaces.</p>
+      </div>
+      <a href="/kernel-developer/device-drivers/" class="kd-stage-link">
+        All Topics <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+    <div class="kd-grid">
+      <a href="/kernel-developer/device-drivers/kernel-modules/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-puzzle-piece"></i></div><h3>Kernel Modules</h3></div>
+        <p>Module lifecycle (init/exit), module parameters, module dependencies, and loading/unloading with insmod/modprobe.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/device-drivers/character-devices/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-file-code"></i></div><h3>Character Devices</h3></div>
+        <p>cdev, file_operations, open/read/write/ioctl, minor/major numbers, and udev device node creation.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/device-drivers/platform-drivers/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-microchip"></i></div><h3>Platform Drivers</h3></div>
+        <p>platform_driver, device tree binding, probe/remove lifecycle, resource management with devm_* APIs.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/device-drivers/interrupts-timers/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-bolt"></i></div><h3>Interrupts &amp; Timers</h3></div>
+        <p>request_irq, threaded IRQs, top/bottom halves, workqueues, tasklets, and kernel timer APIs.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/device-drivers/i2c-spi-uart/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-plug"></i></div><h3>I2C / SPI / UART</h3></div>
+        <p>i2c_driver, spi_driver, regmap, tty layer, and writing client drivers for real peripheral ICs.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/device-drivers/sysfs-procfs/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-folder-tree"></i></div><h3>sysfs &amp; procfs</h3></div>
+        <p>Expose driver state and tunable parameters via /sys and /proc — kobjects, attributes, and seq_file interface.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/device-drivers/dma/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-arrows-left-right"></i></div><h3>DMA</h3></div>
+        <p>DMA engine API, coherent vs streaming mappings, scatter-gather, and using dmaengine for high-throughput peripherals.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Stage 09: Root Filesystem ── -->
+  <div class="kd-stage-block kd-c9">
+    <div class="kd-stage-header">
+      <div>
+        <div class="kd-stage-num">Stage 09</div>
+        <h2 class="kd-stage-title">Root Filesystem &amp; Init Systems</h2>
+        <p class="kd-stage-sub">Build the environment your applications run in — filesystem types, init systems, and minimal rootfs images.</p>
+      </div>
+      <a href="/kernel-developer/rootfs/" class="kd-stage-link">
+        All Topics <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+    <div class="kd-grid">
+      <a href="/kernel-developer/rootfs/busybox/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-box"></i></div><h3>BusyBox</h3></div>
+        <p>Build a minimal rootfs using BusyBox — configure, compile, install, and set up init scripts for embedded targets.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/rootfs/systemd/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-gears"></i></div><h3>systemd</h3></div>
+        <p>Unit files, service management, targets, socket activation, journald, and minimizing boot time with systemd on embedded.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/rootfs/sysvinit/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-play-circle"></i></div><h3>SysVinit &amp; runlevels</h3></div>
+        <p>Init scripts, runlevels, /etc/inittab, rc.d directories, and writing portable init scripts for legacy embedded systems.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/rootfs/filesystems/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-hard-drive"></i></div><h3>Filesystem Types</h3></div>
+        <p>ext4, squashfs, tmpfs, overlayfs — when to use each, mounting, creating images, and wear-leveling on flash storage.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/rootfs/nfs-initramfs/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-network-wired"></i></div><h3>NFS &amp; initramfs</h3></div>
+        <p>NFS root for rapid development iteration, creating initramfs images, pivot_root, and in-memory rootfs for production.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Stage 10: Build Systems ── -->
+  <div class="kd-stage-block kd-c10">
+    <div class="kd-stage-header">
+      <div>
+        <div class="kd-stage-num">Stage 10</div>
+        <h2 class="kd-stage-title">Build Systems — Yocto &amp; Buildroot</h2>
+        <p class="kd-stage-sub">Automate the entire toolchain, kernel, rootfs, and package build pipeline for production images.</p>
+      </div>
+      <a href="/kernel-developer/build-systems/" class="kd-stage-link">
+        All Topics <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+    <div class="kd-grid">
+      <a href="/kernel-developer/build-systems/buildroot-basics/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-hammer"></i></div><h3>Buildroot Basics</h3></div>
+        <p>Configure Buildroot, understand the directory layout, select packages, and build a full toolchain + rootfs image.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/build-systems/buildroot-packages/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-layer-group"></i></div><h3>Buildroot Packages &amp; Board Config</h3></div>
+        <p>Write custom package .mk files, add board defconfigs, overlay files, and post-build scripts for production targets.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/build-systems/bitbake-recipes/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-code"></i></div><h3>BitBake &amp; Recipes</h3></div>
+        <p>BitBake syntax, recipe structure (SRC_URI, do_compile, do_install), bbappend files, and the fetch/unpack/patch workflow.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/build-systems/yocto-layers/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-table-cells"></i></div><h3>Yocto Layers</h3></div>
+        <p>Layer architecture, bblayers.conf, meta-* layers, creating a BSP layer, and upstream community layer conventions.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/build-systems/custom-distro/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fab fa-linux"></i></div><h3>Custom Distro</h3></div>
+        <p>Define your own distribution policy, image features, package groups, and IMAGE_INSTALL for a locked-down production image.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/build-systems/sdk-generation/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-wrench"></i></div><h3>SDK Generation</h3></div>
+        <p>Generate standard and extensible SDKs (eSDK), distribute them to application developers, and use devtool for iteration.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="/kernel-developer/build-systems/ci-pipeline/" class="kd-card">
+        <div class="kd-card-top"><div class="kd-card-icon"><i class="fas fa-rotate"></i></div><h3>CI / Automated Builds</h3></div>
+        <p>Integrate Yocto/Buildroot into CI pipelines — shared sstate-cache, build reproducibility, and artifact management.</p>
+        <div class="kd-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signals · Eslam Mohamed</title>
+  <meta name="description" content="Master POSIX signals — sigaction, signal masks, blocked/pending/caught states, real-time signals, async-signal-safe functions, and the self-pipe trick." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/posix/">POSIX APIs & Concurrency</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Signals</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 04</span>
+      </div>
+      <h1 class="guide-title">Signals</h1>
+      <p class="guide-subtitle">Master POSIX signals — sigaction, signal masks, blocked/pending/caught states, real-time signals, async-signal-safe functions, and the self-pipe trick.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="signal-basics">Signal Basics</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>A signal is a <strong>software interrupt</strong> delivered to a process by the kernel or another process. Each signal has a default action (terminate, ignore, core dump, stop, continue).</p>
+
+<h3 id="common-signals">Common Signals</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Signal</th>
+      <th>Value</th>
+      <th>Default Action</th>
+      <th>Common Trigger</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGHUP</code></td>
+      <td>1</td>
+      <td>Terminate</td>
+      <td>Terminal hangup, daemon reload</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGINT</code></td>
+      <td>2</td>
+      <td>Terminate</td>
+      <td>Ctrl+C</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGQUIT</code></td>
+      <td>3</td>
+      <td>Core dump</td>
+      <td>Ctrl+\</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGILL</code></td>
+      <td>4</td>
+      <td>Core dump</td>
+      <td>Illegal instruction</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGFPE</code></td>
+      <td>8</td>
+      <td>Core dump</td>
+      <td>Floating point exception</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGKILL</code></td>
+      <td>9</td>
+      <td>Terminate</td>
+      <td><strong>Cannot be caught or ignored</strong></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGSEGV</code></td>
+      <td>11</td>
+      <td>Core dump</td>
+      <td>Invalid memory reference</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGPIPE</code></td>
+      <td>13</td>
+      <td>Terminate</td>
+      <td>Write to broken pipe</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGALRM</code></td>
+      <td>14</td>
+      <td>Terminate</td>
+      <td>Timer expired (alarm())</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGTERM</code></td>
+      <td>15</td>
+      <td>Terminate</td>
+      <td>Default kill signal</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGCHLD</code></td>
+      <td>17</td>
+      <td>Ignore</td>
+      <td>Child stopped or exited</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGCONT</code></td>
+      <td>18</td>
+      <td>Continue</td>
+      <td>Resume if stopped</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGSTOP</code></td>
+      <td>19</td>
+      <td>Stop</td>
+      <td><strong>Cannot be caught or ignored</strong></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGTSTP</code></td>
+      <td>20</td>
+      <td>Stop</td>
+      <td>Ctrl+Z</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGUSR1</code></td>
+      <td>10</td>
+      <td>Terminate</td>
+      <td>User-defined</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SIGUSR2</code></td>
+      <td>12</td>
+      <td>Terminate</td>
+      <td>User-defined</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="sending-signals">Sending Signals</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;signal.h&gt;</span><span class="cp">
+</span>
+<span class="n">kill</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">SIGTERM</span><span class="p">);</span>   <span class="c1">// send SIGTERM to process</span>
+<span class="n">kill</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">SIGTERM</span><span class="p">);</span>     <span class="c1">// send to all in same process group</span>
+<span class="n">kill</span><span class="p">(</span><span class="o">-</span><span class="n">pgid</span><span class="p">,</span> <span class="n">SIGUSR1</span><span class="p">);</span> <span class="c1">// send to process group</span>
+
+<span class="n">raise</span><span class="p">(</span><span class="n">SIGUSR1</span><span class="p">);</span>       <span class="c1">// send to yourself</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="sigaction--installing-signal-handlers"><code class="language-plaintext highlighter-rouge">sigaction</code> — Installing Signal Handlers</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>Always use <code class="language-plaintext highlighter-rouge">sigaction()</code> instead of the obsolete <code class="language-plaintext highlighter-rouge">signal()</code> — it is portable and provides more control.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;signal.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span>
+<span class="k">static</span> <span class="k">volatile</span> <span class="kt">sig_atomic_t</span> <span class="n">g_running</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="k">static</span> <span class="k">volatile</span> <span class="kt">sig_atomic_t</span> <span class="n">g_reload</span>  <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="c1">// Signal handler — VERY restricted: only async-signal-safe functions!</span>
+<span class="k">static</span> <span class="kt">void</span> <span class="nf">sigterm_handler</span><span class="p">(</span><span class="kt">int</span> <span class="n">sig</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">g_running</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>   <span class="c1">// atomic write — safe</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="nf">sighup_handler</span><span class="p">(</span><span class="kt">int</span> <span class="n">sig</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">g_reload</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">struct</span> <span class="n">sigaction</span> <span class="n">sa_term</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">.</span><span class="n">sa_handler</span> <span class="o">=</span> <span class="n">sigterm_handler</span><span class="p">,</span>
+        <span class="p">.</span><span class="n">sa_flags</span>   <span class="o">=</span> <span class="n">SA_RESTART</span><span class="p">,</span>     <span class="c1">// restart interrupted syscalls</span>
+    <span class="p">};</span>
+    <span class="n">sigemptyset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sa_term</span><span class="p">.</span><span class="n">sa_mask</span><span class="p">);</span>
+    <span class="n">sigaction</span><span class="p">(</span><span class="n">SIGTERM</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sa_term</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">sigaction</span><span class="p">(</span><span class="n">SIGINT</span><span class="p">,</span>  <span class="o">&amp;</span><span class="n">sa_term</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+
+    <span class="k">struct</span> <span class="n">sigaction</span> <span class="n">sa_hup</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">.</span><span class="n">sa_handler</span> <span class="o">=</span> <span class="n">sighup_handler</span><span class="p">,</span>
+        <span class="p">.</span><span class="n">sa_flags</span>   <span class="o">=</span> <span class="n">SA_RESTART</span><span class="p">,</span>
+    <span class="p">};</span>
+    <span class="n">sigemptyset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sa_hup</span><span class="p">.</span><span class="n">sa_mask</span><span class="p">);</span>
+    <span class="n">sigaction</span><span class="p">(</span><span class="n">SIGHUP</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sa_hup</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+
+    <span class="c1">// Ignore SIGPIPE (broken pipe — handle in write() return value instead)</span>
+    <span class="n">signal</span><span class="p">(</span><span class="n">SIGPIPE</span><span class="p">,</span> <span class="n">SIG_IGN</span><span class="p">);</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="n">g_running</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">g_reload</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">g_reload</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="n">reload_config</span><span class="p">();</span>
+        <span class="p">}</span>
+        <span class="n">do_work</span><span class="p">();</span>
+    <span class="p">}</span>
+    <span class="n">cleanup</span><span class="p">();</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="async-signal-safe-functions">Async-Signal-Safe Functions</h3>
+
+<p>Signal handlers run <strong>asynchronously</strong> and may interrupt any non-reentrant code. Only <strong>async-signal-safe</strong> functions may be called inside a handler.</p>
+
+<p><strong>Safe:</strong> <code class="language-plaintext highlighter-rouge">write()</code>, <code class="language-plaintext highlighter-rouge">read()</code>, <code class="language-plaintext highlighter-rouge">_exit()</code>, <code class="language-plaintext highlighter-rouge">kill()</code>, <code class="language-plaintext highlighter-rouge">signal()</code>, <code class="language-plaintext highlighter-rouge">sigaction()</code>, <code class="language-plaintext highlighter-rouge">getpid()</code>, <code class="language-plaintext highlighter-rouge">getppid()</code>, <code class="language-plaintext highlighter-rouge">fork()</code>, <code class="language-plaintext highlighter-rouge">execve()</code></p>
+
+<p><strong>NOT safe (never call in handlers):</strong> <code class="language-plaintext highlighter-rouge">printf()</code>, <code class="language-plaintext highlighter-rouge">malloc()</code>, <code class="language-plaintext highlighter-rouge">free()</code>, <code class="language-plaintext highlighter-rouge">syslog()</code>, <code class="language-plaintext highlighter-rouge">pthread_mutex_lock()</code>, <code class="language-plaintext highlighter-rouge">fopen()</code>, C++ standard library</p>
+
+<hr />
+
+<h2 class="gc-mid" id="signal-masks">Signal Masks</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<p>Each thread has a <strong>signal mask</strong> — a set of signals currently <strong>blocked</strong> (delivery is deferred until unblocked).</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;signal.h&gt;</span><span class="cp">
+</span>
+<span class="n">sigset_t</span> <span class="n">mask</span><span class="p">,</span> <span class="n">old_mask</span><span class="p">;</span>
+
+<span class="c1">// Block SIGINT and SIGTERM during critical section</span>
+<span class="n">sigemptyset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mask</span><span class="p">);</span>
+<span class="n">sigaddset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mask</span><span class="p">,</span> <span class="n">SIGINT</span><span class="p">);</span>
+<span class="n">sigaddset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mask</span><span class="p">,</span> <span class="n">SIGTERM</span><span class="p">);</span>
+
+<span class="n">pthread_sigmask</span><span class="p">(</span><span class="n">SIG_BLOCK</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">old_mask</span><span class="p">);</span>  <span class="c1">// thread-safe</span>
+<span class="c1">// ... critical section ...</span>
+<span class="n">pthread_sigmask</span><span class="p">(</span><span class="n">SIG_SETMASK</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">old_mask</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span> <span class="c1">// restore</span>
+
+<span class="c1">// Block all signals</span>
+<span class="n">sigfillset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mask</span><span class="p">);</span>
+<span class="n">pthread_sigmask</span><span class="p">(</span><span class="n">SIG_BLOCK</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+
+<span class="c1">// Check pending signals (blocked but not yet delivered)</span>
+<span class="n">sigset_t</span> <span class="n">pending</span><span class="p">;</span>
+<span class="n">sigpending</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pending</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">sigismember</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pending</span><span class="p">,</span> <span class="n">SIGTERM</span><span class="p">))</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"SIGTERM is pending"</span><span class="p">);</span>
+
+<span class="c1">// sigsuspend — atomically unblock + wait</span>
+<span class="n">sigsuspend</span><span class="p">(</span><span class="o">&amp;</span><span class="n">old_mask</span><span class="p">);</span>   <span class="c1">// wait for signal, then re-block</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="the-self-pipe-trick">The Self-Pipe Trick</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p>Signal handlers cannot call <code class="language-plaintext highlighter-rouge">select()</code>/<code class="language-plaintext highlighter-rouge">poll()</code>/<code class="language-plaintext highlighter-rouge">epoll_wait()</code> safely. The self-pipe trick lets you <strong>convert signals into readable pipe events</strong> — bridging the async world of signals with the synchronous I/O multiplexing world.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;poll.h&gt;</span><span class="cp">
+</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="n">signal_pipe</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>   <span class="c1">// [0]=read end, [1]=write end</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="nf">signal_handler</span><span class="p">(</span><span class="kt">int</span> <span class="n">sig</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// write() is async-signal-safe</span>
+    <span class="kt">uint8_t</span> <span class="n">signum</span> <span class="o">=</span> <span class="p">(</span><span class="kt">uint8_t</span><span class="p">)</span><span class="n">sig</span><span class="p">;</span>
+    <span class="n">write</span><span class="p">(</span><span class="n">signal_pipe</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">signum</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Create non-blocking pipe</span>
+    <span class="n">pipe</span><span class="p">(</span><span class="n">signal_pipe</span><span class="p">);</span>
+    <span class="n">fcntl</span><span class="p">(</span><span class="n">signal_pipe</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">F_SETFL</span><span class="p">,</span> <span class="n">O_NONBLOCK</span><span class="p">);</span>
+    <span class="n">fcntl</span><span class="p">(</span><span class="n">signal_pipe</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">F_SETFL</span><span class="p">,</span> <span class="n">O_NONBLOCK</span><span class="p">);</span>
+
+    <span class="c1">// Install handlers</span>
+    <span class="k">struct</span> <span class="n">sigaction</span> <span class="n">sa</span> <span class="o">=</span> <span class="p">{</span> <span class="p">.</span><span class="n">sa_handler</span> <span class="o">=</span> <span class="n">signal_handler</span><span class="p">,</span> <span class="p">.</span><span class="n">sa_flags</span> <span class="o">=</span> <span class="n">SA_RESTART</span> <span class="p">};</span>
+    <span class="n">sigemptyset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sa</span><span class="p">.</span><span class="n">sa_mask</span><span class="p">);</span>
+    <span class="n">sigaction</span><span class="p">(</span><span class="n">SIGINT</span><span class="p">,</span>  <span class="o">&amp;</span><span class="n">sa</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">sigaction</span><span class="p">(</span><span class="n">SIGTERM</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sa</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">sigaction</span><span class="p">(</span><span class="n">SIGHUP</span><span class="p">,</span>  <span class="o">&amp;</span><span class="n">sa</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+
+    <span class="c1">// Main event loop with poll()</span>
+    <span class="k">struct</span> <span class="n">pollfd</span> <span class="n">fds</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">{</span> <span class="p">.</span><span class="n">fd</span> <span class="o">=</span> <span class="n">signal_pipe</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">POLLIN</span> <span class="p">},</span>
+        <span class="p">{</span> <span class="p">.</span><span class="n">fd</span> <span class="o">=</span> <span class="n">data_socket</span><span class="p">,</span>    <span class="p">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">POLLIN</span> <span class="p">},</span>
+    <span class="p">};</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">poll</span><span class="p">(</span><span class="n">fds</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">fds</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">revents</span> <span class="o">&amp;</span> <span class="n">POLLIN</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kt">uint8_t</span> <span class="n">sig</span><span class="p">;</span>
+            <span class="n">read</span><span class="p">(</span><span class="n">signal_pipe</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">sig</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">sig</span> <span class="o">==</span> <span class="n">SIGTERM</span> <span class="o">||</span> <span class="n">sig</span> <span class="o">==</span> <span class="n">SIGINT</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">sig</span> <span class="o">==</span> <span class="n">SIGHUP</span><span class="p">)</span>  <span class="n">reload_config</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">fds</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">revents</span> <span class="o">&amp;</span> <span class="n">POLLIN</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">handle_data</span><span class="p">(</span><span class="n">data_socket</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>Modern alternative:</strong> <code class="language-plaintext highlighter-rouge">signalfd()</code> (Linux-specific) — creates an fd that delivers signals as readable events:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;sys/signalfd.h&gt;</span><span class="cp">
+</span>
+<span class="n">sigset_t</span> <span class="n">mask</span><span class="p">;</span>
+<span class="n">sigemptyset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mask</span><span class="p">);</span>
+<span class="n">sigaddset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mask</span><span class="p">,</span> <span class="n">SIGINT</span><span class="p">);</span>
+<span class="n">sigaddset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mask</span><span class="p">,</span> <span class="n">SIGTERM</span><span class="p">);</span>
+
+<span class="c1">// Block signals from normal delivery</span>
+<span class="n">pthread_sigmask</span><span class="p">(</span><span class="n">SIG_BLOCK</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+
+<span class="c1">// Create signalfd — readable when a signal arrives</span>
+<span class="kt">int</span> <span class="n">sfd</span> <span class="o">=</span> <span class="n">signalfd</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">,</span> <span class="n">SFD_NONBLOCK</span> <span class="o">|</span> <span class="n">SFD_CLOEXEC</span><span class="p">);</span>
+
+<span class="c1">// Add sfd to poll/epoll like any other fd</span>
+<span class="k">struct</span> <span class="n">signalfd_siginfo</span> <span class="n">info</span><span class="p">;</span>
+<span class="n">read</span><span class="p">(</span><span class="n">sfd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">info</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">info</span><span class="p">));</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"Got signal %u from PID %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">info</span><span class="p">.</span><span class="n">ssi_signo</span><span class="p">,</span> <span class="n">info</span><span class="p">.</span><span class="n">ssi_pid</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="real-time-signals">Real-Time Signals</h2>
+
+<p>Real-time signals (<code class="language-plaintext highlighter-rouge">SIGRTMIN</code> to <code class="language-plaintext highlighter-rouge">SIGRTMAX</code>, typically 32 values) differ from standard signals:</p>
+
+<ul>
+  <li><strong>Queued</strong> — multiple instances are queued (standard signals only record one)</li>
+  <li><strong>Ordered</strong> — delivered in signal number order</li>
+  <li><strong>Carry data</strong> — can send an <code class="language-plaintext highlighter-rouge">int</code> or pointer with <code class="language-plaintext highlighter-rouge">sigqueue()</code></li>
+</ul>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;signal.h&gt;</span><span class="cp">
+</span>
+<span class="c1">// Send real-time signal with value</span>
+<span class="k">union</span> <span class="n">sigval</span> <span class="n">val</span> <span class="o">=</span> <span class="p">{</span> <span class="p">.</span><span class="n">sival_int</span> <span class="o">=</span> <span class="mi">42</span> <span class="p">};</span>
+<span class="n">sigqueue</span><span class="p">(</span><span class="n">target_pid</span><span class="p">,</span> <span class="n">SIGRTMIN</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
+
+<span class="c1">// Receive with SA_SIGINFO</span>
+<span class="k">static</span> <span class="kt">void</span> <span class="nf">rt_handler</span><span class="p">(</span><span class="kt">int</span> <span class="n">sig</span><span class="p">,</span> <span class="n">siginfo_t</span><span class="o">*</span> <span class="n">info</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"RT signal %d, value=%d from PID=%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+           <span class="n">sig</span><span class="p">,</span> <span class="n">info</span><span class="o">-&gt;</span><span class="n">si_value</span><span class="p">.</span><span class="n">sival_int</span><span class="p">,</span> <span class="n">info</span><span class="o">-&gt;</span><span class="n">si_pid</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">struct</span> <span class="n">sigaction</span> <span class="n">sa</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">sa_sigaction</span> <span class="o">=</span> <span class="n">rt_handler</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">sa_flags</span>     <span class="o">=</span> <span class="n">SA_SIGINFO</span><span class="p">,</span>
+<span class="p">};</span>
+<span class="n">sigemptyset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sa</span><span class="p">.</span><span class="n">sa_mask</span><span class="p">);</span>
+<span class="n">sigaction</span><span class="p">(</span><span class="n">SIGRTMIN</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sa</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">SIGKILL</code>, <code class="language-plaintext highlighter-rouge">SIGTERM</code>, and <code class="language-plaintext highlighter-rouge">SIGINT</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">SIGKILL</code> (9) immediately terminates the process — it cannot be caught, blocked, or ignored. <code class="language-plaintext highlighter-rouge">SIGTERM</code> (15) is the polite shutdown signal; it can be caught to perform cleanup before exiting (close files, flush buffers). <code class="language-plaintext highlighter-rouge">SIGINT</code> (2) is sent by Ctrl+C from the terminal; also catchable. Best practice: always attempt <code class="language-plaintext highlighter-rouge">SIGTERM</code> first and give the process time to clean up; use <code class="language-plaintext highlighter-rouge">SIGKILL</code> only as a last resort.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: Why should you use <code class="language-plaintext highlighter-rouge">sigaction()</code> instead of <code class="language-plaintext highlighter-rouge">signal()</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">signal()</code> has unspecified behaviour when a signal is already being handled — it may auto-reset the handler to <code class="language-plaintext highlighter-rouge">SIG_DFL</code> (so the next occurrence kills the process) or block the signal while the handler runs, depending on the platform. <code class="language-plaintext highlighter-rouge">sigaction()</code> provides portable, consistent semantics: control over <code class="language-plaintext highlighter-rouge">sa_flags</code> (<code class="language-plaintext highlighter-rouge">SA_RESTART</code> to restart interrupted syscalls, <code class="language-plaintext highlighter-rouge">SA_SIGINFO</code> for signal info), explicit signal masking during handler execution, and guaranteed not to reset the handler.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: What is the async-signal-safety constraint and why does it matter?</strong></p>
+
+<blockquote>
+  <p>Signal handlers can interrupt <strong>any</strong> point in the program — including inside <code class="language-plaintext highlighter-rouge">malloc</code>, <code class="language-plaintext highlighter-rouge">printf</code>, or any non-reentrant function. If a handler calls <code class="language-plaintext highlighter-rouge">malloc</code> while <code class="language-plaintext highlighter-rouge">malloc</code> is running (perhaps with the heap lock held), the behaviour is undefined (deadlock or heap corruption). Only <strong>async-signal-safe</strong> functions — those that are reentrant and don’t use global state in a non-reentrant way — may be called in signal handlers. The POSIX standard lists these explicitly; notably <code class="language-plaintext highlighter-rouge">printf</code>, <code class="language-plaintext highlighter-rouge">malloc</code>, <code class="language-plaintext highlighter-rouge">syslog</code> are NOT on the list.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: Explain the self-pipe trick and why it is needed.</strong></p>
+
+<blockquote>
+  <p>Signal handlers are asynchronous and cannot safely call most library functions. But <code class="language-plaintext highlighter-rouge">select()</code>/<code class="language-plaintext highlighter-rouge">poll()</code>/<code class="language-plaintext highlighter-rouge">epoll_wait()</code> block the event loop waiting for I/O. The self-pipe trick bridges these two worlds: create a pipe, install signal handlers that call <code class="language-plaintext highlighter-rouge">write()</code> (async-signal-safe) to put a byte in the pipe, and add the read end of the pipe to your <code class="language-plaintext highlighter-rouge">poll()</code> interest set. When a signal arrives, <code class="language-plaintext highlighter-rouge">poll()</code> wakes up, you read the signal number from the pipe, and handle it safely in the event loop context. The modern Linux alternative is <code class="language-plaintext highlighter-rouge">signalfd()</code>.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 signal</code></td>
+      <td>Signal overview</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 2 sigaction</code></td>
+      <td>sigaction() manual</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 2 signalfd</code></td>
+      <td>signalfd() manual</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 2 sigprocmask</code></td>
+      <td>Signal masking</td>
+    </tr>
+    <tr>
+      <td>TLPI Chapter 20–22</td>
+      <td>Comprehensive signal coverage</td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-network-wired"></i>
+        <span>POSIX &amp; Concurrency</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/posix/file-io/" class="gtn-link ">
+          <i class="fas fa-file-code"></i> POSIX File I/O
+        </a>
+        <a href="/linux-developer/posix/processes-fork/" class="gtn-link ">
+          <i class="fas fa-sitemap"></i> Processes &amp; fork()
+        </a>
+        <a href="/linux-developer/posix/signals/" class="gtn-link gts-active">
+          <i class="fas fa-bolt"></i> Signals
+        </a>
+        <a href="/linux-developer/posix/unix-sockets/" class="gtn-link ">
+          <i class="fas fa-plug"></i> UNIX Sockets
+        </a>
+        <a href="/linux-developer/posix/pthreads/" class="gtn-link ">
+          <i class="fas fa-microchip"></i> Pthreads
+        </a>
+        <a href="/linux-developer/posix/mutexes-semaphores/" class="gtn-link ">
+          <i class="fas fa-lock"></i> Mutexes &amp; Semaphores
+        </a>
+        <a href="/linux-developer/posix/pipes-ipc/" class="gtn-link ">
+          <i class="fas fa-arrows-left-right"></i> Pipes &amp; Shared Memory
+        </a>
+      </nav>
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/posix/processes-fork/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Processes & fork()</span>
+      </a>
+      
+      
+      <a href="/linux-developer/posix/unix-sockets/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">UNIX Sockets</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

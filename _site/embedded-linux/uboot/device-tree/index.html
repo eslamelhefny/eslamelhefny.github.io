@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Device Tree (DTS) · Eslam Mohamed</title>
+  <meta name="description" content="Learn to read, write, and debug Device Tree Source files — the hardware description language that decouples board-specific configuration from the Linux kernel and U-Boot." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/embedded-linux/">Embedded Linux Developer</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Device Tree (DTS)</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 03 — Embedded Linux</span>
+        <span class="guide-stage-pill">Stage 06</span>
+      </div>
+      <h1 class="guide-title">Device Tree (DTS)</h1>
+      <p class="guide-subtitle">Learn to read, write, and debug Device Tree Source files — the hardware description language that decouples board-specific configuration from the Linux kernel and U-Boot.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="device-tree-fundamentals-structure-syntax-and-compilation">Device Tree Fundamentals: Structure, Syntax, and Compilation</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<h3 id="why-device-tree">Why Device Tree?</h3>
+
+<p>Before Device Tree, the Linux kernel source contained thousands of lines of board-specific C code scattered across <code class="language-plaintext highlighter-rouge">arch/arm/mach-*/</code> directories. Adding a new board meant adding new C files to the kernel. Updating board configuration required recompiling the kernel. When ARM was at risk of being removed from the Linux mainline kernel, Linus Torvalds demanded a better approach.</p>
+
+<p>Device Tree solves this by moving hardware description out of C code and into a separate data structure — the Device Tree. The kernel reads this data at runtime and configures itself accordingly. Now you can:</p>
+<ul>
+  <li>Boot different boards with the same kernel binary, just different <code class="language-plaintext highlighter-rouge">.dtb</code> files</li>
+  <li>Update board configuration without recompiling the kernel</li>
+  <li>Share hardware description between the kernel and U-Boot</li>
+</ul>
+
+<hr />
+
+<h3 id="the-dts-file-format">The DTS File Format</h3>
+
+<p>A <strong>Device Tree Source (.dts)</strong> file is a human-readable text format. The compiler <code class="language-plaintext highlighter-rouge">dtc</code> converts it to a <strong>Device Tree Blob (.dtb)</strong> — a compact binary format that the kernel and U-Boot understand.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          .dts  ──(dtc)──►  .dtb
+     (text, readable)    (binary, runtime)
+</code></pre></div></div>
+
+<p>Basic structure of a DTS file:</p>
+
+<pre><code class="language-dts">/dts-v1/;
+
+/ {
+    /* Root node — represents the entire system */
+    #address-cells = &lt;1&gt;;
+    #size-cells = &lt;1&gt;;
+    compatible = "ti,am335x-bone-black", "ti,am335x-bone", "ti,am33xx";
+    model = "TI AM335x BeagleBone Black";
+
+    /* Memory node — tells the kernel about RAM */
+    memory@80000000 {
+        device_type = "memory";
+        reg = &lt;0x80000000 0x20000000&gt;;  /* Start: 0x80000000, Size: 512MB */
+    };
+
+    /* Chosen node — boot parameters */
+    chosen {
+        bootargs = "console=ttyO0,115200n8";
+        stdout-path = &amp;uart0;
+    };
+
+    /* CPU nodes */
+    cpus {
+        #address-cells = &lt;1&gt;;
+        #size-cells = &lt;0&gt;;
+
+        cpu@0 {
+            compatible = "arm,cortex-a8";
+            device_type = "cpu";
+            reg = &lt;0&gt;;
+        };
+    };
+
+    /* A simple GPIO LED */
+    leds {
+        compatible = "gpio-leds";
+        pinctrl-names = "default";
+        pinctrl-0 = &lt;&amp;led_pins&gt;;
+
+        led0: user-led-0 {
+            label = "beaglebone:green:usr0";
+            gpios = &lt;&amp;gpio1 21 GPIO_ACTIVE_HIGH&gt;;
+            linux,default-trigger = "heartbeat";
+        };
+    };
+};
+</code></pre>
+
+<hr />
+
+<h3 id="data-types-in-device-tree">Data Types in Device Tree</h3>
+
+<p>Property values use specific encoding:</p>
+
+<pre><code class="language-dts">/ {
+    /* String (null-terminated) */
+    compatible = "myvendor,myboard";
+
+    /* String list */
+    compatible = "myvendor,myboard-v2", "myvendor,myboard";
+
+    /* 32-bit unsigned integer (angle brackets) */
+    reg = &lt;0x44E09000&gt;;
+
+    /* Array of 32-bit integers */
+    reg = &lt;0x44E09000 0x1000&gt;;   /* two cells: address and size */
+
+    /* Multi-element array */
+    clocks = &lt;0 11 0x00480000 1&gt;;
+
+    /* Byte array (square brackets) */
+    local-mac-address = [00 0a 35 00 01 02];
+
+    /* Boolean (presence means true, no value needed) */
+    dma-coherent;
+
+    /* Empty property */
+    status = "okay";   /* string "okay" enables the device */
+    status = "disabled";
+};
+</code></pre>
+
+<hr />
+
+<h3 id="phandle-and--references">phandle and &amp; References</h3>
+
+<p>A <strong>phandle</strong> is a unique numeric identifier for a node. You reference nodes using the <code class="language-plaintext highlighter-rouge">&amp;label</code> syntax, which the compiler resolves to the phandle number.</p>
+
+<pre><code class="language-dts">/ {
+    /* Define a node with a label */
+    uart0: serial@44E09000 {
+        compatible = "ti,am3352-uart", "ti,omap2-uart";
+        reg = &lt;0x44E09000 0x1000&gt;;
+        interrupts = &lt;72&gt;;
+        status = "okay";
+    };
+
+    gpio1: gpio@4804C000 {
+        compatible = "ti,omap4-gpio";
+        reg = &lt;0x4804C000 0x1000&gt;;
+        gpio-controller;
+        #gpio-cells = &lt;2&gt;;
+    };
+
+    /* Reference uart0 by its label */
+    chosen {
+        stdout-path = &amp;uart0;   /* &amp;uart0 becomes phandle integer at compile time */
+    };
+
+    /* Reference gpio1 — the &lt;&amp;gpio1 21 0&gt; expands to &lt;phandle_of_gpio1 21 0&gt; */
+    leds {
+        led0 {
+            gpios = &lt;&amp;gpio1 21 GPIO_ACTIVE_HIGH&gt;;
+        };
+    };
+};
+</code></pre>
+
+<hr />
+
+<h3 id="the-dtc-compiler">The dtc Compiler</h3>
+
+<p><code class="language-plaintext highlighter-rouge">dtc</code> (Device Tree Compiler) converts between DTS text and DTB binary formats:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install dtc</span>
+<span class="nv">$ </span><span class="nb">sudo </span>apt <span class="nb">install </span>device-tree-compiler
+<span class="nv">$ </span>dtc <span class="nt">--version</span>
+Version: DTC 1.6.1
+
+<span class="c"># Compile .dts to .dtb</span>
+<span class="nv">$ </span>dtc <span class="nt">-I</span> dts <span class="nt">-O</span> dtb <span class="nt">-o</span> myboard.dtb myboard.dts
+myboard.dts: Warning <span class="o">(</span>unique_unit_address<span class="o">)</span>: /leds/led0: duplicate unit-address
+
+<span class="c"># Compile with all warnings as errors</span>
+<span class="nv">$ </span>dtc <span class="nt">-I</span> dts <span class="nt">-O</span> dtb <span class="nt">-W</span> all <span class="nt">-o</span> myboard.dtb myboard.dts
+
+<span class="c"># Decompile .dtb back to readable .dts (useful for inspecting binary DTBs)</span>
+<span class="nv">$ </span>dtc <span class="nt">-I</span> dtb <span class="nt">-O</span> dts <span class="nt">-o</span> myboard_decoded.dts myboard.dtb
+
+<span class="c"># Decompile a live running kernel's device tree</span>
+<span class="nv">$ </span>dtc <span class="nt">-I</span> dtb <span class="nt">-O</span> dts <span class="nt">-o</span> running.dts /sys/firmware/fdt
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="reading-a-simple-dts-uart-and-gpio-example">Reading a Simple DTS: UART and GPIO Example</h3>
+
+<p>Here is an annotated UART node showing the most common properties:</p>
+
+<pre><code class="language-dts">uart0: serial@44E09000 {
+    /* compatible: driver matching string */
+    compatible = "ti,am3352-uart", "ti,omap2-uart";
+
+    /* reg: &lt;base_address size&gt; — physical register location */
+    reg = &lt;0x44E09000 0x1000&gt;;
+
+    /* interrupts: &lt;irq_number&gt; — GIC or INTC line number */
+    interrupts = &lt;72&gt;;
+
+    /* clocks: clock phandle and ID */
+    clocks = &lt;&amp;uart0_fck&gt;;
+    clock-names = "fck";
+
+    /* status: "okay" enables this node, "disabled" skips it */
+    status = "okay";
+};
+</code></pre>
+
+<p>And a GPIO LED node:</p>
+
+<pre><code class="language-dts">gpio1: gpio@4804C000 {
+    compatible = "ti,omap4-gpio";
+    reg = &lt;0x4804C000 0x1000&gt;;
+    ti,hwmods = "gpio2";
+
+    /* gpio-controller: marks this node as a GPIO provider */
+    gpio-controller;
+
+    /* #gpio-cells: how many cells a GPIO specifier takes */
+    /* &lt;&amp;gpio1 21 GPIO_ACTIVE_HIGH&gt; = 2 cells (pin_number flags) */
+    #gpio-cells = &lt;2&gt;;
+
+    interrupts = &lt;98&gt;;
+    interrupt-controller;
+    #interrupt-cells = &lt;2&gt;;
+};
+</code></pre>
+
+<hr />
+
+<h2 class="gc-mid" id="compatible-property-address-cells-interrupts-pinctrl-and-overlays">Compatible Property, Address Cells, Interrupts, Pinctrl, and Overlays</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="the-compatible-property-how-drivers-are-matched">The compatible Property: How Drivers Are Matched</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">compatible</code> property is a list of strings from most-specific to most-generic. The kernel walks this list and binds the first matching driver.</p>
+
+<pre><code class="language-dts">/* Specific first, generic fallback last */
+compatible = "ti,am3352-uart", "ti,omap2-uart";
+</code></pre>
+
+<p>In the kernel driver:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* drivers/tty/serial/omap-serial.c */</span>
+<span class="k">static</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">of_device_id</span> <span class="n">omap_serial_of_match</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">{</span> <span class="p">.</span><span class="n">compatible</span> <span class="o">=</span> <span class="s">"ti,omap2-uart"</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="p">.</span><span class="n">compatible</span> <span class="o">=</span> <span class="s">"ti,omap3-uart"</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="p">.</span><span class="n">compatible</span> <span class="o">=</span> <span class="s">"ti,omap4-uart"</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="p">.</span><span class="n">compatible</span> <span class="o">=</span> <span class="s">"ti,am3352-uart"</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="p">.</span><span class="n">compatible</span> <span class="o">=</span> <span class="s">"ti,am4372-uart"</span> <span class="p">},</span>
+    <span class="p">{},</span>
+<span class="p">};</span>
+<span class="n">MODULE_DEVICE_TABLE</span><span class="p">(</span><span class="n">of</span><span class="p">,</span> <span class="n">omap_serial_of_match</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>The kernel’s <code class="language-plaintext highlighter-rouge">of_match_device()</code> function iterates the driver’s <code class="language-plaintext highlighter-rouge">of_match</code> table and the DTS <code class="language-plaintext highlighter-rouge">compatible</code> list, binding the driver when a match is found.</p>
+
+<hr />
+
+<h3 id="address-cells-and-size-cells">Address Cells and Size Cells</h3>
+
+<p><code class="language-plaintext highlighter-rouge">#address-cells</code> and <code class="language-plaintext highlighter-rouge">#size-cells</code> define how many 32-bit cells are used to encode addresses and sizes in child nodes’ <code class="language-plaintext highlighter-rouge">reg</code> properties.</p>
+
+<pre><code class="language-dts">soc {
+    /* 1 cell for address, 1 cell for size */
+    #address-cells = &lt;1&gt;;
+    #size-cells = &lt;1&gt;;
+
+    /* reg = &lt;address size&gt; — 1 cell each */
+    uart0: serial@44E09000 {
+        reg = &lt;0x44E09000 0x1000&gt;;
+    };
+};
+
+/* 64-bit address systems need 2 cells for address */
+bus@0 {
+    #address-cells = &lt;2&gt;;
+    #size-cells = &lt;2&gt;;
+
+    /* reg = &lt;addr_high addr_low size_high size_low&gt; */
+    memory@80000000 {
+        reg = &lt;0x00000000 0x80000000 0x00000000 0x80000000&gt;;
+    };
+};
+
+/* CPU nodes often have address but no size */
+cpus {
+    #address-cells = &lt;1&gt;;
+    #size-cells = &lt;0&gt;;     /* No size cell — just a CPU number */
+
+    cpu@0 {
+        reg = &lt;0&gt;;          /* Just the CPU index */
+    };
+    cpu@1 {
+        reg = &lt;1&gt;;
+    };
+};
+</code></pre>
+
+<hr />
+
+<h3 id="interrupt-nodes">Interrupt Nodes</h3>
+
+<p>Interrupt configuration requires an interrupt controller node and consumer nodes:</p>
+
+<pre><code class="language-dts">/* Interrupt controller */
+intc: interrupt-controller@48200000 {
+    compatible = "ti,omap2-intc";
+    reg = &lt;0x48200000 0x1000&gt;;
+    interrupt-controller;       /* This node IS an interrupt controller */
+    #interrupt-cells = &lt;1&gt;;     /* One cell needed per interrupt reference */
+};
+
+/* Consumer using the interrupt controller */
+uart0: serial@44E09000 {
+    compatible = "ti,am3352-uart";
+    reg = &lt;0x44E09000 0x1000&gt;;
+    interrupts = &lt;72&gt;;           /* IRQ number 72 on the intc */
+    interrupt-parent = &lt;&amp;intc&gt;; /* Which controller handles this */
+    status = "okay";
+};
+
+/* GIC (Generic Interrupt Controller) — used on Cortex-A9 and newer */
+gic: interrupt-controller@1e001000 {
+    compatible = "arm,cortex-a9-gic";
+    reg = &lt;0x1e001000 0x1000&gt;,
+          &lt;0x1e000100 0x100&gt;;
+    interrupt-controller;
+    #interrupt-cells = &lt;3&gt;;  /* &lt;type number flags&gt; */
+};
+
+/* GIC consumer — 3 cells: &lt;GIC_SPI irq_num IRQ_TYPE_LEVEL_HIGH&gt; */
+uart1: serial@e0001000 {
+    compatible = "cdns,uart-r1p8";
+    reg = &lt;0xe0001000 0x1000&gt;;
+    interrupts = &lt;GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH&gt;;
+    interrupt-parent = &lt;&amp;gic&gt;;
+};
+</code></pre>
+
+<hr />
+
+<h3 id="pinctrl-multiplexing-gpio-and-peripherals">Pinctrl: Multiplexing GPIO and Peripherals</h3>
+
+<p>SoC pins can be configured as GPIO, UART, SPI, I2C, etc. The <code class="language-plaintext highlighter-rouge">pinctrl</code> subsystem handles this:</p>
+
+<pre><code class="language-dts">/* Pin controller node (AM335x) */
+am33xx_pinmux: pinmux@44E10800 {
+    compatible = "pinctrl-single";
+    reg = &lt;0x44E10800 0x0238&gt;;
+    #address-cells = &lt;1&gt;;
+    #size-cells = &lt;0&gt;;
+    pinctrl-single,register-width = &lt;32&gt;;
+    pinctrl-single,function-mask = &lt;0x7f&gt;;
+
+    /* Define a pin group for UART0 */
+    uart0_pins: pinmux_uart0_pins {
+        pinctrl-single,pins = &lt;
+            AM33XX_PADCONF(AM335X_PIN_UART0_RXD, PIN_INPUT_PULLUP, MUX_MODE0)
+            AM33XX_PADCONF(AM335X_PIN_UART0_TXD, PIN_OUTPUT_PULLDOWN, MUX_MODE0)
+        &gt;;
+    };
+
+    /* LED GPIO pins */
+    led_pins: pinmux_led_pins {
+        pinctrl-single,pins = &lt;
+            AM33XX_PADCONF(AM335X_PIN_GPMC_A5, PIN_OUTPUT, MUX_MODE7)  /* GPIO1_21 */
+            AM33XX_PADCONF(AM335X_PIN_GPMC_A6, PIN_OUTPUT, MUX_MODE7)  /* GPIO1_22 */
+        &gt;;
+    };
+};
+
+/* UART0 node references its pin group */
+uart0: serial@44E09000 {
+    compatible = "ti,am3352-uart";
+    reg = &lt;0x44E09000 0x1000&gt;;
+    interrupts = &lt;72&gt;;
+    pinctrl-names = "default";
+    pinctrl-0 = &lt;&amp;uart0_pins&gt;;  /* Apply uart0_pins when in "default" state */
+    status = "okay";
+};
+</code></pre>
+
+<p><code class="language-plaintext highlighter-rouge">pinctrl-names</code> defines state names; <code class="language-plaintext highlighter-rouge">pinctrl-0</code> through <code class="language-plaintext highlighter-rouge">pinctrl-N</code> give the pin groups for each state.</p>
+
+<hr />
+
+<h3 id="device-tree-overlays-dto">Device Tree Overlays (DTO)</h3>
+
+<p>Overlays allow you to modify a base DTB without recompiling it. This is how Raspberry Pi cape/expansion board configuration works.</p>
+
+<pre><code class="language-dts">/* Base DTB: am335x-boneblack.dts */
+/ {
+    /* ... */
+    &amp;spi0 {
+        status = "disabled";   /* SPI0 disabled by default */
+    };
+};
+</code></pre>
+
+<pre><code class="language-dts">/* Overlay: enable SPI0 with a MCP2515 CAN controller */
+/dts-v1/;
+/plugin/;   /* This marks the file as an overlay */
+
+/ {
+    compatible = "ti,am335x-bone-black";
+    fragment@0 {
+        target = &lt;&amp;spi0&gt;;
+        __overlay__ {
+            status = "okay";
+            pinctrl-names = "default";
+            pinctrl-0 = &lt;&amp;spi0_pins&gt;;
+            #address-cells = &lt;1&gt;;
+            #size-cells = &lt;0&gt;;
+
+            mcp2515@0 {
+                compatible = "microchip,mcp2515";
+                reg = &lt;0&gt;;
+                spi-max-frequency = &lt;10000000&gt;;
+                interrupt-parent = &lt;&amp;gpio3&gt;;
+                interrupts = &lt;19 IRQ_TYPE_EDGE_FALLING&gt;;
+                clocks = &lt;&amp;spi0_can_osc&gt;;
+            };
+        };
+    };
+};
+</code></pre>
+
+<p>Compile the overlay:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>dtc <span class="nt">-I</span> dts <span class="nt">-O</span> dtb -@ <span class="nt">-o</span> spi0-mcp2515.dtbo spi0-mcp2515.dts
+<span class="c"># The -@ flag is crucial: it preserves symbols for runtime fixup</span>
+</code></pre></div></div>
+
+<p>Apply in U-Boot:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">=&gt;</span> fdt addr <span class="k">${</span><span class="nv">fdt_addr_r</span><span class="k">}</span>
+<span class="o">=&gt;</span> fdt resize 0x1000
+<span class="o">=&gt;</span> fatload mmc 0:1 0x88100000 spi0-mcp2515.dtbo
+<span class="o">=&gt;</span> fdt apply 0x88100000
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="clock-reset-and-power-domain-references">Clock, Reset, and Power Domain References</h3>
+
+<pre><code class="language-dts">/* Clock provider */
+clocks: clocks {
+    uart0_fck: uart0_fck {
+        #clock-cells = &lt;0&gt;;
+        compatible = "fixed-clock";
+        clock-frequency = &lt;48000000&gt;;
+    };
+};
+
+/* Clock consumer */
+uart0: serial@44E09000 {
+    compatible = "ti,am3352-uart";
+    clocks = &lt;&amp;uart0_fck&gt;;        /* Reference the clock provider */
+    clock-names = "fck";          /* Name matches driver expectation */
+};
+
+/* Reset controller */
+rst: reset-controller@44E00F00 {
+    compatible = "ti,syscon-reset";
+    reg = &lt;0x44E00F00 0x100&gt;;
+    #reset-cells = &lt;1&gt;;
+};
+
+/* Device with reset */
+usb0: usb@47400000 {
+    compatible = "ti,am33xx-usb";
+    resets = &lt;&amp;rst 0&gt;;
+    reset-names = "usbphy0";
+};
+</code></pre>
+
+<hr />
+
+<h3 id="kernel-binding-documentation">Kernel Binding Documentation</h3>
+
+<p>Every Device Tree binding (compatible string + required properties) must be documented in the kernel:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Browse bindings for a device</span>
+<span class="nv">$ </span><span class="nb">ls </span>Documentation/devicetree/bindings/serial/
+8250.yaml
+fsl,lpuart.yaml
+...
+ti,omap2-uart.yaml
+
+<span class="nv">$ </span><span class="nb">cat </span>Documentation/devicetree/bindings/serial/ti,omap2-uart.yaml
+<span class="c"># SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)</span>
+%YAML 1.2
+<span class="nt">---</span>
+<span class="nv">$id</span>: http://devicetree.org/schemas/serial/ti,omap2-uart.yaml#
+<span class="nv">$schema</span>: http://devicetree.org/meta-schemas/core.yaml#
+
+title: TI OMAP2+ Universal Asynchronous Receiver/Transmitter <span class="o">(</span>UART<span class="o">)</span>
+
+properties:
+  compatible:
+    enum:
+      - ti,omap2-uart
+      - ti,omap3-uart
+      - ti,omap4-uart
+      - ti,am3352-uart
+  reg:
+    maxItems: 1
+  interrupts:
+    maxItems: 1
+  clocks:
+    maxItems: 1
+required:
+  - compatible
+  - reg
+  - interrupts
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="custom-board-dts-dynamic-overlays-validation-and-u-boot-dt-commands">Custom Board DTS, Dynamic Overlays, Validation, and U-Boot DT Commands</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="writing-a-complete-dts-soc-dtsi--board-dts-pattern">Writing a Complete DTS: SoC .dtsi + Board .dts Pattern</h3>
+
+<p>Large SoCs are described in a <code class="language-plaintext highlighter-rouge">.dtsi</code> (include) file that defines all SoC peripherals as <code class="language-plaintext highlighter-rouge">disabled</code>. Board <code class="language-plaintext highlighter-rouge">.dts</code> files include the SoC dtsi and enable/configure only what is present on that board.</p>
+
+<pre><code class="language-dts">/* arch/arm/boot/dts/am33xx.dtsi (SoC-level, everything disabled) */
+/ {
+    #address-cells = &lt;1&gt;;
+    #size-cells = &lt;1&gt;;
+    compatible = "ti,am33xx";
+
+    aliases {
+        serial0 = &amp;uart0;
+        i2c0    = &amp;i2c0;
+        spi0    = &amp;spi0;
+    };
+
+    uart0: serial@44E09000 {
+        compatible = "ti,am3352-uart", "ti,omap2-uart";
+        reg = &lt;0x44E09000 0x1000&gt;;
+        interrupts = &lt;72&gt;;
+        clocks = &lt;&amp;uart0_fck&gt;;
+        clock-names = "fck";
+        status = "disabled";    /* All peripherals start disabled */
+    };
+
+    i2c0: i2c@44E0B000 {
+        compatible = "ti,omap4-i2c";
+        reg = &lt;0x44E0B000 0x1000&gt;;
+        interrupts = &lt;70&gt;;
+        status = "disabled";
+    };
+};
+</code></pre>
+
+<pre><code class="language-dts">/* arch/arm/boot/dts/am335x-boneblack.dts (board-level) */
+/dts-v1/;
+
+/* Include the SoC dtsi */
+#include "am33xx.dtsi"
+#include "am335x-bone-common.dtsi"
+
+/* Override model and compatible */
+/ {
+    model = "TI AM335x BeagleBone Black";
+    compatible = "ti,am335x-bone-black", "ti,am335x-bone", "ti,am33xx";
+};
+
+/* Enable UART0 (console) */
+&amp;uart0 {
+    status = "okay";
+    pinctrl-names = "default";
+    pinctrl-0 = &lt;&amp;uart0_pins&gt;;
+};
+
+/* Enable I2C0 for PMIC */
+&amp;i2c0 {
+    status = "okay";
+    clock-frequency = &lt;400000&gt;;
+
+    tps65217: pmic@24 {
+        compatible = "ti,tps65217";
+        reg = &lt;0x24&gt;;
+        /* ... */
+    };
+};
+
+/* Configure eMMC */
+&amp;mmc1 {
+    status = "okay";
+    bus-width = &lt;8&gt;;
+    pinctrl-names = "default";
+    pinctrl-0 = &lt;&amp;emmc_pins&gt;;
+    ti,non-removable;
+};
+</code></pre>
+
+<hr />
+
+<h3 id="dynamic-device-tree-on-raspberry-pi">Dynamic Device Tree on Raspberry Pi</h3>
+
+<p>Raspberry Pi uses overlays at boot time to configure the hardware:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># /boot/config.txt on Raspberry Pi</span>
+<span class="nv">dtoverlay</span><span class="o">=</span>spi0-1cs          <span class="c"># Enable SPI0 with 1 chip select</span>
+<span class="nv">dtoverlay</span><span class="o">=</span>i2c-rtc,ds3231    <span class="c"># Add DS3231 RTC on I2C</span>
+<span class="nv">dtoverlay</span><span class="o">=</span>gpio-led,gpio<span class="o">=</span>17,label<span class="o">=</span>myled  <span class="c"># GPIO LED on pin 17</span>
+<span class="nv">dtparam</span><span class="o">=</span><span class="nv">i2c_arm</span><span class="o">=</span>on          <span class="c"># Enable I2C1</span>
+<span class="nv">dtparam</span><span class="o">=</span><span class="nv">spi</span><span class="o">=</span>on              <span class="c"># Enable SPI0</span>
+</code></pre></div></div>
+
+<p>At boot, the Pi firmware merges these overlays into the base DTB before handing it to U-Boot (or the kernel directly). You can inspect the result:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># On a running Raspberry Pi</span>
+<span class="nv">$ </span>dtc <span class="nt">-I</span> dtb <span class="nt">-O</span> dts <span class="nt">-o</span> /tmp/live.dts /proc/device-tree/../fdt
+<span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-A10</span> <span class="s2">"spi@7e204000"</span> /tmp/live.dts
+spi@7e204000 <span class="o">{</span>
+    compatible <span class="o">=</span> <span class="s2">"brcm,bcm2835-spi"</span><span class="p">;</span>
+    reg <span class="o">=</span> &lt;0x7e204000 0x200&gt;<span class="p">;</span>
+    status <span class="o">=</span> <span class="s2">"okay"</span><span class="p">;</span>    <span class="c"># Was "disabled" in base DTB, overlay set it "okay"</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="device-tree-validation-with-dt-schema">Device Tree Validation with dt-schema</h3>
+
+<p>Modern kernel development requires DTS files to pass schema validation:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install dt-schema tools</span>
+<span class="nv">$ </span>pip3 <span class="nb">install </span>dtschema
+
+<span class="c"># Validate a DTB against all applicable schemas</span>
+<span class="nv">$ </span>dt-validate <span class="nt">-s</span> Documentation/devicetree/bindings/ myboard.dtb
+/uart0: <span class="s1">'clocks'</span> is a required property
+/i2c0/pmic@24: <span class="s1">'reg'</span> 0x24 is out of range 0x0..0x0f
+
+<span class="c"># Validate during kernel build</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm <span class="nv">CROSS_COMPILE</span><span class="o">=</span>arm-linux-gnueabihf- dtbs_check
+  DTC     <span class="nb">arch</span>/arm/boot/dts/am335x-boneblack.dtb
+  CHECK   <span class="nb">arch</span>/arm/boot/dts/am335x-boneblack.dtb
+<span class="nb">arch</span>/arm/boot/dts/am335x-boneblack.dtb: /ocp/i2c@44e0b000/tps65217@24:
+  interrupt-parent: False schema does not allow <span class="o">[</span>17]
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="multiple-compatible-strings-and-fallback">Multiple Compatible Strings and Fallback</h3>
+
+<p>A device with multiple compatible strings uses the first match; if none match, the kernel tries the next. This enables forward/backward compatibility:</p>
+
+<pre><code class="language-dts">/* This board has a "new" UART variant, but falls back to "omap2" driver */
+uart0: serial@44E09000 {
+    compatible = "ti,am3352-uart",     /* Specific — try first */
+                 "ti,omap4-uart",      /* Slightly less specific */
+                 "ti,omap2-uart";      /* Generic fallback */
+};
+</code></pre>
+
+<p>In driver code, you can detect which compatible matched:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="kt">int</span> <span class="nf">mydriver_probe</span><span class="p">(</span><span class="k">struct</span> <span class="n">platform_device</span> <span class="o">*</span><span class="n">pdev</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">const</span> <span class="k">struct</span> <span class="n">of_device_id</span> <span class="o">*</span><span class="n">match</span><span class="p">;</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">of_match_device</span><span class="p">(</span><span class="n">mydriver_of_match</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">pdev</span><span class="o">-&gt;</span><span class="n">dev</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">match</span><span class="o">-&gt;</span><span class="n">data</span> <span class="o">==</span> <span class="o">&amp;</span><span class="n">am3352_data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="cm">/* AM3352-specific initialization */</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="passing-dtb-from-u-boot-to-kernel-fdt-commands">Passing DTB from U-Boot to Kernel: fdt Commands</h3>
+
+<p>U-Boot has a full set of commands for manipulating a DTB in memory before booting:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Load DTB into memory</span>
+<span class="o">=&gt;</span> fatload mmc 0:1 <span class="k">${</span><span class="nv">fdt_addr_r</span><span class="k">}</span> am335x-boneblack.dtb
+43056 bytes <span class="nb">read </span><span class="k">in </span>9 ms
+
+<span class="c"># Set the active DTB address for fdt commands</span>
+<span class="o">=&gt;</span> fdt addr <span class="k">${</span><span class="nv">fdt_addr_r</span><span class="k">}</span>
+
+<span class="c"># Print the entire device tree (very verbose)</span>
+<span class="o">=&gt;</span> fdt print /
+
+<span class="c"># Print a specific node</span>
+<span class="o">=&gt;</span> fdt print /ocp/serial@44e09000
+serial@44e09000 <span class="o">{</span>
+    compatible <span class="o">=</span> <span class="s2">"ti,am3352-uart</span><span class="se">\0</span><span class="s2">ti,omap2-uart"</span><span class="p">;</span>
+    reg <span class="o">=</span> &lt;0x44e09000 0x1000&gt;<span class="p">;</span>
+    status <span class="o">=</span> <span class="s2">"okay"</span><span class="p">;</span>
+<span class="o">}</span><span class="p">;</span>
+
+<span class="c"># Get a property value</span>
+<span class="o">=&gt;</span> fdt get value uart_status /ocp/serial@44e09000 status
+<span class="o">=&gt;</span> <span class="nb">echo</span> <span class="k">${</span><span class="nv">uart_status</span><span class="k">}</span>
+okay
+
+<span class="c"># Set a property (modify DTB at runtime — useful for passing info to kernel)</span>
+<span class="o">=&gt;</span> fdt <span class="nb">set</span> /chosen bootargs <span class="s2">"console=ttyO0,115200n8 root=/dev/mmcblk0p2 rw"</span>
+
+<span class="c"># Resize DTB to accommodate overlays</span>
+<span class="o">=&gt;</span> fdt resize 0x2000
+
+<span class="c"># Apply an overlay</span>
+<span class="o">=&gt;</span> fatload mmc 0:1 0x88100000 spi0-mcp2515.dtbo
+<span class="o">=&gt;</span> fdt apply 0x88100000
+applying fdt overlay ...
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="debugging-device-tree-at-runtime">Debugging Device Tree at Runtime</h3>
+
+<p>Once Linux is running, the live device tree is exposed through the filesystem:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># The live DTB is at /sys/firmware/fdt (binary)</span>
+<span class="c"># The parsed tree is at /proc/device-tree/ (filesystem)</span>
+
+<span class="c"># List root node properties</span>
+<span class="nv">$ </span><span class="nb">ls</span> /proc/device-tree/
+<span class="c">#address-cells  compatible  cpus  leds  memory@80000000  model  name</span>
+
+<span class="c"># Read a property</span>
+<span class="nv">$ </span><span class="nb">cat</span> /proc/device-tree/model
+TI AM335x BeagleBone Black
+
+<span class="c"># Find the UART node</span>
+<span class="nv">$ </span>find /proc/device-tree <span class="nt">-name</span> <span class="s2">"serial*"</span>
+/proc/device-tree/ocp/serial@44e09000
+
+<span class="c"># Read its compatible string (null-separated)</span>
+<span class="nv">$ </span><span class="nb">cat</span> /proc/device-tree/ocp/serial@44e09000/compatible | <span class="nb">tr</span> <span class="s1">'\0'</span> <span class="s1">'\n'</span>
+ti,am3352-uart
+ti,omap2-uart
+
+<span class="c"># Check driver binding</span>
+<span class="nv">$ </span><span class="nb">ls</span> /sys/bus/platform/drivers/omap-serial/
+44e09000.serial -&gt; ../../../../devices/platform/ocp/44e09000.serial
+
+<span class="c"># Decompile the live tree for inspection</span>
+<span class="nv">$ </span>dtc <span class="nt">-I</span> dtb <span class="nt">-O</span> dts <span class="nt">-o</span> /tmp/live.dts /sys/firmware/fdt
+<span class="nv">$ </span><span class="nb">wc</span> <span class="nt">-l</span> /tmp/live.dts
+4821 /tmp/live.dts
+
+<span class="c"># Check which DTB was loaded</span>
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-lh</span> /sys/firmware/fdt
+<span class="nt">-r--r--r--</span> 1 root root 53K /sys/firmware/fdt
+
+<span class="c"># Check for DT probe failures</span>
+<span class="nv">$ </span>dmesg | <span class="nb">grep</span> <span class="nt">-i</span> <span class="s2">"dt</span><span class="se">\|</span><span class="s2">of_probe</span><span class="se">\|</span><span class="s2">devicetree"</span>
+<span class="o">[</span>    0.423456] OF: fdt: Machine model: TI AM335x BeagleBone Black
+<span class="o">[</span>    1.234567] OF: overlay: overlay target is not a fragment node: __fixups__
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="spi-and-i2c-child-nodes">SPI and I2C Child Nodes</h3>
+
+<pre><code class="language-dts">/* SPI controller */
+spi0: spi@48030000 {
+    compatible = "ti,omap4-mcspi";
+    reg = &lt;0x48030000 0x400&gt;;
+    interrupts = &lt;65&gt;;
+    dmas = &lt;&amp;edma 16 0&gt;, &lt;&amp;edma 17 0&gt;;
+    dma-names = "tx0", "rx0";
+    ti,spi-num-cs = &lt;2&gt;;
+    status = "okay";
+
+    /* SPI child device — MCP2515 CAN controller */
+    can0: can@0 {
+        compatible = "microchip,mcp2515";
+        reg = &lt;0&gt;;              /* Chip select 0 */
+        spi-max-frequency = &lt;10000000&gt;;
+        clocks = &lt;&amp;can_osc_clk&gt;;
+        interrupt-parent = &lt;&amp;gpio3&gt;;
+        interrupts = &lt;19 IRQ_TYPE_EDGE_FALLING&gt;;
+    };
+};
+
+/* I2C controller */
+i2c1: i2c@4802A000 {
+    compatible = "ti,omap4-i2c";
+    reg = &lt;0x4802A000 0x1000&gt;;
+    interrupts = &lt;71&gt;;
+    clock-frequency = &lt;100000&gt;;    /* 100 kHz */
+    status = "okay";
+
+    /* I2C child: temperature sensor at address 0x48 */
+    temp_sensor: lm75@48 {
+        compatible = "national,lm75";
+        reg = &lt;0x48&gt;;              /* 7-bit I2C address */
+    };
+
+    /* I2C child: EEPROM at address 0x50 */
+    eeprom: eeprom@50 {
+        compatible = "atmel,24c256";
+        reg = &lt;0x50&gt;;
+        pagesize = &lt;64&gt;;
+    };
+};
+</code></pre>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-questions">Interview Questions</h2>
+
+<p><strong>1. What problem does Device Tree solve?</strong></p>
+
+<p>Before Device Tree, board-specific hardware configuration was hardcoded in C files within the kernel source tree. Each new board required new kernel code, and boards could not share a single kernel binary. Device Tree moves hardware description into a separate data file (<code class="language-plaintext highlighter-rouge">.dtb</code>), allowing one kernel binary to support many boards. It decouples the kernel from board-specific details, enables runtime configuration, and eliminates the need to recompile the kernel when board hardware changes.</p>
+
+<p><strong>2. What is the compatible property and how does the kernel use it?</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">compatible</code> is a list of strings in a DT node, ordered from most-specific to most-generic (e.g., <code class="language-plaintext highlighter-rouge">"ti,am3352-uart", "ti,omap2-uart"</code>). At boot, the kernel iterates over all DT nodes and for each node, scans registered driver tables (<code class="language-plaintext highlighter-rouge">of_device_id</code> arrays) looking for a match with any string in the node’s <code class="language-plaintext highlighter-rouge">compatible</code> list. The first driver that matches any compatible string wins and is bound to that device. This enables driver inheritance: a specific driver can handle the first string, while a generic driver handles the fallback.</p>
+
+<p><strong>3. What is the difference between a .dts, .dtsi, and .dtb file?</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">.dts</code> (Device Tree Source) is a human-readable text file describing a complete board. <code class="language-plaintext highlighter-rouge">.dtsi</code> (Device Tree Source Include) is also a text file but designed to be included by <code class="language-plaintext highlighter-rouge">.dts</code> files — it describes shared SoC or platform components. Multiple <code class="language-plaintext highlighter-rouge">.dts</code> files for different boards can include the same <code class="language-plaintext highlighter-rouge">.dtsi</code>. <code class="language-plaintext highlighter-rouge">.dtb</code> (Device Tree Blob) is the compiled binary output of <code class="language-plaintext highlighter-rouge">dtc</code> applied to a <code class="language-plaintext highlighter-rouge">.dts</code> file. It is the file actually loaded by U-Boot and passed to the kernel at runtime.</p>
+
+<p><strong>4. How do you pass a DTB to the Linux kernel?</strong></p>
+
+<p>U-Boot loads the DTB binary into DRAM at a known address (stored in <code class="language-plaintext highlighter-rouge">${fdt_addr_r}</code>), then passes that address as the third argument to the boot command: <code class="language-plaintext highlighter-rouge">bootz ${kernel_addr_r} - ${fdt_addr_r}</code> for zImage, or <code class="language-plaintext highlighter-rouge">booti ${kernel_addr_r} - ${fdt_addr_r}</code> for ARM64 Image. The kernel boot code reads the DTB address from register r2 (ARM32) or x2 (ARM64) and parses it before any device initialization.</p>
+
+<p><strong>5. What is a Device Tree overlay and when would you use one?</strong></p>
+
+<p>A Device Tree overlay is a partial DTS file (compiled to <code class="language-plaintext highlighter-rouge">.dtbo</code>) that modifies a base DTB without recompiling it. Overlays are used when: (1) supporting expansion boards (capes, hats) that add hardware — you apply the overlay for that expansion board at boot; (2) enabling/disabling specific features on the same base board; (3) platforms like Raspberry Pi use overlays to configure peripherals from a simple <code class="language-plaintext highlighter-rouge">config.txt</code>. An overlay uses the <code class="language-plaintext highlighter-rouge">/plugin/</code> directive and <code class="language-plaintext highlighter-rouge">fragment@N</code> nodes targeting specific nodes in the base tree.</p>
+
+<p><strong>6. How do you debug Device Tree issues at runtime?</strong></p>
+
+<p>Several approaches: (1) Read <code class="language-plaintext highlighter-rouge">/proc/device-tree/</code> to inspect the parsed device tree; (2) Decompile the live binary with <code class="language-plaintext highlighter-rouge">dtc -I dtb -O dts /sys/firmware/fdt</code>; (3) Check driver binding with <code class="language-plaintext highlighter-rouge">ls /sys/bus/platform/devices/</code> and <code class="language-plaintext highlighter-rouge">ls /sys/bus/platform/drivers/</code>; (4) Look for <code class="language-plaintext highlighter-rouge">of_</code> errors in <code class="language-plaintext highlighter-rouge">dmesg</code>; (5) Use <code class="language-plaintext highlighter-rouge">dtc -I dts -O dtb -W all</code> during compilation to catch syntax issues early; (6) In U-Boot, use <code class="language-plaintext highlighter-rouge">fdt print /path/to/node</code> to inspect the DTB before booting.</p>
+
+<p><strong>7. What is #address-cells and #size-cells?</strong></p>
+
+<p>These properties, set in a parent node, define the encoding format for <code class="language-plaintext highlighter-rouge">reg</code> properties in their immediate children. <code class="language-plaintext highlighter-rouge">#address-cells = &lt;1&gt;</code> means each address in <code class="language-plaintext highlighter-rouge">reg</code> uses 1 32-bit cell (4 bytes). <code class="language-plaintext highlighter-rouge">#size-cells = &lt;1&gt;</code> means each size uses 1 cell. For a 64-bit bus, you would use <code class="language-plaintext highlighter-rouge">#address-cells = &lt;2&gt;</code> to encode 64-bit addresses with two 32-bit cells. For nodes with no meaningful address range (like CPUs), <code class="language-plaintext highlighter-rouge">#size-cells = &lt;0&gt;</code> means the <code class="language-plaintext highlighter-rouge">reg</code> property contains only the CPU index with no size.</p>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<ul>
+  <li>Linux kernel: <code class="language-plaintext highlighter-rouge">Documentation/devicetree/bindings/</code> — official binding specifications</li>
+  <li>“Mastering Embedded Linux Programming” — Chris Simmonds, Chapter 3 (Boot) and Chapter 14 (Device Drivers)</li>
+  <li>Device Tree specification: <a href="https://devicetree-spec.readthedocs.io/">https://devicetree-spec.readthedocs.io/</a></li>
+  <li>Embedded Linux Wiki Device Tree usage: <a href="https://elinux.org/Device_Tree_Usage">https://elinux.org/Device_Tree_Usage</a></li>
+  <li>Grant Likely: “Device Tree for Dummies” — ELCE talk (available on YouTube)</li>
+  <li>dt-schema validation tools: <a href="https://github.com/devicetree-org/dt-schema">https://github.com/devicetree-org/dt-schema</a></li>
+  <li>Raspberry Pi Device Tree overlays documentation: <a href="https://www.raspberrypi.com/documentation/computers/configuration.html">https://www.raspberrypi.com/documentation/computers/configuration.html</a></li>
+</ul>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-wrench"></i>
+        <span>U-Boot Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/embedded-linux/uboot/boot-sequence/" class="gtn-link ">
+          <i class="fas fa-play"></i> Boot Sequence
+        </a>
+        <a href="/embedded-linux/uboot/uboot-config-build/" class="gtn-link ">
+          <i class="fas fa-wrench"></i> U-Boot Config &amp; Build
+        </a>
+        <a href="/embedded-linux/uboot/uboot-commands/" class="gtn-link ">
+          <i class="fas fa-terminal"></i> U-Boot Commands &amp; Scripting
+        </a>
+        <a href="/embedded-linux/uboot/device-tree/" class="gtn-link gts-active">
+          <i class="fas fa-sitemap"></i> Device Tree (DTS)
+        </a>
+        <a href="/embedded-linux/uboot/board-porting/" class="gtn-link ">
+          <i class="fas fa-puzzle-piece"></i> Board Porting
+        </a>
+        <a href="/embedded-linux/uboot/tftp-boot/" class="gtn-link ">
+          <i class="fas fa-network-wired"></i> TFTP &amp; Network Boot
+        </a>
+      </nav>
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/embedded-linux/uboot/uboot-commands/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">U-Boot Commands & Scripting</span>
+      </a>
+      
+      
+      <a href="/embedded-linux/uboot/board-porting/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Board Porting</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

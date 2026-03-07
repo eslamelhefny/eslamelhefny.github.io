@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sysroot & Libraries · Eslam Mohamed</title>
+  <meta name="description" content="Understanding sysroots for cross-compilation: creating, populating, and using sysroots to provide target headers and libraries to the cross-compiler." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/embedded-linux/">Embedded Linux Developer</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Sysroot & Libraries</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 03 — Embedded Linux</span>
+        <span class="guide-stage-pill">Stage 05</span>
+      </div>
+      <h1 class="guide-title">Sysroot & Libraries</h1>
+      <p class="guide-subtitle">Understanding sysroots for cross-compilation: creating, populating, and using sysroots to provide target headers and libraries to the cross-compiler.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="what-is-a-sysroot">What Is a Sysroot?</h2>
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>When a cross-compiler builds a program, it needs two things from the target system:</p>
+
+<ol>
+  <li><strong>Headers</strong> (<code class="language-plaintext highlighter-rouge">.h</code> files) — to know the API of libraries and the kernel (e.g., <code class="language-plaintext highlighter-rouge">&lt;stdio.h&gt;</code>, <code class="language-plaintext highlighter-rouge">&lt;sys/socket.h&gt;</code>)</li>
+  <li><strong>Libraries</strong> (<code class="language-plaintext highlighter-rouge">.so</code>, <code class="language-plaintext highlighter-rouge">.a</code> files) — to link against at build time (e.g., <code class="language-plaintext highlighter-rouge">libssl.so</code>, <code class="language-plaintext highlighter-rouge">libc.so.6</code>)</li>
+</ol>
+
+<p>The problem is that the host machine’s headers and libraries are for x86-64, not for ARM. Using the host’s <code class="language-plaintext highlighter-rouge">/usr/include</code> and <code class="language-plaintext highlighter-rouge">/usr/lib</code> would lead to building ARM code that references x86 symbol layouts — which would produce broken binaries or simply fail to compile.</p>
+
+<p>A <strong>sysroot</strong> is a directory on the host machine that mirrors the target filesystem’s root (<code class="language-plaintext highlighter-rouge">/</code>). It contains the headers and libraries that belong to the <em>target</em> architecture, allowing the cross-compiler to find the correct files when building.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sysroot/
+├── lib/
+│   ├── libc.so.6            ← ARM glibc
+│   ├── ld-linux-armhf.so.3  ← ARM dynamic linker
+│   └── libm.so.6
+├── usr/
+│   ├── include/             ← ARM kernel + glibc headers
+│   │   ├── stdio.h
+│   │   ├── openssl/
+│   │   └── ...
+│   └── lib/
+│       ├── libssl.so        ← ARM libssl
+│       ├── libcrypto.so
+│       └── pkgconfig/       ← .pc files for pkg-config
+└── etc/
+    └── ld.so.conf
+</code></pre></div></div>
+
+<h3 id="default-sysroot-in-a-debianubuntu-toolchain">Default Sysroot in a Debian/Ubuntu Toolchain</h3>
+
+<p>When you install <code class="language-plaintext highlighter-rouge">gcc-arm-linux-gnueabihf</code>, the toolchain comes with a built-in sysroot that contains just the C library and kernel headers:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="nt">-print-sysroot</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/usr/arm-linux-gnueabihf
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> /usr/arm-linux-gnueabihf/
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bin  include  lib
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> /usr/arm-linux-gnueabihf/include/ | <span class="nb">head</span> <span class="nt">-15</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>aio.h          alloca.h       ar.h           argp.h
+assert.h       bits/          byteswap.h     complex.h
+cpio.h         ctype.h        dirent.h       dlfcn.h
+endian.h       errno.h        execinfo.h     fcntl.h
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> /usr/arm-linux-gnueabihf/lib/
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>crt1.o          crti.o          crtn.o
+ld-linux-armhf.so.3
+libanl.so.1     libanl-2.35.so
+libc.so.6       libc-2.35.so
+libc_nonshared.a
+libdl.so.2      libdl-2.35.so
+libm.so.6       libm-2.35.so
+libpthread.so.0 libpthread-2.35.so
+librt.so.1      librt-2.35.so
+</code></pre></div></div>
+
+<p>This built-in sysroot is fine for programs that only use the C standard library. The moment your program needs a third-party library (libssl, libcurl, libjpeg, etc.) you need a custom sysroot containing those libraries built for ARM.</p>
+
+<h3 id="using-sysroot-with-gcc">Using –sysroot with GCC</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Tell gcc to use a custom sysroot instead of its built-in one</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="se">\</span>
+    <span class="nt">--sysroot</span><span class="o">=</span>/opt/rpi4-sysroot <span class="se">\</span>
+    <span class="nt">-I</span>/opt/rpi4-sysroot/usr/include <span class="se">\</span>
+    <span class="nt">-o</span> myapp main.c <span class="se">\</span>
+    <span class="nt">-lssl</span> <span class="nt">-lcrypto</span>
+
+<span class="c"># Equivalent: set via environment variable (used by some build systems)</span>
+<span class="nv">$ </span><span class="nb">export </span><span class="nv">SYSROOT</span><span class="o">=</span>/opt/rpi4-sysroot
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="se">\</span>
+    <span class="nt">--sysroot</span><span class="o">=</span><span class="nv">$SYSROOT</span> <span class="se">\</span>
+    <span class="nt">-o</span> myapp main.c <span class="nt">-lssl</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">--sysroot=PATH</code> flag prepends PATH to all implicit <code class="language-plaintext highlighter-rouge">-I</code> and <code class="language-plaintext highlighter-rouge">-L</code> search paths, so the compiler automatically finds headers in <code class="language-plaintext highlighter-rouge">PATH/usr/include</code> and libraries in <code class="language-plaintext highlighter-rouge">PATH/usr/lib</code> and <code class="language-plaintext highlighter-rouge">PATH/lib</code>.</p>
+
+<h3 id="simple-example-compiling-against-a-sysroot-header">Simple Example: Compiling Against a Sysroot Header</h3>
+
+<p>Suppose your target board (Raspberry Pi) has <code class="language-plaintext highlighter-rouge">libgpiod</code> installed. You want to cross-compile a GPIO program on the host. With a proper sysroot:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Program: toggle_led.c</span>
+<span class="c"># #include &lt;gpiod.h&gt;   ← This header must be in the sysroot</span>
+
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="se">\</span>
+    <span class="nt">--sysroot</span><span class="o">=</span>/opt/rpi4-sysroot <span class="se">\</span>
+    <span class="nt">-o</span> toggle_led toggle_led.c <span class="se">\</span>
+    <span class="nt">-lgpiod</span>
+
+<span class="nv">$ </span>file toggle_led
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>toggle_led: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV),
+dynamically linked, interpreter /lib/ld-linux-armhf.so.3,
+for GNU/Linux 3.2.0, not stripped
+</code></pre></div></div>
+
+<p>Without the sysroot set correctly this would fail with <code class="language-plaintext highlighter-rouge">fatal error: gpiod.h: No such file or directory</code>.</p>
+
+<hr />
+
+<h2 class="gc-mid" id="creating-and-populating-a-sysroot">Creating and Populating a Sysroot</h2>
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="method-1-rsync-from-a-running-target-board">Method 1: rsync From a Running Target Board</h3>
+
+<p>The most reliable way to build a sysroot is to copy the relevant directories from the actual target device while it is running. This guarantees exact library versions:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Identify the target board's IP address</span>
+<span class="nv">TARGET_IP</span><span class="o">=</span>192.168.1.100
+<span class="nv">SYSROOT</span><span class="o">=</span>/opt/rpi4-sysroot
+
+<span class="nb">mkdir</span> <span class="nt">-p</span> <span class="nv">$SYSROOT</span>
+
+<span class="c"># Sync the directories needed for cross-compilation</span>
+<span class="c"># --rsync-path ensures rsync is available on target</span>
+rsync <span class="nt">-avz</span> <span class="nt">--rsync-path</span><span class="o">=</span><span class="s2">"rsync"</span> <span class="se">\</span>
+    pi@<span class="k">${</span><span class="nv">TARGET_IP</span><span class="k">}</span>:/lib/           <span class="nv">$SYSROOT</span>/lib/ <span class="se">\</span>
+    pi@<span class="k">${</span><span class="nv">TARGET_IP</span><span class="k">}</span>:/usr/lib/       <span class="nv">$SYSROOT</span>/usr/lib/ <span class="se">\</span>
+    pi@<span class="k">${</span><span class="nv">TARGET_IP</span><span class="k">}</span>:/usr/include/   <span class="nv">$SYSROOT</span>/usr/include/ <span class="se">\</span>
+    pi@<span class="k">${</span><span class="nv">TARGET_IP</span><span class="k">}</span>:/lib/arm-linux-gnueabihf/ <span class="nv">$SYSROOT</span>/lib/arm-linux-gnueabihf/
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>receiving file list ... done
+lib/
+lib/arm-linux-gnueabihf/
+lib/arm-linux-gnueabihf/libc-2.31.so
+lib/arm-linux-gnueabihf/libc.so.6 -&gt; libc-2.31.so
+lib/arm-linux-gnueabihf/libm-2.31.so
+lib/arm-linux-gnueabihf/libm.so.6 -&gt; libm-2.31.so
+lib/arm-linux-gnueabihf/libssl.so.1.1
+lib/arm-linux-gnueabihf/libcrypto.so.1.1
+...
+sent 1,247 bytes  received 42,891,563 bytes  5,614,428.31 bytes/sec
+total size is 42,856,124  speedup is 1.00
+</code></pre></div></div>
+
+<h3 id="method-2-copy-from-a-rootfs-image">Method 2: Copy From a Rootfs Image</h3>
+
+<p>If you built your rootfs with Buildroot or Yocto, you can mount the image and copy from it:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Mount the rootfs image</span>
+<span class="nv">$ </span><span class="nb">sudo mkdir</span> <span class="nt">-p</span> /mnt/rootfs
+<span class="nv">$ </span><span class="nb">sudo </span>mount <span class="nt">-o</span> loop output/images/rootfs.ext2 /mnt/rootfs
+
+<span class="c"># Copy required directories</span>
+<span class="nv">$ </span>rsync <span class="nt">-a</span> /mnt/rootfs/lib/   /opt/my-sysroot/lib/
+<span class="nv">$ </span>rsync <span class="nt">-a</span> /mnt/rootfs/usr/lib/   /opt/my-sysroot/usr/lib/
+<span class="nv">$ </span>rsync <span class="nt">-a</span> /mnt/rootfs/usr/include/ /opt/my-sysroot/usr/include/
+
+<span class="nv">$ </span><span class="nb">sudo </span>umount /mnt/rootfs
+</code></pre></div></div>
+
+<h3 id="fixing-absolute-symlinks">Fixing Absolute Symlinks</h3>
+
+<p>A major issue with sysroots is that library symlinks are often absolute paths, which point to the host filesystem rather than the sysroot:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Check for broken absolute symlinks</span>
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-la</span> /opt/rpi4-sysroot/lib/arm-linux-gnueabihf/ | <span class="nb">grep</span> <span class="s2">"</span><span class="se">\-</span><span class="s2">&gt;"</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lrwxrwxrwx  libssl.so.1.1 -&gt; /lib/arm-linux-gnueabihf/libssl.so.1.1
+lrwxrwxrwx  libcrypto.so.1.1 -&gt; /lib/arm-linux-gnueabihf/libcrypto.so.1.1
+lrwxrwxrwx  libc.so.6 -&gt; /lib/arm-linux-gnueabihf/libc-2.31.so
+</code></pre></div></div>
+
+<p>These absolute symlinks are broken on the host because <code class="language-plaintext highlighter-rouge">/lib/arm-linux-gnueabihf/</code> refers to the <em>host’s</em> <code class="language-plaintext highlighter-rouge">/lib</code>, not the sysroot. Fix them with a script that converts absolute symlinks to relative ones:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># sysroot-fix-symlinks.sh</span>
+<span class="c">#!/bin/bash</span>
+<span class="nv">SYSROOT</span><span class="o">=</span><span class="nv">$1</span>
+find <span class="nv">$SYSROOT</span> <span class="nt">-type</span> l | <span class="k">while </span><span class="nb">read link</span><span class="p">;</span> <span class="k">do
+    </span><span class="nv">target</span><span class="o">=</span><span class="si">$(</span><span class="nb">readlink</span> <span class="s2">"</span><span class="nv">$link</span><span class="s2">"</span><span class="si">)</span>
+    <span class="k">if</span> <span class="o">[[</span> <span class="s2">"</span><span class="nv">$target</span><span class="s2">"</span> <span class="o">==</span> /<span class="k">*</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+        <span class="c"># Convert absolute symlink to relative</span>
+        <span class="nv">rel_target</span><span class="o">=</span><span class="si">$(</span><span class="nb">realpath</span> <span class="nt">--relative-to</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span><span class="nb">dirname</span> <span class="nv">$link</span><span class="si">)</span><span class="s2">"</span> <span class="s2">"</span><span class="k">${</span><span class="nv">SYSROOT</span><span class="k">}${</span><span class="nv">target</span><span class="k">}</span><span class="s2">"</span><span class="si">)</span>
+        <span class="nb">echo</span> <span class="s2">"Fixing: </span><span class="nv">$link</span><span class="s2"> -&gt; </span><span class="nv">$target</span><span class="s2">  =&gt;  </span><span class="nv">$rel_target</span><span class="s2">"</span>
+        <span class="nb">ln</span> <span class="nt">-snf</span> <span class="s2">"</span><span class="nv">$rel_target</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$link</span><span class="s2">"</span>
+    <span class="k">fi
+done</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>bash sysroot-fix-symlinks.sh /opt/rpi4-sysroot
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Fixing: /opt/rpi4-sysroot/lib/arm-linux-gnueabihf/libssl.so.1.1 -&gt; /lib/arm-linux-gnueabihf/libssl.so.1.1  =&gt;  libssl.so.1.1
+Fixing: /opt/rpi4-sysroot/usr/lib/arm-linux-gnueabihf/libssl.so -&gt; /lib/arm-linux-gnueabihf/libssl.so.1.1  =&gt;  ../../lib/arm-linux-gnueabihf/libssl.so.1.1
+Fixing: /opt/rpi4-sysroot/lib/arm-linux-gnueabihf/libc.so.6 -&gt; /lib/arm-linux-gnueabihf/libc-2.31.so  =&gt;  libc-2.31.so
+</code></pre></div></div>
+
+<p>After fixing, verify:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-la</span> /opt/rpi4-sysroot/lib/arm-linux-gnueabihf/ | <span class="nb">grep</span> <span class="s2">"</span><span class="se">\-</span><span class="s2">&gt;"</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lrwxrwxrwx  libssl.so.1.1 -&gt; libssl.so.1.1
+lrwxrwxrwx  libcrypto.so.1.1 -&gt; libcrypto.so.1.1
+lrwxrwxrwx  libc.so.6 -&gt; libc-2.31.so
+</code></pre></div></div>
+
+<h3 id="configuring-pkg-config-for-cross-compilation">Configuring pkg-config for Cross-Compilation</h3>
+
+<p><code class="language-plaintext highlighter-rouge">pkg-config</code> is a tool that provides compiler and linker flags for libraries. By default it searches the host’s pkg-config database — which contains x86-64 paths and flags. You must redirect it to the sysroot’s pkg-config database.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Find pkg-config .pc files in the sysroot</span>
+<span class="nv">$ </span>find /opt/rpi4-sysroot <span class="nt">-name</span> <span class="s2">"*.pc"</span> | <span class="nb">head</span> <span class="nt">-5</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/opt/rpi4-sysroot/usr/lib/arm-linux-gnueabihf/pkgconfig/openssl.pc
+/opt/rpi4-sysroot/usr/lib/arm-linux-gnueabihf/pkgconfig/libcrypto.pc
+/opt/rpi4-sysroot/usr/lib/arm-linux-gnueabihf/pkgconfig/libssl.pc
+/opt/rpi4-sysroot/usr/lib/pkgconfig/gpiod.pc
+/opt/rpi4-sysroot/usr/share/pkgconfig/libfoo.pc
+</code></pre></div></div>
+
+<p>Set the required environment variables:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">PKG_CONFIG_SYSROOT_DIR</span><span class="o">=</span>/opt/rpi4-sysroot
+<span class="nb">export </span><span class="nv">PKG_CONFIG_LIBDIR</span><span class="o">=</span>/opt/rpi4-sysroot/usr/lib/arm-linux-gnueabihf/pkgconfig:<span class="se">\</span>
+/opt/rpi4-sysroot/usr/lib/pkgconfig:<span class="se">\</span>
+/opt/rpi4-sysroot/usr/share/pkgconfig
+
+<span class="c"># Unset the host pkg-config path to avoid mixing</span>
+<span class="nb">unset </span>PKG_CONFIG_PATH
+</code></pre></div></div>
+
+<p>Now verify pkg-config returns ARM flags:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>pkg-config <span class="nt">--cflags</span> <span class="nt">--libs</span> openssl
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-I/opt/rpi4-sysroot/usr/include -L/opt/rpi4-sysroot/usr/lib/arm-linux-gnueabihf -lssl -lcrypto
+</code></pre></div></div>
+
+<p>Cross-compile using pkg-config output:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="se">\</span>
+    <span class="nt">--sysroot</span><span class="o">=</span>/opt/rpi4-sysroot <span class="se">\</span>
+    <span class="si">$(</span>pkg-config <span class="nt">--cflags</span> openssl<span class="si">)</span> <span class="se">\</span>
+    <span class="nt">-o</span> tls_client tls_client.c <span class="se">\</span>
+    <span class="si">$(</span>pkg-config <span class="nt">--libs</span> openssl<span class="si">)</span>
+
+<span class="nv">$ </span>file tls_client
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tls_client: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV),
+dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 3.2.0, not stripped
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-sysroot-topics">Advanced Sysroot Topics</h2>
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="sysroot-vs-staging-directory-buildrootyocto">Sysroot vs Staging Directory (Buildroot/Yocto)</h3>
+
+<p>In automated build systems the distinction is important:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Concept</th>
+      <th>Description</th>
+      <th>Location in Buildroot</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Sysroot</strong></td>
+      <td>Contains host-side ARM libraries/headers used <em>during compilation</em> only</td>
+      <td><code class="language-plaintext highlighter-rouge">output/staging/</code></td>
+    </tr>
+    <tr>
+      <td><strong>Staging directory</strong></td>
+      <td>Synonym for sysroot in Buildroot; mirrors target tree with extra .pc files</td>
+      <td><code class="language-plaintext highlighter-rouge">output/staging/</code></td>
+    </tr>
+    <tr>
+      <td><strong>Target directory</strong></td>
+      <td>The actual rootfs that will be deployed to the board; stripped, no .pc files, no static libs</td>
+      <td><code class="language-plaintext highlighter-rouge">output/target/</code></td>
+    </tr>
+    <tr>
+      <td><strong>Host directory</strong></td>
+      <td>Tools that run on the build machine (e.g., host-pkgconf)</td>
+      <td><code class="language-plaintext highlighter-rouge">output/host/</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The staging directory has extra files (<code class="language-plaintext highlighter-rouge">.pc</code>, static <code class="language-plaintext highlighter-rouge">.a</code>, unstripped <code class="language-plaintext highlighter-rouge">.so</code>) that would waste space if deployed to the board. The target directory has only what the board needs at runtime.</p>
+
+<h3 id="checking-dependencies-against-a-sysroot-with-ldd-root">Checking Dependencies Against a Sysroot with ldd –root</h3>
+
+<p>The standard <code class="language-plaintext highlighter-rouge">ldd</code> on the host cannot evaluate ARM binaries. Instead use the <code class="language-plaintext highlighter-rouge">--root</code> option to point it at the sysroot:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>/lib/ld-linux-armhf.so.3 <span class="se">\</span>
+    <span class="nt">--library-path</span> /opt/rpi4-sysroot/lib/arm-linux-gnueabihf:<span class="se">\</span>
+/opt/rpi4-sysroot/usr/lib/arm-linux-gnueabihf <span class="se">\</span>
+    /opt/rpi4-sysroot/lib/arm-linux-gnueabihf/libc.so.6 <span class="se">\</span>
+    <span class="nt">--list</span> <span class="se">\</span>
+    ./myapp
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        linux-vdso.so.1 (0x00000000)
+        libssl.so.1.1 =&gt; /opt/rpi4-sysroot/lib/arm-linux-gnueabihf/libssl.so.1.1 (0x00000000)
+        libcrypto.so.1.1 =&gt; /opt/rpi4-sysroot/lib/arm-linux-gnueabihf/libcrypto.so.1.1 (0x00000000)
+        libc.so.6 =&gt; /opt/rpi4-sysroot/lib/arm-linux-gnueabihf/libc.so.6 (0x00000000)
+        libdl.so.2 =&gt; /opt/rpi4-sysroot/lib/arm-linux-gnueabihf/libdl.so.2 (0x00000000)
+        /lib/ld-linux-armhf.so.3 (0x00000000)
+</code></pre></div></div>
+
+<p>Alternatively, after copying the binary to the target board:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># On the target board</span>
+<span class="nv">$ </span>ldd myapp
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        libssl.so.1.1 =&gt; /lib/arm-linux-gnueabihf/libssl.so.1.1 (0xb6e11000)
+        libcrypto.so.1.1 =&gt; /lib/arm-linux-gnueabihf/libcrypto.so.1.1 (0xb6c31000)
+        libc.so.6 =&gt; /lib/arm-linux-gnueabihf/libc.so.6 (0xb6b14000)
+        /lib/ld-linux-armhf.so.3 (0xb6f2e000)
+</code></pre></div></div>
+
+<h3 id="creating-a-minimal-sysroot">Creating a Minimal Sysroot</h3>
+
+<p>For production builds, create the smallest possible sysroot containing only what your application actually needs:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+<span class="c"># create-minimal-sysroot.sh</span>
+<span class="nv">TARGET_APP</span><span class="o">=</span><span class="nv">$1</span>
+<span class="nv">FULL_SYSROOT</span><span class="o">=</span>/opt/rpi4-sysroot
+<span class="nv">MIN_SYSROOT</span><span class="o">=</span>/opt/minimal-sysroot
+
+<span class="nb">mkdir</span> <span class="nt">-p</span> <span class="nv">$MIN_SYSROOT</span>/<span class="o">{</span>lib,usr/lib,usr/include,lib/arm-linux-gnueabihf<span class="o">}</span>
+
+<span class="c"># Copy the app and find its library dependencies</span>
+<span class="nb">cp</span> <span class="nv">$TARGET_APP</span> <span class="nv">$MIN_SYSROOT</span>/
+
+<span class="c"># Use readelf to find NEEDED libraries</span>
+<span class="nv">NEEDED</span><span class="o">=</span><span class="si">$(</span>arm-linux-gnueabihf-readelf <span class="nt">-d</span> <span class="nv">$TARGET_APP</span> <span class="se">\</span>
+    | <span class="nb">grep </span>NEEDED | <span class="nb">awk</span> <span class="s1">'{print $NF}'</span> | <span class="nb">tr</span> <span class="nt">-d</span> <span class="s1">'[]'</span><span class="si">)</span>
+
+<span class="nb">echo</span> <span class="s2">"Libraries needed: </span><span class="nv">$NEEDED</span><span class="s2">"</span>
+
+<span class="k">for </span>lib <span class="k">in</span> <span class="nv">$NEEDED</span><span class="p">;</span> <span class="k">do</span>
+    <span class="c"># Find and copy each library</span>
+    <span class="nv">src</span><span class="o">=</span><span class="si">$(</span>find <span class="nv">$FULL_SYSROOT</span> <span class="nt">-name</span> <span class="s2">"</span><span class="nv">$lib</span><span class="s2">"</span> <span class="nt">-type</span> f | <span class="nb">head</span> <span class="nt">-1</span><span class="si">)</span>
+    <span class="k">if</span> <span class="o">[</span> <span class="nt">-n</span> <span class="s2">"</span><span class="nv">$src</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+        </span><span class="nb">cp</span> <span class="nt">-v</span> <span class="s2">"</span><span class="nv">$src</span><span class="s2">"</span> <span class="nv">$MIN_SYSROOT</span>/lib/arm-linux-gnueabihf/
+        <span class="c"># Copy symlinks too</span>
+        <span class="nb">dir</span><span class="o">=</span><span class="si">$(</span><span class="nb">dirname</span> <span class="nv">$src</span><span class="si">)</span>
+        find <span class="nv">$dir</span> <span class="nt">-name</span> <span class="s2">"</span><span class="k">${</span><span class="nv">lib</span><span class="p">%.*</span><span class="k">}</span><span class="s2">*"</span> <span class="nt">-maxdepth</span> 1 | <span class="se">\</span>
+            xargs <span class="nt">-I</span><span class="o">{}</span> <span class="nb">cp</span> <span class="nt">-P</span> <span class="o">{}</span> <span class="nv">$MIN_SYSROOT</span>/lib/arm-linux-gnueabihf/
+    <span class="k">fi
+done</span>
+
+<span class="c"># Copy the dynamic linker</span>
+<span class="nb">cp</span> <span class="nt">-P</span> <span class="nv">$FULL_SYSROOT</span>/lib/ld-linux-armhf.so.3 <span class="nv">$MIN_SYSROOT</span>/lib/
+</code></pre></div></div>
+
+<h3 id="rpath-and-runpath-in-sysroot-context">RPATH and RUNPATH in Sysroot Context</h3>
+
+<p>When your cross-compiled binary has an embedded RPATH pointing to a sysroot path, that path needs to match the actual target filesystem layout:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Compile with RPATH pointing to /opt/myapp/lib on the TARGET</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="se">\</span>
+    <span class="nt">--sysroot</span><span class="o">=</span>/opt/rpi4-sysroot <span class="se">\</span>
+    <span class="nt">-Wl</span>,-rpath,/opt/myapp/lib <span class="se">\</span>
+    <span class="nt">-Wl</span>,-rpath-link,/opt/rpi4-sysroot/usr/lib/arm-linux-gnueabihf <span class="se">\</span>
+    <span class="nt">-o</span> myapp main.c <span class="nt">-lssl</span>
+
+<span class="c"># -rpath: embedded in the binary, used at runtime ON THE TARGET</span>
+<span class="c"># -rpath-link: used by the linker ON THE HOST to resolve secondary dependencies</span>
+<span class="c">#              (not embedded in binary)</span>
+
+<span class="nv">$ </span>arm-linux-gnueabihf-readelf <span class="nt">-d</span> myapp | <span class="nb">grep</span> <span class="nt">-E</span> <span class="s2">"RPATH|RUNPATH|NEEDED"</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 0x0000000f (RPATH)                      Library rpath: [/opt/myapp/lib]
+ 0x00000001 (NEEDED)                     Shared library: [libssl.so.1.1]
+ 0x00000001 (NEEDED)                     Shared library: [libcrypto.so.1.1]
+ 0x00000001 (NEEDED)                     Shared library: [libc.so.6]
+</code></pre></div></div>
+
+<h3 id="handling-multiarch-sysroots">Handling Multiarch Sysroots</h3>
+
+<p>Modern Debian/Ubuntu use a multiarch layout where libraries are in architecture-specific subdirectories:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># On Raspberry Pi OS (Debian-based):</span>
+<span class="c"># Libraries are in /lib/arm-linux-gnueabihf/ not /lib/</span>
+
+<span class="nv">$ </span><span class="nb">ls</span> /opt/rpi4-sysroot/lib/arm-linux-gnueabihf/
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>libc-2.31.so          libc.so.6 -&gt; libc-2.31.so
+libm-2.31.so          libm.so.6 -&gt; libm-2.31.so
+libssl.so.1.1         libcrypto.so.1.1
+ld-linux-armhf.so.3
+</code></pre></div></div>
+
+<p>The cross-compiler knows about multiarch paths and searches them automatically when <code class="language-plaintext highlighter-rouge">--sysroot</code> is set. However, some older build systems assume a flat <code class="language-plaintext highlighter-rouge">/lib</code> layout and need manual <code class="language-plaintext highlighter-rouge">-L</code> flags:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>arm-linux-gnueabihf-gcc <span class="se">\</span>
+    <span class="nt">--sysroot</span><span class="o">=</span>/opt/rpi4-sysroot <span class="se">\</span>
+    <span class="nt">-L</span>/opt/rpi4-sysroot/lib/arm-linux-gnueabihf <span class="se">\</span>
+    <span class="nt">-L</span>/opt/rpi4-sysroot/usr/lib/arm-linux-gnueabihf <span class="se">\</span>
+    <span class="nt">-o</span> myapp main.c <span class="nt">-lssl</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-questions">Interview Questions</h2>
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q: What is a sysroot and why is it needed for cross-compilation?</strong></p>
+
+<p>A sysroot is a directory on the build host that contains the target architecture’s headers and libraries, mirroring the target filesystem’s root directory structure. It is needed because when cross-compiling, the host’s own <code class="language-plaintext highlighter-rouge">/usr/include</code> and <code class="language-plaintext highlighter-rouge">/usr/lib</code> contain x86-64 binaries and headers. Using them would cause ABI mismatches and incorrect code generation. The <code class="language-plaintext highlighter-rouge">--sysroot=PATH</code> flag to gcc causes all implicit header and library search paths to be prefixed with the sysroot path, so the compiler finds ARM headers in <code class="language-plaintext highlighter-rouge">PATH/usr/include</code> and ARM libraries in <code class="language-plaintext highlighter-rouge">PATH/usr/lib</code> and <code class="language-plaintext highlighter-rouge">PATH/lib</code>.</p>
+
+<p><strong>Q: How do you fix absolute symlinks in a manually created sysroot?</strong></p>
+
+<p>When you rsync or copy libraries from a target device, symbolic links are often absolute paths like <code class="language-plaintext highlighter-rouge">libssl.so -&gt; /lib/arm-linux-gnueabihf/libssl.so.1.1</code>. On the host machine, this absolute path resolves to the host’s <code class="language-plaintext highlighter-rouge">/lib</code>, which either does not exist or contains host x86-64 files. The fix is to convert these absolute symlinks to relative symlinks. A script using <code class="language-plaintext highlighter-rouge">readlink</code> to detect absolute symlinks and <code class="language-plaintext highlighter-rouge">ln -snf</code> with a relative path computed via <code class="language-plaintext highlighter-rouge">realpath --relative-to</code> will fix all affected links. After fixing, <code class="language-plaintext highlighter-rouge">libssl.so</code> should point to <code class="language-plaintext highlighter-rouge">libssl.so.1.1</code> (relative, within the same directory) rather than <code class="language-plaintext highlighter-rouge">/lib/arm-linux-gnueabihf/libssl.so.1.1</code>.</p>
+
+<p><strong>Q: How do you make pkg-config work in a cross-compilation environment?</strong></p>
+
+<p>Set three environment variables: <code class="language-plaintext highlighter-rouge">PKG_CONFIG_SYSROOT_DIR</code> to the sysroot path (this is prepended to all paths returned by pkg-config), <code class="language-plaintext highlighter-rouge">PKG_CONFIG_LIBDIR</code> to a colon-separated list of directories inside the sysroot where <code class="language-plaintext highlighter-rouge">.pc</code> files live (e.g., <code class="language-plaintext highlighter-rouge">/sysroot/usr/lib/arm-linux-gnueabihf/pkgconfig:/sysroot/usr/share/pkgconfig</code>), and unset <code class="language-plaintext highlighter-rouge">PKG_CONFIG_PATH</code> to prevent the host’s pkg-config search paths from being used. With these set, <code class="language-plaintext highlighter-rouge">pkg-config --cflags --libs openssl</code> returns paths inside the sysroot, which the cross-compiler can then use correctly.</p>
+
+<p><strong>Q: What is the difference between a sysroot and a staging directory?</strong></p>
+
+<p>These terms are often used interchangeably, but in the context of Buildroot they have a distinction. The sysroot is the conceptual idea of a directory that mirrors the target root and is used by the compiler. The staging directory (<code class="language-plaintext highlighter-rouge">output/staging/</code> in Buildroot) is the physical implementation — it contains all the cross-compiled libraries and headers needed by the compiler, including <code class="language-plaintext highlighter-rouge">.pc</code> files, static <code class="language-plaintext highlighter-rouge">.a</code> files, and unstripped <code class="language-plaintext highlighter-rouge">.so</code> files. The target directory (<code class="language-plaintext highlighter-rouge">output/target/</code>) is what actually gets deployed to the board: it has stripped shared libraries, no static libs, and no <code class="language-plaintext highlighter-rouge">.pc</code> files. Think of it as: staging = what the compiler needs; target = what the board needs.</p>
+
+<p><strong>Q: How do you debug missing library issues when running a cross-compiled binary on target?</strong></p>
+
+<p>First, on the host, use <code class="language-plaintext highlighter-rouge">arm-linux-gnueabihf-readelf -d mybinary | grep NEEDED</code> to list all shared libraries the binary requires. Then on the target board run <code class="language-plaintext highlighter-rouge">ldd mybinary</code> to see which libraries are found and which are missing (<code class="language-plaintext highlighter-rouge">not found</code>). If a library is missing: (1) check if it is installed on the target (<code class="language-plaintext highlighter-rouge">find /usr/lib /lib -name "libfoo*"</code>), (2) if not, cross-compile the library and add it to the target rootfs, (3) check if the library is in an unexpected path and set <code class="language-plaintext highlighter-rouge">LD_LIBRARY_PATH</code> as a temporary workaround, (4) for a permanent fix, add the library path to <code class="language-plaintext highlighter-rouge">/etc/ld.so.conf</code> on the target and run <code class="language-plaintext highlighter-rouge">ldconfig</code>. Also verify that the library ABI (e.g., <code class="language-plaintext highlighter-rouge">libssl.so.1.1</code> vs <code class="language-plaintext highlighter-rouge">libssl.so.3</code>) matches what the binary was compiled against.</p>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<ul>
+  <li><strong>“Mastering Embedded Linux Programming”</strong> — Chris Simmonds, 3rd Ed. — Chapter 2: Toolchains, sysroot and staging directories</li>
+  <li><strong>Buildroot Manual: Staging Directory</strong> — explains staging vs target directory distinction (https://buildroot.org/downloads/manual/manual.html)</li>
+  <li><strong>pkg-config Cross-Compilation Guide</strong> — environment variables for cross-compiling with pkg-config (https://autotools.io/pkgconfig/cross-compiling.html)</li>
+  <li><strong>GCC –sysroot Documentation</strong> — official GCC documentation for the –sysroot flag (https://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html)</li>
+  <li><strong>Raspbian/Raspberry Pi Sysroot Guide</strong> — community guide for setting up RPi sysroots (https://tttapa.github.io/Pages/Raspberry-Pi/C++-Development-RPiOS/index.html)</li>
+  <li><strong>Linaro Sysroot Tools</strong> — scripts from Linaro for creating cross-compilation sysroots (https://wiki.linaro.org/WorkingGroups/ToolChain)</li>
+</ul>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-gears"></i>
+        <span>Cross-Compilation Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/embedded-linux/cross-compilation/gnu-toolchain/" class="gtn-link ">
+          <i class="fas fa-gears"></i> GNU Toolchain
+        </a>
+        <a href="/embedded-linux/cross-compilation/sysroot-libraries/" class="gtn-link gts-active">
+          <i class="fas fa-folder-tree"></i> Sysroot &amp; Libraries
+        </a>
+        <a href="/embedded-linux/cross-compilation/static-dynamic-linking/" class="gtn-link ">
+          <i class="fas fa-link"></i> Static vs Dynamic Linking
+        </a>
+        <a href="/embedded-linux/cross-compilation/qemu-emulation/" class="gtn-link ">
+          <i class="fas fa-computer"></i> QEMU Emulation
+        </a>
+        <a href="/embedded-linux/cross-compilation/binary-analysis/" class="gtn-link ">
+          <i class="fas fa-magnifying-glass-chart"></i> readelf / objdump / nm
+        </a>
+        <a href="/embedded-linux/cross-compilation/cross-compile-cmake/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> Cross-Compiling with CMake
+        </a>
+      </nav>
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/embedded-linux/cross-compilation/gnu-toolchain/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">GNU Toolchain</span>
+      </a>
+      
+      
+      <a href="/embedded-linux/cross-compilation/static-dynamic-linking/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Static vs Dynamic Linking</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

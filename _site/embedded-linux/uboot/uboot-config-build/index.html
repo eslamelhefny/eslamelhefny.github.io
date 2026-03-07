@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>U-Boot Configuration & Build · Eslam Mohamed</title>
+  <meta name="description" content="Configure and build U-Boot from source for ARM targets, understand defconfigs, Kconfig options, and all output artifacts including MLO, u-boot.bin, and FIT images." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/embedded-linux/">Embedded Linux Developer</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>U-Boot Configuration & Build</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 03 — Embedded Linux</span>
+        <span class="guide-stage-pill">Stage 06</span>
+      </div>
+      <h1 class="guide-title">U-Boot Configuration & Build</h1>
+      <p class="guide-subtitle">Configure and build U-Boot from source for ARM targets, understand defconfigs, Kconfig options, and all output artifacts including MLO, u-boot.bin, and FIT images.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="getting-u-boot-source-and-building-your-first-image">Getting U-Boot Source and Building Your First Image</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>U-Boot is an open-source bootloader maintained by Denx Software Engineering. The source is hosted on a public GitLab instance. You download it, select the configuration for your board, and cross-compile it for your target architecture.</p>
+
+<h3 id="downloading-u-boot">Downloading U-Boot</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Clone the mainline U-Boot repository</span>
+<span class="nv">$ </span>git clone https://source.denx.de/u-boot/u-boot.git
+Cloning into <span class="s1">'u-boot'</span>...
+remote: Enumerating objects: 890234, <span class="k">done</span><span class="nb">.</span>
+remote: Counting objects: 100% <span class="o">(</span>890234/890234<span class="o">)</span>, <span class="k">done</span><span class="nb">.</span>
+Receiving objects: 100% <span class="o">(</span>890234/890234<span class="o">)</span>, 324.21 MiB | 8.92 MiB/s, <span class="k">done</span><span class="nb">.</span>
+
+<span class="nv">$ </span><span class="nb">cd </span>u-boot
+<span class="nv">$ </span>git log <span class="nt">--oneline</span> <span class="nt">-5</span>
+a28b4a5c5b <span class="o">(</span>HEAD -&gt; master<span class="o">)</span> Merge branch <span class="s1">'next'</span> of ...
+3f1e9d2a4c arm: am33xx: Fix DDR training <span class="nb">timeout
+</span>7b8c34f1e2 net: dwc_eth_qos: Add i.MX8MP support
+2c4a8f9e3d mmc: omap_hsmmc: Increase <span class="nb">timeout </span><span class="k">for </span>eMMC
+1d3e7c8b2a doc: Update release notes <span class="k">for </span>2023.10
+
+<span class="c"># Check out a stable release rather than HEAD</span>
+<span class="nv">$ </span>git tag | <span class="nb">grep</span> <span class="s2">"^v2023"</span> | <span class="nb">tail</span> <span class="nt">-5</span>
+v2023.01
+v2023.04
+v2023.07
+v2023.07.01
+v2023.10
+
+<span class="nv">$ </span>git checkout v2023.10
+HEAD is now at 8b3f9a2 Merge tag <span class="s1">'v2023.10'</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="finding-the-right-defconfig">Finding the Right defconfig</h3>
+
+<p>A <strong>defconfig</strong> is a minimal configuration file listing only the settings that differ from their default values. U-Boot ships hundreds of defconfigs for supported boards:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># List all available defconfigs</span>
+<span class="nv">$ </span><span class="nb">ls </span>configs/ | <span class="nb">wc</span> <span class="nt">-l</span>
+1247
+
+<span class="c"># Search for BeagleBone-related configs</span>
+<span class="nv">$ </span><span class="nb">ls </span>configs/ | <span class="nb">grep</span> <span class="nt">-i</span> beagle
+am335x_boneblack_defconfig
+am335x_boneblack_vboot_defconfig
+am335x_evm_defconfig
+am335x_evm_spiboot_defconfig
+beaglebone_defconfig
+
+<span class="c"># Search for Raspberry Pi configs</span>
+<span class="nv">$ </span><span class="nb">ls </span>configs/ | <span class="nb">grep</span> <span class="nt">-i</span> rpi
+rpi_0_w_defconfig
+rpi_2_defconfig
+rpi_3_32b_defconfig
+rpi_3_defconfig
+rpi_3_b_plus_defconfig
+rpi_4_32b_defconfig
+rpi_4_defconfig
+rpi_arm64_defconfig
+
+<span class="c"># Search for QEMU ARM configs</span>
+<span class="nv">$ </span><span class="nb">ls </span>configs/ | <span class="nb">grep</span> <span class="nt">-i</span> qemu
+qemu-ppce500_defconfig
+qemu_arm64_defconfig
+qemu_arm_defconfig
+qemu_mips_defconfig
+qemu_riscv32_defconfig
+qemu_riscv64_defconfig
+qemu_x86_64_defconfig
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="applying-a-defconfig">Applying a defconfig</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">make</code> command with a defconfig target reads the defconfig file and writes the full <code class="language-plaintext highlighter-rouge">.config</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Set environment variables for convenience</span>
+<span class="nv">$ </span><span class="nb">export </span><span class="nv">ARCH</span><span class="o">=</span>arm
+<span class="nv">$ </span><span class="nb">export </span><span class="nv">CROSS_COMPILE</span><span class="o">=</span>arm-linux-gnueabihf-
+
+<span class="c"># Apply the BeagleBone Black defconfig</span>
+<span class="nv">$ </span>make am335x_boneblack_defconfig
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/kconfig/conf.o
+  HOSTCC  scripts/kconfig/zconf.tab.o
+  HOSTCC  scripts/kconfig/lxdialog/checklist.o
+  HOSTCC  scripts/kconfig/lxdialog/inputbox.o
+  HOSTCC  scripts/kconfig/lxdialog/menubox.o
+  HOSTCC  scripts/kconfig/lxdialog/textbox.o
+  HOSTCC  scripts/kconfig/lxdialog/util.o
+  HOSTCC  scripts/kconfig/lxdialog/yesno.o
+  HOSTCC  scripts/kconfig/mconf.o
+<span class="c">#</span>
+<span class="c"># configuration written to .config</span>
+<span class="c">#</span>
+
+<span class="c"># Verify .config was created</span>
+<span class="nv">$ </span><span class="nb">head</span> <span class="nt">-20</span> .config
+<span class="c">#</span>
+<span class="c"># Automatically generated file; DO NOT EDIT.</span>
+<span class="c"># U-Boot 2023.10 Configuration</span>
+<span class="c">#</span>
+<span class="nv">CONFIG_CREATE_ARCH_SYMLINK</span><span class="o">=</span>y
+<span class="nv">CONFIG_LINKER_LIST_ALIGN</span><span class="o">=</span>8
+<span class="nv">CONFIG_ARM</span><span class="o">=</span>y
+<span class="nv">CONFIG_ARCH_CPU_INIT</span><span class="o">=</span>y
+<span class="nv">CONFIG_ARCH_OMAP2PLUS</span><span class="o">=</span>y
+<span class="nv">CONFIG_TI_COMMON_CMD_OPTIONS</span><span class="o">=</span>y
+<span class="nv">CONFIG_SOC_AM33XX</span><span class="o">=</span>y
+<span class="nv">CONFIG_TARGET_AM335X_EVM</span><span class="o">=</span>y
+<span class="nv">CONFIG_SYS_BOARD</span><span class="o">=</span><span class="s2">"am335x"</span>
+<span class="nv">CONFIG_SYS_VENDOR</span><span class="o">=</span><span class="s2">"ti"</span>
+<span class="nv">CONFIG_SYS_SOC</span><span class="o">=</span><span class="s2">"am33xx"</span>
+<span class="nv">CONFIG_SYS_CONFIG_NAME</span><span class="o">=</span><span class="s2">"am335x_evm"</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="customizing-with-menuconfig">Customizing with menuconfig</h3>
+
+<p><code class="language-plaintext highlighter-rouge">menuconfig</code> provides a terminal UI for browsing and changing configuration options:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>make menuconfig
+</code></pre></div></div>
+
+<p>This opens a full-screen menu. Key navigation:</p>
+<ul>
+  <li>Arrow keys: navigate</li>
+  <li>Enter: enter submenu</li>
+  <li>Space: toggle option</li>
+  <li><code class="language-plaintext highlighter-rouge">/</code>: search for a config symbol</li>
+  <li><code class="language-plaintext highlighter-rouge">?</code>: help for current option</li>
+  <li><code class="language-plaintext highlighter-rouge">Esc Esc</code>: go back / exit</li>
+</ul>
+
+<p>Important menu locations:</p>
+<ul>
+  <li><strong>Architecture select</strong> → <code class="language-plaintext highlighter-rouge">ARM architecture</code></li>
+  <li><strong>Boot images</strong> → kernel loading address settings</li>
+  <li><strong>Command line interface</strong> → which commands to include</li>
+  <li><strong>Environment</strong> → where to store environment variables</li>
+  <li><strong>Device Drivers</strong> → enable specific hardware drivers</li>
+  <li><strong>File systems</strong> → FAT, ext4, ubifs support</li>
+</ul>
+
+<hr />
+
+<h3 id="compiling-u-boot">Compiling U-Boot</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Build with 4 parallel jobs</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm <span class="nv">CROSS_COMPILE</span><span class="o">=</span>arm-linux-gnueabihf- <span class="nt">-j4</span>
+
+  CC      init/board_init.o
+  CC      init/main.o
+  CC      board/ti/am335x/board.o
+  CC      board/ti/am335x/mux.o
+  CC      <span class="nb">arch</span>/arm/cpu/armv7/start.o
+  ...
+  LD      u-boot
+  OBJCOPY u-boot.bin
+  OBJCOPY u-boot-nodtb.bin
+  COPY    u-boot.dtb
+  CAT     u-boot-dtb.bin
+  MKIMAGE u-boot.img
+
+SPL binary size is 98304 bytes <span class="o">(</span>max 114688 bytes<span class="o">)</span>
+
+Build finished successfully <span class="k">in </span>45 seconds.
+</code></pre></div></div>
+
+<p>A clean build on a modern laptop takes approximately 30-90 seconds.</p>
+
+<hr />
+
+<h3 id="understanding-output-artifacts">Understanding Output Artifacts</h3>
+
+<p>After a successful build, several output files are produced:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-lh</span> <span class="k">*</span>.bin <span class="k">*</span>.img MLO spl/<span class="k">*</span>.bin 2&gt;/dev/null
+<span class="nt">-rw-r--r--</span> 1 user user  98K Oct 15 spl/u-boot-spl.bin
+<span class="nt">-rw-r--r--</span> 1 user user  98K MLO
+<span class="nt">-rw-r--r--</span> 1 user user 512K u-boot.bin
+<span class="nt">-rw-r--r--</span> 1 user user 516K u-boot-dtb.bin
+<span class="nt">-rw-r--r--</span> 1 user user 516K u-boot-dtb.img
+<span class="nt">-rw-r--r--</span> 1 user user 516K u-boot.img
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Description</th>
+      <th>Used When</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MLO</code></td>
+      <td>SPL with AM335x GP header</td>
+      <td>First file BootROM loads from FAT on AM335x</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">spl/u-boot-spl.bin</code></td>
+      <td>Raw SPL binary</td>
+      <td>Various — MLO is this with header</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">u-boot.bin</code></td>
+      <td>U-Boot proper, raw binary, no DTB embedded</td>
+      <td>When DTB is separate</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">u-boot-dtb.bin</code></td>
+      <td>U-Boot proper with DTB appended</td>
+      <td>Preferred for most boards</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">u-boot.img</code></td>
+      <td>u-boot.bin wrapped in legacy uImage header</td>
+      <td>Older SPL versions</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">u-boot-dtb.img</code></td>
+      <td>u-boot-dtb.bin wrapped in legacy uImage header</td>
+      <td>When SPL uses uImage format</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">u-boot.elf</code></td>
+      <td>ELF file with full symbols</td>
+      <td>JTAG debugging</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Which file to flash depends on your board:</strong></p>
+<ul>
+  <li>BeagleBone Black: Copy <code class="language-plaintext highlighter-rouge">MLO</code> and <code class="language-plaintext highlighter-rouge">u-boot.img</code> to the FAT partition</li>
+  <li>Raspberry Pi: Copy <code class="language-plaintext highlighter-rouge">u-boot.bin</code> alongside the Pi firmware files</li>
+  <li>i.MX6: Use <code class="language-plaintext highlighter-rouge">dd</code> to write the u-boot image at a specific offset</li>
+</ul>
+
+<hr />
+
+<h3 id="flashing-to-sd-card-beaglebone-black">Flashing to SD Card (BeagleBone Black)</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Identify the SD card device</span>
+<span class="nv">$ </span>lsblk
+NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+sda      8:0    0 500.1G  0 disk
+└─sda1   8:1    0 500.1G  0 part /
+sdb      8:16   1  15.0G  0 disk     &lt;<span class="nt">--</span> SD card
+├─sdb1   8:17   1    64M  0 part
+└─sdb2   8:18   1  14.9G  0 part
+
+<span class="c"># Mount FAT partition and copy bootloader files</span>
+<span class="nv">$ </span><span class="nb">sudo </span>mount /dev/sdb1 /mnt/sdcard
+<span class="nv">$ </span><span class="nb">sudo cp </span>MLO /mnt/sdcard/
+<span class="nv">$ </span><span class="nb">sudo cp </span>u-boot.img /mnt/sdcard/
+<span class="nv">$ </span><span class="nb">sync</span>
+<span class="nv">$ </span><span class="nb">sudo </span>umount /mnt/sdcard
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="key-config-options-versioning-and-multiple-board-builds">Key CONFIG Options, Versioning, and Multiple Board Builds</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="most-important-config-symbols">Most Important CONFIG Symbols</h3>
+
+<p>Understanding key configuration symbols helps you customize U-Boot’s behavior:</p>
+
+<p><strong>Command availability (<code class="language-plaintext highlighter-rouge">CONFIG_CMD_*</code>):</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Symbol</th>
+      <th>Effect</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_CMD_MMC=y</code></td>
+      <td>Enable mmc commands</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_CMD_USB=y</code></td>
+      <td>Enable usb commands</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_CMD_DHCP=y</code></td>
+      <td>Enable dhcp command</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_CMD_TFTP=y</code></td>
+      <td>Enable tftp command</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_CMD_NFS=y</code></td>
+      <td>Enable nfs command</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_CMD_PING=y</code></td>
+      <td>Enable ping command</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_CMD_EXT4=y</code></td>
+      <td>Enable ext4 filesystem commands</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_CMD_FAT=y</code></td>
+      <td>Enable FAT filesystem commands</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_CMD_I2C=y</code></td>
+      <td>Enable i2c commands</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_CMD_FPGA=y</code></td>
+      <td>Enable fpga load commands</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Environment storage (<code class="language-plaintext highlighter-rouge">CONFIG_ENV_IS_*</code>):</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Symbol</th>
+      <th>Storage Location</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_ENV_IS_IN_MMC=y</code></td>
+      <td>MMC/eMMC at ENV_OFFSET</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_ENV_IS_IN_NAND=y</code></td>
+      <td>NAND flash at ENV_OFFSET</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_ENV_IS_IN_SPI_FLASH=y</code></td>
+      <td>SPI NOR flash</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_ENV_IS_IN_FAT=y</code></td>
+      <td>File on FAT partition</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_ENV_IS_NOWHERE=y</code></td>
+      <td>No persistence (always defaults)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_ENV_IS_IN_UBI=y</code></td>
+      <td>UBI volume on NAND</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Memory layout (<code class="language-plaintext highlighter-rouge">CONFIG_SYS_*</code>):</strong></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CONFIG_SYS_TEXT_BASE=0x80800000  # Where U-Boot loads itself in DRAM
+CONFIG_SYS_SDRAM_BASE=0x80000000 # Start of DRAM
+CONFIG_SYS_MALLOC_LEN=0x400000   # 4MB malloc pool
+CONFIG_SYS_LOAD_ADDR=0x82000000  # Default kernel load address
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="config_sys_text_base-explained">CONFIG_SYS_TEXT_BASE Explained</h3>
+
+<p><code class="language-plaintext highlighter-rouge">CONFIG_SYS_TEXT_BASE</code> is the virtual address where U-Boot expects to be loaded in memory. The linker uses this to compute all absolute addresses in the binary.</p>
+
+<p>If this value does not match where SPL actually loads U-Boot, the CPU will jump to the wrong address and crash:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>U-Boot 2023.10
+...
+data abort
+pc : 0x8034a2b0  &lt;-- wrong address, U-Boot is actually at 0x80300000
+lr : 0x80349f14
+sp : 0x8ef6bff8
+</code></pre></div></div>
+
+<p>To find where U-Boot is linked to run:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>arm-linux-gnueabihf-objdump <span class="nt">-f</span> u-boot | <span class="nb">grep</span> <span class="s2">"start address"</span>
+start address 0x80800000
+</code></pre></div></div>
+
+<p>This must match what SPL puts into the <code class="language-plaintext highlighter-rouge">load_addr</code> field of the image header.</p>
+
+<hr />
+
+<h3 id="u-boot-kconfig-vs-old-style-config-headers">U-Boot Kconfig vs Old-Style Config Headers</h3>
+
+<p>Before 2016, U-Boot configuration was done entirely in C header files under <code class="language-plaintext highlighter-rouge">include/configs/BOARD.h</code>. These headers used <code class="language-plaintext highlighter-rouge">#define</code> macros:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* OLD STYLE — include/configs/am335x_evm.h */</span>
+<span class="cp">#define CONFIG_SYS_TEXT_BASE    0x80800000
+#define CONFIG_BOOTDELAY        1
+#define CONFIG_BOOTCOMMAND      "run findfdt; run distro_bootcmd"
+</span></code></pre></div></div>
+
+<p>Modern U-Boot uses <strong>Kconfig</strong> (the same system as the Linux kernel), with <code class="language-plaintext highlighter-rouge">.config</code> files and <code class="language-plaintext highlighter-rouge">menuconfig</code>. However, a mix still exists:</p>
+
+<ul>
+  <li>Architecture and board selection: Kconfig</li>
+  <li>Some board-specific settings: still in <code class="language-plaintext highlighter-rouge">include/configs/BOARD.h</code></li>
+  <li>The transition is ongoing; some boards are fully Kconfig, others still have config headers</li>
+</ul>
+
+<p>The Kconfig symbols in <code class="language-plaintext highlighter-rouge">.config</code> take precedence. The header file is included by <code class="language-plaintext highlighter-rouge">include/autoconf.mk</code> which is generated from <code class="language-plaintext highlighter-rouge">.config</code>.</p>
+
+<hr />
+
+<h3 id="saving-a-minimal-defconfig">Saving a Minimal defconfig</h3>
+
+<p>After customizing with menuconfig, save a minimal defconfig (only changed values):</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Save minimal defconfig</span>
+<span class="nv">$ </span>make savedefconfig
+scripts/kconfig/conf <span class="nt">--savedefconfig</span><span class="o">=</span>defconfig .config
+
+<span class="nv">$ </span><span class="nb">cat </span>defconfig
+<span class="nv">CONFIG_ARM</span><span class="o">=</span>y
+<span class="nv">CONFIG_ARCH_OMAP2PLUS</span><span class="o">=</span>y
+<span class="nv">CONFIG_TARGET_AM335X_EVM</span><span class="o">=</span>y
+<span class="nv">CONFIG_DEFAULT_DEVICE_TREE</span><span class="o">=</span><span class="s2">"am335x-boneblack"</span>
+<span class="nv">CONFIG_ENV_IS_IN_MMC</span><span class="o">=</span>y
+<span class="nv">CONFIG_CMD_DHCP</span><span class="o">=</span>y
+<span class="nv">CONFIG_CMD_NFS</span><span class="o">=</span>y
+<span class="nv">CONFIG_OF_CONTROL</span><span class="o">=</span>y
+
+<span class="c"># Copy back to configs/ to make it your board's defconfig</span>
+<span class="nv">$ </span><span class="nb">cp </span>defconfig configs/my_custom_board_defconfig
+</code></pre></div></div>
+
+<p>The saved defconfig has only 8 lines instead of 1000+ lines in the full <code class="language-plaintext highlighter-rouge">.config</code>.</p>
+
+<hr />
+
+<h3 id="building-for-multiple-boards">Building for Multiple Boards</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Build for Raspberry Pi 4 (64-bit)</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm64 <span class="nv">CROSS_COMPILE</span><span class="o">=</span>aarch64-linux-gnu- rpi_4_defconfig
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm64 <span class="nv">CROSS_COMPILE</span><span class="o">=</span>aarch64-linux-gnu- <span class="nt">-j4</span>
+
+<span class="c"># Build for QEMU ARM vexpress (useful for testing without hardware)</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm <span class="nv">CROSS_COMPILE</span><span class="o">=</span>arm-linux-gnueabihf- qemu_arm_defconfig
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm <span class="nv">CROSS_COMPILE</span><span class="o">=</span>arm-linux-gnueabihf- <span class="nt">-j4</span>
+
+<span class="c"># Run in QEMU (no hardware needed)</span>
+<span class="nv">$ </span>qemu-system-arm <span class="se">\</span>
+    <span class="nt">-machine</span> vexpress-a9 <span class="se">\</span>
+    <span class="nt">-m</span> 256M <span class="se">\</span>
+    <span class="nt">-nographic</span> <span class="se">\</span>
+    <span class="nt">-kernel</span> u-boot <span class="se">\</span>
+    <span class="nt">-serial</span> mon:stdio
+
+U-Boot 2023.10 <span class="o">(</span>Oct 15 2023 - 12:34:56 +0000<span class="o">)</span>
+
+DRAM:  256 MiB
+WARNING: Caches not enabled
+Flash: 128 MiB
+MMC:   MMC: 0
+Loading Environment from Flash... OK
+In:    serial@9000000
+Out:   serial@9000000
+Err:   serial@9000000
+Hit any key to stop autoboot:  3
+<span class="o">=&gt;</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="output-artifacts-summary-table">Output Artifacts Summary Table</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Format</th>
+      <th>Size (typical)</th>
+      <th>Flash Location</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MLO</code></td>
+      <td>SPL + AM335x header</td>
+      <td>~96 KB</td>
+      <td>FAT offset 0, or raw sector 1</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">u-boot.img</code></td>
+      <td>U-Boot + uImage header</td>
+      <td>~400-600 KB</td>
+      <td>FAT as file, or raw sector 256</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">u-boot.bin</code></td>
+      <td>Raw binary</td>
+      <td>~400-600 KB</td>
+      <td>SPI flash offset 0x40000</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">u-boot-dtb.bin</code></td>
+      <td>Raw binary + DTB</td>
+      <td>~420-620 KB</td>
+      <td>Same as u-boot.bin</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">u-boot.elf</code></td>
+      <td>ELF with symbols</td>
+      <td>~2-4 MB</td>
+      <td>Never flashed; for JTAG</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">u-boot.map</code></td>
+      <td>Linker map</td>
+      <td>text file</td>
+      <td>Never flashed; for debugging</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-adv" id="driver-model-fit-images-and-advanced-build-topics">Driver Model, FIT Images, and Advanced Build Topics</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="u-boot-driver-model-dm">U-Boot Driver Model (DM)</h3>
+
+<p>U-Boot’s driver model (CONFIG_DM) is a framework for organizing device drivers, introduced around 2014. It provides:</p>
+<ul>
+  <li>A device tree-based driver binding mechanism</li>
+  <li>A unified API for device access</li>
+  <li>Separation of platform data from driver code</li>
+</ul>
+
+<p><strong>Driver Model concepts:</strong></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>uclass (e.g., UCLASS_MMC)
+   └── udevice (e.g., "omap_hsmmc.0")
+          └── driver (e.g., struct driver omap_hsmmc_driver)
+                └── ops (e.g., struct dm_mmc_ops)
+</code></pre></div></div>
+
+<p>Enable DM in defconfig:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CONFIG_DM=y
+CONFIG_DM_MMC=y
+CONFIG_DM_SERIAL=y
+CONFIG_DM_GPIO=y
+CONFIG_DM_I2C=y
+CONFIG_DM_USB=y
+</code></pre></div></div>
+
+<p>Writing a minimal DM driver:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* drivers/serial/serial_myboard.c */</span>
+<span class="cp">#include</span> <span class="cpf">&lt;dm.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;serial.h&gt;</span><span class="cp">
+</span>
+<span class="k">struct</span> <span class="n">myboard_serial_priv</span> <span class="p">{</span>
+    <span class="kt">void</span> <span class="n">__iomem</span> <span class="o">*</span><span class="n">base</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">myboard_serial_putc</span><span class="p">(</span><span class="k">struct</span> <span class="n">udevice</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">ch</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">myboard_serial_priv</span> <span class="o">*</span><span class="n">priv</span> <span class="o">=</span> <span class="n">dev_get_priv</span><span class="p">(</span><span class="n">dev</span><span class="p">);</span>
+    <span class="cm">/* Wait for TX FIFO not full */</span>
+    <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">readl</span><span class="p">(</span><span class="n">priv</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">+</span> <span class="n">UART_LSR</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">UART_LSR_THRE</span><span class="p">))</span>
+        <span class="p">;</span>
+    <span class="n">writel</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">priv</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">+</span> <span class="n">UART_THR</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">myboard_serial_probe</span><span class="p">(</span><span class="k">struct</span> <span class="n">udevice</span> <span class="o">*</span><span class="n">dev</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">myboard_serial_priv</span> <span class="o">*</span><span class="n">priv</span> <span class="o">=</span> <span class="n">dev_get_priv</span><span class="p">(</span><span class="n">dev</span><span class="p">);</span>
+    <span class="n">priv</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">=</span> <span class="n">dev_read_addr_ptr</span><span class="p">(</span><span class="n">dev</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">dm_serial_ops</span> <span class="n">myboard_serial_ops</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">putc</span> <span class="o">=</span> <span class="n">myboard_serial_putc</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">getc</span> <span class="o">=</span> <span class="n">myboard_serial_getc</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">pending</span> <span class="o">=</span> <span class="n">myboard_serial_pending</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">udevice_id</span> <span class="n">myboard_serial_ids</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">{</span> <span class="p">.</span><span class="n">compatible</span> <span class="o">=</span> <span class="s">"myvendor,myboard-uart"</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">U_BOOT_DRIVER</span><span class="p">(</span><span class="n">myboard_serial</span><span class="p">)</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">name</span>     <span class="o">=</span> <span class="s">"myboard_serial"</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">id</span>       <span class="o">=</span> <span class="n">UCLASS_SERIAL</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">of_match</span> <span class="o">=</span> <span class="n">myboard_serial_ids</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">probe</span>    <span class="o">=</span> <span class="n">myboard_serial_probe</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">ops</span>      <span class="o">=</span> <span class="o">&amp;</span><span class="n">myboard_serial_ops</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">priv_auto</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">myboard_serial_priv</span><span class="p">),</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="fit-image-flattened-image-tree">FIT Image (Flattened Image Tree)</h3>
+
+<p>A <strong>FIT image</strong> is a single file that bundles multiple components (kernel, DTB, initrd, firmware) with metadata in a device tree format. It supports:</p>
+<ul>
+  <li>Multiple kernels, DTBs, and configurations in one file</li>
+  <li>Cryptographic signing of each component</li>
+  <li>Hash verification (SHA256)</li>
+  <li>Compression</li>
+</ul>
+
+<p><strong>FIT image ITS (Image Tree Source) file:</strong></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># kernel.its
+/dts-v1/;
+
+/ {
+    description = "Linux kernel and FDT blob for BeagleBone Black";
+    #address-cells = &lt;1&gt;;
+
+    images {
+        kernel {
+            description = "Linux kernel";
+            data = /incbin/("zImage");
+            type = "kernel";
+            arch = "arm";
+            os = "linux";
+            compression = "none";
+            load = &lt;0x82000000&gt;;
+            entry = &lt;0x82000000&gt;;
+            hash-1 {
+                algo = "sha256";
+            };
+        };
+
+        fdt-1 {
+            description = "BeagleBone Black DTB";
+            data = /incbin/("am335x-boneblack.dtb");
+            type = "flat_dt";
+            arch = "arm";
+            compression = "none";
+            hash-1 {
+                algo = "sha256";
+            };
+        };
+    };
+
+    configurations {
+        default = "conf-1";
+        conf-1 {
+            description = "BeagleBone Black";
+            kernel = "kernel";
+            fdt = "fdt-1";
+            signature-1 {
+                algo = "sha256,rsa2048";
+                key-name-hint = "dev";
+                sign-images = "fdt", "kernel";
+            };
+        };
+    };
+};
+</code></pre></div></div>
+
+<p><strong>Building the FIT image:</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Build the FIT image using mkimage</span>
+<span class="nv">$ </span>mkimage <span class="nt">-f</span> kernel.its kernel.itb
+FIT description: Linux kernel and FDT blob <span class="k">for </span>BeagleBone Black
+Created:         Sun Oct 15 12:34:56 2023
+ Image 0 <span class="o">(</span>kernel<span class="o">)</span>
+  Description:  Linux kernel
+  Created:      Sun Oct 15 12:34:56 2023
+  Type:         Kernel Image
+  Compression:  uncompressed
+  Data Size:    6016704 Bytes <span class="o">=</span> 5876.66 KiB <span class="o">=</span> 5.74 MiB
+  Architecture: ARM
+  OS:           Linux
+  Load Address: 0x82000000
+  Entry Point:  0x82000000
+  Hash algo:    sha256
+  Hash value:   a3f8c9e2d1b4f7a6...
+ Image 1 <span class="o">(</span>fdt-1<span class="o">)</span>
+  Description:  BeagleBone Black DTB
+  Data Size:    43056 Bytes <span class="o">=</span> 42.05 KiB
+  Architecture: ARM
+  Hash algo:    sha256
+  Hash value:   b7d4e1f9c2a8b3d6...
+ Default Configuration: <span class="s1">'conf-1'</span>
+ Configuration 0 <span class="o">(</span>conf-1<span class="o">)</span>
+  Description:  BeagleBone Black
+  Kernel:       kernel
+  FDT:          fdt-1
+
+<span class="c"># Verify the FIT image</span>
+<span class="nv">$ </span>mkimage <span class="nt">-l</span> kernel.itb
+FIT description: Linux kernel and FDT blob <span class="k">for </span>BeagleBone Black
+...
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="u-boot-environment-in-flash">U-Boot Environment in Flash</h3>
+
+<p>The environment is stored in a dedicated region of flash. Configuration in defconfig:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># For MMC storage</span>
+<span class="nv">CONFIG_ENV_IS_IN_MMC</span><span class="o">=</span>y
+<span class="nv">CONFIG_ENV_OFFSET</span><span class="o">=</span>0x260000    <span class="c"># Byte offset on MMC raw</span>
+<span class="nv">CONFIG_ENV_SIZE</span><span class="o">=</span>0x20000       <span class="c"># 128 KB for environment</span>
+<span class="nv">CONFIG_ENV_OFFSET_REDUND</span><span class="o">=</span>0x280000  <span class="c"># Redundant copy</span>
+
+<span class="c"># For SPI NOR flash</span>
+<span class="nv">CONFIG_ENV_IS_IN_SPI_FLASH</span><span class="o">=</span>y
+<span class="nv">CONFIG_ENV_OFFSET</span><span class="o">=</span>0x80000
+<span class="nv">CONFIG_ENV_SIZE</span><span class="o">=</span>0x20000
+<span class="nv">CONFIG_ENV_SECT_SIZE</span><span class="o">=</span>0x10000  <span class="c"># Must align to erase block size</span>
+
+<span class="c"># For NAND flash</span>
+<span class="nv">CONFIG_ENV_IS_IN_NAND</span><span class="o">=</span>y
+<span class="nv">CONFIG_ENV_OFFSET</span><span class="o">=</span>0x200000
+<span class="nv">CONFIG_ENV_SIZE</span><span class="o">=</span>0x20000
+<span class="nv">CONFIG_ENV_RANGE</span><span class="o">=</span>0x40000      <span class="c"># Range to search for good blocks</span>
+</code></pre></div></div>
+
+<p>The environment is stored with a CRC32 checksum:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>┌────────────┬──────────────────────────────────────────────┐
+│ CRC32 (4B) │ Environment data (null-separated key=value)  │
+├────────────┴──────────────────────────────────────────────┤
+│ "baudrate=115200\0bootcmd=run distro_bootcmd\0..."        │
+└───────────────────────────────────────────────────────────┘
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="checking-spl-size-with-nm">Checking SPL Size with nm</h3>
+
+<p>To verify your SPL will fit in the SRAM limit:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Check total SPL binary size</span>
+<span class="nv">$ </span><span class="nb">wc</span> <span class="nt">-c</span> spl/u-boot-spl.bin
+98304 spl/u-boot-spl.bin
+
+<span class="c"># Find the largest sections</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-nm <span class="nt">--size-sort</span> <span class="nt">--print-size</span> spl/u-boot-spl <span class="se">\</span>
+  | <span class="nb">grep</span> <span class="s2">" [Tt] "</span> | <span class="nb">tail</span> <span class="nt">-20</span>
+00000150 000001a0 T omap_dm_timer_set_load
+000001a0 00000210 T spi_flash_read_common
+00000210 00000234 T board_init_f
+00000234 000004a8 T ddr3_data_macro_config
+000004a8 00000514 T spl_mmc_load_image
+
+<span class="c"># Check section sizes</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-size spl/u-boot-spl
+   text    data     bss     dec     hex filename
+  78234   12344    7726   98304   18000 spl/u-boot-spl
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">bss</code> section (zero-initialized globals) is not in the binary but occupies SRAM at runtime. Ensure <code class="language-plaintext highlighter-rouge">text + data + bss &lt; SRAM_SIZE</code>.</p>
+
+<hr />
+
+<h3 id="generating-compile_commandsjson-for-ide-integration">Generating compile_commands.json for IDE Integration</h3>
+
+<p>Modern IDEs (VS Code with clangd, CLion) use <code class="language-plaintext highlighter-rouge">compile_commands.json</code> for accurate code navigation:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install bear</span>
+<span class="nv">$ </span><span class="nb">sudo </span>apt <span class="nb">install </span>bear
+
+<span class="c"># Generate compile_commands.json</span>
+<span class="nv">$ </span>bear <span class="nt">--</span> make <span class="nv">ARCH</span><span class="o">=</span>arm <span class="nv">CROSS_COMPILE</span><span class="o">=</span>arm-linux-gnueabihf- <span class="nt">-j4</span>
+<span class="o">[</span>bear] loaded config from <span class="s1">'/etc/bear/libear.so'</span>
+...
+<span class="o">[</span>bear] output written to <span class="s1">'/home/user/u-boot/compile_commands.json'</span>
+
+<span class="nv">$ </span><span class="nb">wc</span> <span class="nt">-l</span> compile_commands.json
+4891 compile_commands.json
+
+<span class="nv">$ </span><span class="nb">head</span> <span class="nt">-20</span> compile_commands.json
+<span class="o">[</span>
+  <span class="o">{</span>
+    <span class="s2">"arguments"</span>: <span class="o">[</span>
+      <span class="s2">"arm-linux-gnueabihf-gcc"</span>,
+      <span class="s2">"-Wp,-MD,.deps/init/board_init.d"</span>,
+      <span class="s2">"-nostdinc"</span>,
+      <span class="s2">"-isystem"</span>,
+      <span class="s2">"/usr/lib/gcc-cross/arm-linux-gnueabihf/12/include"</span>,
+      <span class="s2">"-I./arch/arm/include"</span>,
+      <span class="s2">"-I./include"</span>,
+      <span class="s2">"-DCONFIG_ARM"</span>,
+      <span class="s2">"-o"</span>,
+      <span class="s2">"init/board_init.o"</span>,
+      <span class="s2">"-c"</span>,
+      <span class="s2">"init/board_init.c"</span>
+    <span class="o">]</span>,
+    <span class="s2">"directory"</span>: <span class="s2">"/home/user/u-boot"</span>,
+    <span class="s2">"file"</span>: <span class="s2">"init/board_init.c"</span>
+  <span class="o">}</span>,
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="running-u-boot-unit-tests">Running U-Boot Unit Tests</h3>
+
+<p>U-Boot has a test suite that can be run without hardware using <code class="language-plaintext highlighter-rouge">sandbox</code> (a Linux-hosted U-Boot):</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Build sandbox target</span>
+<span class="nv">$ </span>make sandbox_defconfig
+<span class="nv">$ </span>make <span class="nt">-j4</span>
+
+<span class="c"># Run all tests</span>
+<span class="nv">$ </span>make check
+...
+<span class="nb">test</span>/py/test.py <span class="nt">--bd</span> sandbox <span class="nt">--build-dir</span> build-sandbox
+<span class="o">=========================</span> <span class="nb">test </span>session starts <span class="o">==========================</span>
+platform linux <span class="nt">--</span> Python 3.10.12, pytest-7.4.3, pluggy-1.3.0
+rootdir: /home/user/u-boot
+collecting ... collected 453 items
+
+<span class="nb">test</span>/py/tests/test_000_version.py <span class="nb">.</span>                              <span class="o">[</span>  0%]
+<span class="nb">test</span>/py/tests/test_efi_loader.py ..                              <span class="o">[</span>  0%]
+<span class="nb">test</span>/py/tests/test_env.py .......................                 <span class="o">[</span>  5%]
+<span class="nb">test</span>/py/tests/test_fat.py .............                          <span class="o">[</span>  7%]
+<span class="nb">test</span>/py/tests/test_fit.py .....                                  <span class="o">[</span>  8%]
+...
+<span class="o">====================</span> 441 passed, 12 skipped <span class="k">in </span>187.34s <span class="o">====================</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">sandbox</code> target compiles U-Boot as a Linux process, allowing tests to run on your development machine without any ARM hardware.</p>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-questions">Interview Questions</h2>
+
+<p><strong>1. What is the difference between MLO and u-boot.img?</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">MLO</code> is the SPL (Secondary Program Loader) binary with an AM335x-specific GP header prepended. It is the first software that BootROM loads on TI AM335x SoCs. Its job is to initialize DRAM and load U-Boot proper. <code class="language-plaintext highlighter-rouge">u-boot.img</code> is U-Boot proper wrapped in a legacy uImage header (4-byte magic + metadata). SPL reads this file from the boot media and loads it into DRAM. They are two separate programs: MLO ~96 KB running in SRAM, u-boot.img ~500 KB running in DRAM.</p>
+
+<p><strong>2. How does U-Boot Kconfig differ from Linux Kconfig?</strong></p>
+
+<p>The Kconfig language and tools are identical. The difference is in what is configured. U-Boot Kconfig is used for a much smaller codebase with different subsystems (boot media, bootloader commands, environment storage). Unlike Linux, U-Boot still has a hybrid configuration system where some settings are in <code class="language-plaintext highlighter-rouge">.config</code> (Kconfig) and some are in C header files (<code class="language-plaintext highlighter-rouge">include/configs/BOARD.h</code>). The migration from <code class="language-plaintext highlighter-rouge">#define</code>-based config headers to pure Kconfig is still in progress for many boards.</p>
+
+<p><strong>3. What is CONFIG_SYS_TEXT_BASE and why does it matter?</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">CONFIG_SYS_TEXT_BASE</code> is the DRAM address where the linker places U-Boot’s <code class="language-plaintext highlighter-rouge">.text</code> section. The linker uses this as the base address when computing all absolute addresses in the binary (function pointers, vtables, global variable addresses). SPL must load U-Boot to exactly this address. If there is a mismatch, all absolute addresses in U-Boot will be wrong and it will crash immediately after SPL jumps to it. On AM335x it is typically <code class="language-plaintext highlighter-rouge">0x80800000</code>.</p>
+
+<p><strong>4. What is a FIT image and what are its advantages over uImage?</strong></p>
+
+<p>A FIT (Flattened Image Tree) image is a single binary file, described using device tree syntax, that contains multiple components: kernel, DTB, initrd, and firmware. Advantages over the legacy uImage format: it supports multiple configurations in one file (different kernels or DTBs for different board revisions); it supports cryptographic signing of individual components with RSA keys (enabling secure boot); it uses hash verification (SHA256) for integrity checking; it can contain compressed components; and it is extensible without modifying the mkimage tool.</p>
+
+<p><strong>5. How do you port U-Boot to a new board?</strong></p>
+
+<p>The minimum steps are: (1) Create <code class="language-plaintext highlighter-rouge">configs/myboard_defconfig</code> with <code class="language-plaintext highlighter-rouge">CONFIG_TARGET_MYBOARD=y</code> and essential options. (2) Create <code class="language-plaintext highlighter-rouge">board/myvendor/myboard/</code> directory with <code class="language-plaintext highlighter-rouge">board.c</code> (board_init_f, dram_init functions) and <code class="language-plaintext highlighter-rouge">Makefile</code>. (3) Create <code class="language-plaintext highlighter-rouge">include/configs/myboard.h</code> for any remaining <code class="language-plaintext highlighter-rouge">#define</code> settings. (4) Add a Kconfig entry in <code class="language-plaintext highlighter-rouge">board/myvendor/Kconfig</code> and the main <code class="language-plaintext highlighter-rouge">arch/arm/Kconfig</code>. (5) Add to <code class="language-plaintext highlighter-rouge">MAINTAINERS</code> file. For SPL, write the DRAM initialization code specific to the DDR chips and SoC DDR controller on your board.</p>
+
+<p><strong>6. How do you persist environment variables in U-Boot?</strong></p>
+
+<p>Run <code class="language-plaintext highlighter-rouge">saveenv</code> in the U-Boot shell. This writes the current in-memory environment to the storage location configured by <code class="language-plaintext highlighter-rouge">CONFIG_ENV_IS_IN_*</code>. The environment is stored as null-separated <code class="language-plaintext highlighter-rouge">key=value</code> pairs with a CRC32 checksum. On next boot, if the CRC is valid, the saved environment is loaded. If not (first boot or corruption), the compiled-in default environment is used. For MMC storage, <code class="language-plaintext highlighter-rouge">CONFIG_ENV_OFFSET</code> specifies the byte offset on the raw MMC device where the environment block lives.</p>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<ul>
+  <li>U-Boot README: <a href="https://source.denx.de/u-boot/u-boot/-/blob/master/README">https://source.denx.de/u-boot/u-boot/-/blob/master/README</a></li>
+  <li>U-Boot documentation directory: <code class="language-plaintext highlighter-rouge">doc/</code> in the U-Boot source tree</li>
+  <li>“Mastering Embedded Linux Programming” — Chris Simmonds, Chapter 3</li>
+  <li>U-Boot GitLab repository: <a href="https://source.denx.de/u-boot/u-boot">https://source.denx.de/u-boot/u-boot</a></li>
+  <li>“Building Embedded Linux Systems” — Karim Yaghmour, Chapter 5</li>
+  <li>Das U-Boot documentation: <a href="https://u-boot.readthedocs.io/en/latest/">https://u-boot.readthedocs.io/en/latest/</a></li>
+  <li>U-Boot driver model documentation: <code class="language-plaintext highlighter-rouge">doc/driver-model/</code> in source tree</li>
+  <li>FIT image documentation: <code class="language-plaintext highlighter-rouge">doc/uImage.FIT/</code> in source tree</li>
+</ul>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-wrench"></i>
+        <span>U-Boot Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/embedded-linux/uboot/boot-sequence/" class="gtn-link ">
+          <i class="fas fa-play"></i> Boot Sequence
+        </a>
+        <a href="/embedded-linux/uboot/uboot-config-build/" class="gtn-link gts-active">
+          <i class="fas fa-wrench"></i> U-Boot Config &amp; Build
+        </a>
+        <a href="/embedded-linux/uboot/uboot-commands/" class="gtn-link ">
+          <i class="fas fa-terminal"></i> U-Boot Commands &amp; Scripting
+        </a>
+        <a href="/embedded-linux/uboot/device-tree/" class="gtn-link ">
+          <i class="fas fa-sitemap"></i> Device Tree (DTS)
+        </a>
+        <a href="/embedded-linux/uboot/board-porting/" class="gtn-link ">
+          <i class="fas fa-puzzle-piece"></i> Board Porting
+        </a>
+        <a href="/embedded-linux/uboot/tftp-boot/" class="gtn-link ">
+          <i class="fas fa-network-wired"></i> TFTP &amp; Network Boot
+        </a>
+      </nav>
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/embedded-linux/uboot/boot-sequence/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">ARM SoC Boot Sequence</span>
+      </a>
+      
+      
+      <a href="/embedded-linux/uboot/uboot-commands/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">U-Boot Commands & Scripting</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

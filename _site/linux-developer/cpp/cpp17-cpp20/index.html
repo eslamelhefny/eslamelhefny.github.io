@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C++17 & C++20 · Eslam Mohamed</title>
+  <meta name="description" content="Master modern C++ features — structured bindings, std::optional, std::variant, constexpr if, concepts, coroutines, modules, ranges, and std::format." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/cpp/">C++ Programming</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>C++17 & C++20</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 03</span>
+      </div>
+      <h1 class="guide-title">C++17 & C++20</h1>
+      <p class="guide-subtitle">Master modern C++ features — structured bindings, std::optional, std::variant, constexpr if, concepts, coroutines, modules, ranges, and std::format.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 id="c-17-language">C++ 17 Language</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<h3 id="structured-bindings">Structured Bindings</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Unpack tuples, pairs, structs</span>
+<span class="k">auto</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mf">4.5</span><span class="n">f</span><span class="p">);</span>
+
+<span class="k">struct</span> <span class="nc">Point</span> <span class="p">{</span> <span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">;</span> <span class="p">};</span>
+<span class="n">Point</span> <span class="n">p</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">};</span>
+<span class="k">auto</span> <span class="p">[</span><span class="n">px</span><span class="p">,</span> <span class="n">py</span><span class="p">,</span> <span class="n">pz</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="p">;</span>
+
+<span class="c1">// In range-based for over maps</span>
+<span class="n">std</span><span class="o">::</span><span class="n">map</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span> <span class="n">registers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">{</span><span class="s">"CTRL"</span><span class="p">,</span>   <span class="mh">0x40</span><span class="p">},</span>
+    <span class="p">{</span><span class="s">"STATUS"</span><span class="p">,</span> <span class="mh">0x41</span><span class="p">}</span>
+<span class="p">};</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="p">[</span><span class="n">name</span><span class="p">,</span> <span class="n">addr</span><span class="p">]</span> <span class="o">:</span> <span class="n">registers</span><span class="p">)</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">" = 0x"</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">hex</span> <span class="o">&lt;&lt;</span> <span class="n">addr</span> <span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h3 id="if-and-switch-with-initialiser"><code class="language-plaintext highlighter-rouge">if</code> and <code class="language-plaintext highlighter-rouge">switch</code> with Initialiser</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// C++17: initialiser inside if statement</span>
+<span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">map</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="s">"key"</span><span class="p">);</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">map</span><span class="p">.</span><span class="n">end</span><span class="p">())</span> <span class="p">{</span>
+    <span class="c1">// it is scoped to this block</span>
+    <span class="n">use</span><span class="p">(</span><span class="n">it</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// switch with init</span>
+<span class="k">switch</span> <span class="p">(</span><span class="k">auto</span> <span class="n">status</span> <span class="o">=</span> <span class="n">get_device_status</span><span class="p">();</span> <span class="n">status</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">DeviceStatus</span><span class="o">::</span><span class="n">Ready</span><span class="p">:</span>  <span class="n">handle_ready</span><span class="p">();</span> <span class="k">break</span><span class="p">;</span>
+    <span class="k">case</span> <span class="n">DeviceStatus</span><span class="o">::</span><span class="n">Error</span><span class="p">:</span>  <span class="n">handle_error</span><span class="p">();</span> <span class="k">break</span><span class="p">;</span>
+    <span class="nl">default:</span> <span class="k">break</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="constexpr-if"><code class="language-plaintext highlighter-rouge">constexpr if</code></h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="k">auto</span> <span class="nf">process</span><span class="p">(</span><span class="n">T</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="k">constexpr</span> <span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_integral_v</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">val</span> <span class="o">*</span> <span class="mi">2</span><span class="p">;</span>             <span class="c1">// compiled for integer types</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="k">constexpr</span> <span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_floating_point_v</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">val</span> <span class="o">*</span> <span class="mf">2.0</span><span class="n">f</span><span class="p">;</span>          <span class="c1">// compiled for float types</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">static_assert</span><span class="p">(</span><span class="n">always_false</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span> <span class="s">"Unsupported type"</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="class-template-argument-deduction-ctad">Class Template Argument Deduction (CTAD)</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// C++17: no need to specify template arguments</span>
+<span class="n">std</span><span class="o">::</span><span class="n">pair</span> <span class="nf">p</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mf">4.5</span><span class="n">f</span><span class="p">);</span>           <span class="c1">// pair&lt;int, float&gt;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span> <span class="n">v</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">};</span>  <span class="c1">// vector&lt;int&gt;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">array</span> <span class="n">arr</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">};</span> <span class="c1">// array&lt;double, 3&gt;</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="c17-standard-library">C++17 Standard Library</h2>
+
+<h3 id="stdoptional"><code class="language-plaintext highlighter-rouge">std::optional</code></h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;optional&gt;</span><span class="cp">
+</span>
+<span class="c1">// Return a value OR nothing — no null pointers!</span>
+<span class="n">std</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="n">read_sensor</span><span class="p">(</span><span class="kt">int</span> <span class="n">id</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">id</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">id</span> <span class="o">&gt;=</span> <span class="n">MAX_SENSORS</span><span class="p">)</span> <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">nullopt</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">sensor_values</span><span class="p">[</span><span class="n">id</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">auto</span> <span class="n">val</span> <span class="o">=</span> <span class="n">read_sensor</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">val</span><span class="p">.</span><span class="n">has_value</span><span class="p">())</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">val</span> <span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span>          <span class="c1">// dereference</span>
+
+<span class="c1">// With value_or</span>
+<span class="kt">float</span> <span class="n">v</span> <span class="o">=</span> <span class="n">read_sensor</span><span class="p">(</span><span class="n">id</span><span class="p">).</span><span class="n">value_or</span><span class="p">(</span><span class="mf">0.0</span><span class="n">f</span><span class="p">);</span>  <span class="c1">// default if empty</span>
+</code></pre></div></div>
+
+<h3 id="stdvariant"><code class="language-plaintext highlighter-rouge">std::variant</code></h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;variant&gt;</span><span class="cp">
+</span>
+<span class="c1">// Type-safe union — holds exactly ONE of the listed types</span>
+<span class="k">using</span> <span class="n">Result</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">variant</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="p">;</span>  <span class="c1">// value or error message</span>
+
+<span class="n">Result</span> <span class="nf">read_temperature</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">float</span> <span class="n">temp</span> <span class="o">=</span> <span class="n">hw_read</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">temp</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">273.0</span><span class="n">f</span><span class="p">)</span> <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="s">"sensor fault"</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">temp</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">auto</span> <span class="n">r</span> <span class="o">=</span> <span class="n">read_temperature</span><span class="p">();</span>
+
+<span class="c1">// std::visit — pattern matching</span>
+<span class="n">std</span><span class="o">::</span><span class="n">visit</span><span class="p">([](</span><span class="k">auto</span><span class="o">&amp;&amp;</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">using</span> <span class="n">T</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">decay_t</span><span class="o">&lt;</span><span class="k">decltype</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="k">if</span> <span class="k">constexpr</span> <span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_same_v</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="kt">float</span><span class="o">&gt;</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"temp: "</span> <span class="o">&lt;&lt;</span> <span class="n">v</span> <span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span>
+    <span class="k">else</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">"error: "</span> <span class="o">&lt;&lt;</span> <span class="n">v</span> <span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span>
+<span class="p">},</span> <span class="n">r</span><span class="p">);</span>
+
+<span class="c1">// Or check type directly</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">holds_alternative</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">get</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h3 id="stdstring_view"><code class="language-plaintext highlighter-rouge">std::string_view</code></h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;string_view&gt;</span><span class="cp">
+</span>
+<span class="c1">// Non-owning view of a string — no allocation, no copy</span>
+<span class="kt">void</span> <span class="nf">print_name</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span> <span class="n">name</span><span class="p">)</span> <span class="p">{</span>    <span class="c1">// accepts string, const char*, string_view</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span> <span class="c1">// O(1) substr</span>
+<span class="p">}</span>
+
+<span class="n">print_name</span><span class="p">(</span><span class="s">"hello world"</span><span class="p">);</span>         <span class="c1">// no allocation</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="s">"hello world"</span><span class="p">;</span>
+<span class="n">print_name</span><span class="p">(</span><span class="n">s</span><span class="p">);</span>                     <span class="c1">// no copy</span>
+
+<span class="c1">// WARNING: string_view does NOT own the data — don't store it past the original's lifetime</span>
+</code></pre></div></div>
+
+<h3 id="stdfilesystem"><code class="language-plaintext highlighter-rouge">std::filesystem</code></h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;filesystem&gt;</span><span class="cp">
+</span><span class="k">namespace</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">filesystem</span><span class="p">;</span>
+
+<span class="c1">// List directory</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">entry</span> <span class="o">:</span> <span class="n">fs</span><span class="o">::</span><span class="n">directory_iterator</span><span class="p">(</span><span class="s">"/etc"</span><span class="p">))</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">entry</span><span class="p">.</span><span class="n">is_regular_file</span><span class="p">())</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">entry</span><span class="p">.</span><span class="n">path</span><span class="p">().</span><span class="n">filename</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">" "</span>
+                  <span class="o">&lt;&lt;</span> <span class="n">entry</span><span class="p">.</span><span class="n">file_size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">" bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Path operations</span>
+<span class="n">fs</span><span class="o">::</span><span class="n">path</span> <span class="n">p</span> <span class="o">=</span> <span class="s">"/usr/local/bin/myapp"</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">p</span><span class="p">.</span><span class="n">filename</span><span class="p">()</span>   <span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span>  <span class="c1">// "myapp"</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">p</span><span class="p">.</span><span class="n">parent_path</span><span class="p">()</span><span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span>  <span class="c1">// "/usr/local/bin"</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">p</span><span class="p">.</span><span class="n">extension</span><span class="p">()</span>  <span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span>  <span class="c1">// ""</span>
+
+<span class="c1">// File operations</span>
+<span class="n">fs</span><span class="o">::</span><span class="n">create_directories</span><span class="p">(</span><span class="s">"/tmp/myapp/logs"</span><span class="p">);</span>
+<span class="n">fs</span><span class="o">::</span><span class="n">copy_file</span><span class="p">(</span><span class="s">"src.txt"</span><span class="p">,</span> <span class="s">"dst.txt"</span><span class="p">);</span>
+<span class="n">fs</span><span class="o">::</span><span class="n">remove</span><span class="p">(</span><span class="s">"/tmp/old.txt"</span><span class="p">);</span>
+<span class="kt">bool</span> <span class="n">exists</span> <span class="o">=</span> <span class="n">fs</span><span class="o">::</span><span class="n">exists</span><span class="p">(</span><span class="s">"/etc/hostname"</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="c20-core-language-features">C++20 Core Language Features</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="concepts">Concepts</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;concepts&gt;</span><span class="cp">
+</span>
+<span class="c1">// Define a concept</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="k">concept</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">integral</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="o">||</span> <span class="n">std</span><span class="o">::</span><span class="n">floating_point</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">;</span>
+
+<span class="c1">// Constrained function template</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="n">Numeric</span> <span class="n">T</span><span class="p">&gt;</span>
+<span class="n">T</span> <span class="nf">clamp</span><span class="p">(</span><span class="n">T</span> <span class="n">val</span><span class="p">,</span> <span class="n">T</span> <span class="n">lo</span><span class="p">,</span> <span class="n">T</span> <span class="n">hi</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">val</span> <span class="o">&lt;</span> <span class="n">lo</span><span class="p">)</span> <span class="o">?</span> <span class="n">lo</span> <span class="o">:</span> <span class="p">(</span><span class="n">val</span> <span class="o">&gt;</span> <span class="n">hi</span><span class="p">)</span> <span class="o">?</span> <span class="n">hi</span> <span class="o">:</span> <span class="n">val</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Shorter syntax (abbreviated function template)</span>
+<span class="k">auto</span> <span class="n">clamp2</span><span class="p">(</span><span class="n">Numeric</span> <span class="k">auto</span> <span class="n">val</span><span class="p">,</span> <span class="n">Numeric</span> <span class="k">auto</span> <span class="n">lo</span><span class="p">,</span> <span class="n">Numeric</span> <span class="k">auto</span> <span class="n">hi</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">val</span> <span class="o">&lt;</span> <span class="n">lo</span><span class="p">)</span> <span class="o">?</span> <span class="n">lo</span> <span class="o">:</span> <span class="p">(</span><span class="n">val</span> <span class="o">&gt;</span> <span class="n">hi</span><span class="p">)</span> <span class="o">?</span> <span class="n">hi</span> <span class="o">:</span> <span class="n">val</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Standard library concepts (in &lt;concepts&gt;)</span>
+<span class="c1">// std::integral, std::floating_point, std::same_as&lt;T,U&gt;,</span>
+<span class="c1">// std::derived_from&lt;T,Base&gt;, std::convertible_to&lt;T,U&gt;,</span>
+<span class="c1">// std::regular, std::invocable&lt;F, Args...&gt;</span>
+</code></pre></div></div>
+
+<h3 id="ranges-c20">Ranges (C++20)</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;ranges&gt;</span><span class="cp">
+</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">};</span>
+
+<span class="c1">// Composable range adaptors with | pipe</span>
+<span class="k">auto</span> <span class="n">squares_of_evens</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="o">|</span> <span class="n">std</span><span class="o">::</span><span class="n">views</span><span class="o">::</span><span class="n">filter</span><span class="p">([](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">;</span> <span class="p">})</span>
+    <span class="o">|</span> <span class="n">std</span><span class="o">::</span><span class="n">views</span><span class="o">::</span><span class="n">transform</span><span class="p">([](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span><span class="p">;</span> <span class="p">});</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">n</span> <span class="o">:</span> <span class="n">squares_of_evens</span><span class="p">)</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">n</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span><span class="p">;</span>   <span class="c1">// 4 16 36 64 100</span>
+
+<span class="c1">// std::ranges algorithms — no begin/end!</span>
+<span class="n">std</span><span class="o">::</span><span class="n">ranges</span><span class="o">::</span><span class="n">sort</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">ranges</span><span class="o">::</span><span class="n">reverse</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">ranges</span><span class="o">::</span><span class="n">find</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span>
+
+<span class="c1">// iota view</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">views</span><span class="o">::</span><span class="n">iota</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span><span class="p">;</span>   <span class="c1">// 1 2 3 4 5</span>
+</code></pre></div></div>
+
+<h3 id="stdformat-c20"><code class="language-plaintext highlighter-rouge">std::format</code> (C++20)</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;format&gt;</span><span class="cp">
+</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">"Sensor {:02d}: {:.2f} °C"</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mf">23.456</span><span class="n">f</span><span class="p">);</span>
+<span class="c1">// "Sensor 05: 23.46 °C"</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">"0x{:08X}</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="mh">0xDEAD</span><span class="p">);</span>  <span class="c1">// "0x0000DEAD"</span>
+
+<span class="c1">// Logging with format</span>
+<span class="k">auto</span> <span class="n">log</span> <span class="o">=</span> <span class="p">[](</span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span> <span class="n">level</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">string_view</span> <span class="n">msg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">"[{}] {}</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">msg</span><span class="p">);</span>
+<span class="p">};</span>
+<span class="n">log</span><span class="p">(</span><span class="s">"INFO"</span><span class="p">,</span> <span class="s">"device initialised"</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="three-way-comparison-spaceship-">Three-Way Comparison (Spaceship <code class="language-plaintext highlighter-rouge">&lt;=&gt;</code>)</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;compare&gt;</span><span class="cp">
+</span>
+<span class="k">struct</span> <span class="nc">Version</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">major</span><span class="p">,</span> <span class="n">minor</span><span class="p">,</span> <span class="n">patch</span><span class="p">;</span>
+
+    <span class="k">auto</span> <span class="k">operator</span><span class="o">&lt;=&gt;</span><span class="p">(</span><span class="k">const</span> <span class="n">Version</span><span class="o">&amp;</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>  <span class="c1">// generates all 6 comparisons</span>
+<span class="p">};</span>
+
+<span class="n">Version</span> <span class="n">v1</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">},</span> <span class="n">v2</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">};</span>
+<span class="kt">bool</span> <span class="n">ok</span> <span class="o">=</span> <span class="n">v1</span> <span class="o">&lt;</span> <span class="n">v2</span><span class="p">;</span>    <span class="c1">// true</span>
+<span class="kt">bool</span> <span class="n">eq</span> <span class="o">=</span> <span class="n">v1</span> <span class="o">==</span> <span class="n">v2</span><span class="p">;</span>   <span class="c1">// false</span>
+<span class="c1">// Also generates &gt;, &gt;=, &lt;=, !=</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="c20-coroutines-intro">C++20 Coroutines (Intro)</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p>Coroutines are functions that can <strong>suspend and resume</strong>. They are useful for async I/O, generators, and cooperative multitasking without OS threads.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;coroutine&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;generator&gt;</span><span class="c1">   // C++23; use a library for C++20</span><span class="cp">
+</span>
+<span class="c1">// Simple generator using co_yield</span>
+<span class="n">std</span><span class="o">::</span><span class="n">generator</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">fibonacci</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="nb">true</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">co_yield</span> <span class="n">a</span><span class="p">;</span>          <span class="c1">// suspend, return value to caller</span>
+        <span class="k">auto</span> <span class="n">next</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">;</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">b</span><span class="p">;</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">next</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Use the generator</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">n</span> <span class="o">:</span> <span class="n">fibonacci</span><span class="p">()</span> <span class="o">|</span> <span class="n">std</span><span class="o">::</span><span class="n">views</span><span class="o">::</span><span class="n">take</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">n</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span><span class="p">;</span>   <span class="c1">// 0 1 1 2 3 5 8 13 21 34</span>
+
+<span class="c1">// co_await — suspend until async operation completes</span>
+<span class="c1">// co_return — return from coroutine</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="c1720-at-a-glance">C++17/20 at a Glance</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th>Version</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Structured bindings</td>
+      <td>C++17</td>
+      <td>Unpack tuples/structs</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">if constexpr</code></td>
+      <td>C++17</td>
+      <td>Compile-time branching</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">std::optional</code></td>
+      <td>C++17</td>
+      <td>Nullable values without pointers</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">std::variant</code></td>
+      <td>C++17</td>
+      <td>Type-safe union</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">std::string_view</code></td>
+      <td>C++17</td>
+      <td>Non-owning string reference</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">std::filesystem</code></td>
+      <td>C++17</td>
+      <td>Portable filesystem API</td>
+    </tr>
+    <tr>
+      <td>Concepts</td>
+      <td>C++20</td>
+      <td>Template constraints</td>
+    </tr>
+    <tr>
+      <td>Ranges</td>
+      <td>C++20</td>
+      <td>Composable algorithm pipelines</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">std::format</code></td>
+      <td>C++20</td>
+      <td>Type-safe string formatting</td>
+    </tr>
+    <tr>
+      <td>Coroutines</td>
+      <td>C++20</td>
+      <td>Async / generator functions</td>
+    </tr>
+    <tr>
+      <td>Modules</td>
+      <td>C++20</td>
+      <td>Replace <code class="language-plaintext highlighter-rouge">#include</code> headers</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">std::jthread</code></td>
+      <td>C++20</td>
+      <td>Auto-joining thread</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What problem does <code class="language-plaintext highlighter-rouge">std::optional</code> solve?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">std::optional&lt;T&gt;</code> represents a value that may or may not be present — a type-safe alternative to returning a sentinel value (like <code class="language-plaintext highlighter-rouge">-1</code>, <code class="language-plaintext highlighter-rouge">nullptr</code>, or <code class="language-plaintext highlighter-rouge">NaN</code>) or throwing an exception for expected absence. It makes the “might not have a value” contract explicit in the type system, forcing callers to check before using the value. Compared to returning a pointer, <code class="language-plaintext highlighter-rouge">optional</code> has value semantics (no raw pointers, no allocation for scalar types) and expresses ownership clearly.</p>
+</blockquote>
+
+<p><strong>Q2 — Intermediate: What are C++20 concepts and how do they improve error messages?</strong></p>
+
+<blockquote>
+  <p>A concept is a named, compile-time predicate that constrains template parameters (e.g. <code class="language-plaintext highlighter-rouge">std::integral&lt;T&gt;</code>, <code class="language-plaintext highlighter-rouge">std::ranges::range&lt;R&gt;</code>). Before concepts, template constraint violations produced multi-page error messages pointing into library internals. With concepts, the compiler checks the constraint at the call site and emits a direct “does not satisfy concept X” message pointing to the user’s code. Concepts also enable overload resolution based on constraints and serve as self-documenting interfaces.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: What is <code class="language-plaintext highlighter-rouge">std::string_view</code> and when should you use it?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">string_view</code> is a non-owning, read-only reference to a contiguous sequence of characters — a pointer and length. It avoids copies when passing strings to functions. Use it for function parameters that read a string but don’t need to store or modify it: <code class="language-plaintext highlighter-rouge">void parse(std::string_view s)</code>. It accepts <code class="language-plaintext highlighter-rouge">std::string</code>, <code class="language-plaintext highlighter-rouge">const char*</code>, and other <code class="language-plaintext highlighter-rouge">string_view</code>s without conversion. <strong>Never</strong> return a <code class="language-plaintext highlighter-rouge">string_view</code> pointing to a local variable — it becomes a dangling reference.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: What are C++20 coroutines used for?</strong></p>
+
+<blockquote>
+  <p>Coroutines are functions that can suspend execution (with <code class="language-plaintext highlighter-rouge">co_yield</code> or <code class="language-plaintext highlighter-rouge">co_await</code>) and resume later without blocking a thread. They are used for: (1) <strong>generators</strong> — lazily producing a sequence of values (like <code class="language-plaintext highlighter-rouge">fibonacci()</code> above), (2) <strong>async I/O</strong> — suspending while waiting for an I/O operation, resuming when data is ready, avoiding thread-per-connection models, and (3) <strong>cooperative multitasking</strong> — multiple coroutines interleaving on a single thread. Frameworks like Asio/coroutines integrate <code class="language-plaintext highlighter-rouge">co_await</code> with async networking for high-performance I/O.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>cppreference — C++17</td>
+      <td><a href="https://en.cppreference.com/w/cpp/17">en.cppreference.com/w/cpp/17</a></td>
+    </tr>
+    <tr>
+      <td>cppreference — C++20</td>
+      <td><a href="https://en.cppreference.com/w/cpp/20">en.cppreference.com/w/cpp/20</a></td>
+    </tr>
+    <tr>
+      <td>C++ Weekly (Jason Turner)</td>
+      <td><a href="https://github.com/lefticus/cppbestpractices">github.com/lefticus/cpp_weekly</a></td>
+    </tr>
+    <tr>
+      <td>Compiler support table</td>
+      <td><a href="https://en.cppreference.com/w/cpp/compiler_support">en.cppreference.com/w/cpp/compiler_support</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-code"></i>
+        <span>C++ Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/cpp/oop-raii/" class="gtn-link ">
+          <i class="fas fa-object-group"></i> OOP &amp; RAII
+        </a>
+        <a href="/linux-developer/cpp/templates-stl/" class="gtn-link ">
+          <i class="fas fa-shapes"></i> Templates &amp; STL
+        </a>
+        <a href="/linux-developer/cpp/smart-pointers/" class="gtn-link ">
+          <i class="fas fa-wand-magic-sparkles"></i> Smart Pointers
+        </a>
+        <a href="/linux-developer/cpp/move-semantics/" class="gtn-link ">
+          <i class="fas fa-right-left"></i> Move Semantics
+        </a>
+        <a href="/linux-developer/cpp/cmake/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> CMake
+        </a>
+        <a href="/linux-developer/cpp/qt/" class="gtn-link ">
+          <i class="fas fa-window-maximize"></i> Qt Framework
+        </a>
+        <a href="/linux-developer/cpp/cpp17-cpp20/" class="gtn-link gts-active">
+          <i class="fas fa-star"></i> C++17 / C++20
+        </a>
+      </nav>
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/cpp/qt/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Qt Framework</span>
+      </a>
+      
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

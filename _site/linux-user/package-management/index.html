@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Package Management · Eslam Mohamed</title>
+  <meta name="description" content="Use APT and dpkg to manage software on Debian/Ubuntu systems, configure repositories and PPAs, handle dependencies, and build software from source with autotools and CMake." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-user/">Linux User Guide</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Package Management</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 01 — Linux User</span>
+        <span class="guide-stage-pill">Stage 04</span>
+      </div>
+      <h1 class="guide-title">Package Management</h1>
+      <p class="guide-subtitle">Use APT and dpkg to manage software on Debian/Ubuntu systems, configure repositories and PPAs, handle dependencies, and build software from source with autotools and CMake.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="apt--advanced-package-tool">APT — Advanced Package Tool</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>APT is the high-level package manager for Debian and Ubuntu systems. It resolves dependencies automatically and communicates with online repositories.</p>
+
+<h3 id="essential-apt-commands">Essential APT Commands</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Update the local package index (doesn't upgrade anything)</span>
+<span class="nb">sudo </span>apt update
+
+<span class="c"># Upgrade all installed packages to their latest versions</span>
+<span class="nb">sudo </span>apt upgrade
+
+<span class="c"># Full upgrade — may add/remove packages to satisfy deps</span>
+<span class="nb">sudo </span>apt full-upgrade
+
+<span class="c"># Install one or more packages</span>
+<span class="nb">sudo </span>apt <span class="nb">install </span>nginx git build-essential
+
+<span class="c"># Remove a package (keep config files)</span>
+<span class="nb">sudo </span>apt remove nginx
+
+<span class="c"># Remove a package AND its config files</span>
+<span class="nb">sudo </span>apt purge nginx
+
+<span class="c"># Remove unused packages that were auto-installed</span>
+<span class="nb">sudo </span>apt autoremove
+
+<span class="c"># Clean downloaded .deb package cache</span>
+<span class="nb">sudo </span>apt clean           <span class="c"># remove all cached .deb files</span>
+<span class="nb">sudo </span>apt autoclean       <span class="c"># remove only outdated cached .debs</span>
+</code></pre></div></div>
+
+<h3 id="searching-and-inspecting">Searching and Inspecting</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Search for packages by name or description</span>
+apt search nginx
+apt search <span class="s2">"web server"</span>
+
+<span class="c"># Show detailed package information</span>
+apt show nginx
+
+<span class="c"># List installed packages</span>
+apt list <span class="nt">--installed</span>
+apt list <span class="nt">--installed</span> | <span class="nb">grep </span>python
+
+<span class="c"># List packages that have upgrades available</span>
+apt list <span class="nt">--upgradable</span>
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">apt show</code> output:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Package: nginx
+Version: 1.22.1-9
+Depends: nginx-common (= 1.22.1-9), libc6 (&gt;= 2.28), libpcre3, ...
+Installed-Size: 497 kB
+Homepage: https://nginx.org
+Description: small, powerful, scalable web/proxy server
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="dpkg--debian-package-manager">dpkg — Debian Package Manager</h2>
+
+<p><code class="language-plaintext highlighter-rouge">dpkg</code> is the low-level backend that APT uses. It installs local <code class="language-plaintext highlighter-rouge">.deb</code> files and provides detailed package inspection tools.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install a local .deb file</span>
+<span class="nb">sudo </span>dpkg <span class="nt">-i</span> package.deb
+
+<span class="c"># Fix broken dependencies after manual dpkg install</span>
+<span class="nb">sudo </span>apt <span class="nb">install</span> <span class="nt">-f</span>
+
+<span class="c"># Remove a package</span>
+<span class="nb">sudo </span>dpkg <span class="nt">-r</span> package_name
+
+<span class="c"># List all installed packages</span>
+dpkg <span class="nt">-l</span>
+dpkg <span class="nt">-l</span> | <span class="nb">grep </span>nginx
+
+<span class="c"># List files installed by a package</span>
+dpkg <span class="nt">-L</span> nginx
+
+<span class="c"># Find which package owns a file</span>
+dpkg <span class="nt">-S</span> /usr/sbin/nginx
+
+<span class="c"># Show package info</span>
+dpkg <span class="nt">-s</span> nginx
+
+<span class="c"># Get detailed info from a .deb file (not installed)</span>
+dpkg <span class="nt">--info</span> package.deb
+dpkg <span class="nt">--contents</span> package.deb    <span class="c"># list contents</span>
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">dpkg -l</code> format:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Desired=Unknown/Install/Remove/Purge/Hold
+Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend
+Err?=(none)/Reinst-required (Status,Err: uppercase=bad)
+||/ Name            Version          Architecture Description
++++-===============-=================-=============-====================================
+ii  nginx           1.22.1-9          amd64         small, powerful, scalable web server
+rc  vim             2:9.0.1378-2      amd64         Vi IMproved - enhanced vi editor
+</code></pre></div></div>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">ii</code> = installed (desired + status both “Install”)</li>
+  <li><code class="language-plaintext highlighter-rouge">rc</code> = removed but config files remain</li>
+</ul>
+
+<hr />
+
+<h2 class="gc-mid" id="repositories-and-ppas">Repositories and PPAs</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="sourceslist-and-sourceslistd"><code class="language-plaintext highlighter-rouge">sources.list</code> and <code class="language-plaintext highlighter-rouge">sources.list.d</code></h3>
+
+<p>APT knows where to find packages through repository definitions:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> /etc/apt/sources.list
+<span class="c"># deb https://archive.ubuntu.com/ubuntu jammy main restricted universe multiverse</span>
+<span class="c"># deb https://archive.ubuntu.com/ubuntu jammy-security main restricted</span>
+
+<span class="nb">ls</span> /etc/apt/sources.list.d/     <span class="c"># additional repo files (PPAs, third-party)</span>
+</code></pre></div></div>
+
+<p><strong>Adding a PPA (Personal Package Archive):</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>add-apt-repository ppa:deadsnakes/python
+<span class="nb">sudo </span>apt update
+<span class="nb">sudo </span>apt <span class="nb">install </span>python3.12
+</code></pre></div></div>
+
+<p><strong>Adding a repository manually (e.g., Docker official repo):</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 1. Add GPG key</span>
+curl <span class="nt">-fsSL</span> https://download.docker.com/linux/ubuntu/gpg <span class="se">\</span>
+  | <span class="nb">sudo </span>gpg <span class="nt">--dearmor</span> <span class="nt">-o</span> /etc/apt/keyrings/docker.gpg
+
+<span class="c"># 2. Add repo definition</span>
+<span class="nb">echo</span> <span class="s2">"deb [arch=</span><span class="si">$(</span>dpkg <span class="nt">--print-architecture</span><span class="si">)</span><span class="s2"> signed-by=/etc/apt/keyrings/docker.gpg] </span><span class="se">\</span><span class="s2">
+  https://download.docker.com/linux/ubuntu </span><span class="si">$(</span><span class="nb">.</span> /etc/os-release <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="nv">$VERSION_CODENAME</span><span class="si">)</span><span class="s2"> stable"</span> <span class="se">\</span>
+  | <span class="nb">sudo tee</span> /etc/apt/sources.list.d/docker.list
+
+<span class="c"># 3. Update and install</span>
+<span class="nb">sudo </span>apt update <span class="o">&amp;&amp;</span> <span class="nb">sudo </span>apt <span class="nb">install </span>docker-ce
+</code></pre></div></div>
+
+<h3 id="holding-packages">Holding Packages</h3>
+
+<p>Prevent a specific package from being upgraded:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt-mark hold linux-image-generic   <span class="c"># hold</span>
+<span class="nb">sudo </span>apt-mark unhold linux-image-generic <span class="c"># release</span>
+apt-mark showhold                        <span class="c"># list held packages</span>
+</code></pre></div></div>
+
+<h3 id="apt-pinning">APT Pinning</h3>
+
+<p>Fine-grained control over which version of a package to install, useful when mixing stable and backports repositories:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># /etc/apt/preferences.d/backports</span>
+Package: <span class="k">*</span>
+Pin: release <span class="nv">a</span><span class="o">=</span>jammy-backports
+Pin-Priority: 400
+
+Package: git
+Pin: release <span class="nv">a</span><span class="o">=</span>jammy-backports
+Pin-Priority: 900    <span class="c"># prefer backports version of git</span>
+</code></pre></div></div>
+
+<p>Priorities: &lt; 0 never install; 0–100 installed only if no other version; 100 default; &gt; 1000 downgrade allowed.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apt-cache policy git    <span class="c"># show available versions and priorities</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="building-software-from-source">Building Software from Source</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p>Sometimes a package isn’t available, is too old, or you need a custom build configuration. Building from source gives full control.</p>
+
+<h3 id="autotools-configure--make--make-install">Autotools (configure / make / make install)</h3>
+
+<p>Most traditional Unix software uses the GNU autotools build system.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install build dependencies</span>
+<span class="nb">sudo </span>apt <span class="nb">install </span>build-essential
+
+<span class="c"># Typical workflow</span>
+wget https://example.com/myapp-1.0.tar.gz
+<span class="nb">tar</span> <span class="nt">-xzf</span> myapp-1.0.tar.gz
+<span class="nb">cd </span>myapp-1.0
+
+<span class="c"># 1. Configure — checks dependencies, sets install prefix, generates Makefile</span>
+./configure <span class="nt">--prefix</span><span class="o">=</span>/usr/local <span class="nt">--enable-ssl</span> <span class="nt">--without-debug</span>
+
+<span class="c"># 2. Build</span>
+make <span class="nt">-j</span><span class="si">$(</span><span class="nb">nproc</span><span class="si">)</span>       <span class="c"># use all CPU cores</span>
+
+<span class="c"># 3. Test (if the project has a test suite)</span>
+make check
+
+<span class="c"># 4. Install</span>
+<span class="nb">sudo </span>make <span class="nb">install</span>
+
+<span class="c"># Uninstall (if supported)</span>
+<span class="nb">sudo </span>make uninstall
+</code></pre></div></div>
+
+<p><strong>Useful configure flags:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./configure <span class="nt">--help</span>               <span class="c"># list all options</span>
+./configure <span class="nt">--prefix</span><span class="o">=</span>/opt/myapp  <span class="c"># install to /opt instead of /usr/local</span>
+./configure <span class="nv">CC</span><span class="o">=</span>clang             <span class="c"># use clang instead of gcc</span>
+./configure <span class="nv">CFLAGS</span><span class="o">=</span><span class="s2">"-O2 -march=armv7-a"</span>  <span class="c"># cross-compile flags</span>
+</code></pre></div></div>
+
+<h3 id="cmake">CMake</h3>
+
+<p>Modern C/C++ projects use CMake, which generates build files for your platform.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt <span class="nb">install </span>cmake
+
+git clone https://github.com/example/project.git
+<span class="nb">cd </span>project
+<span class="nb">mkdir </span>build <span class="o">&amp;&amp;</span> <span class="nb">cd </span>build         <span class="c"># out-of-source build (recommended)</span>
+
+<span class="c"># Configure</span>
+cmake .. <span class="nt">-DCMAKE_BUILD_TYPE</span><span class="o">=</span>Release <span class="se">\</span>
+          <span class="nt">-DCMAKE_INSTALL_PREFIX</span><span class="o">=</span>/usr/local <span class="se">\</span>
+          <span class="nt">-DBUILD_SHARED_LIBS</span><span class="o">=</span>ON
+
+<span class="c"># Build</span>
+cmake <span class="nt">--build</span> <span class="nb">.</span> <span class="nt">--</span> <span class="nt">-j</span><span class="si">$(</span><span class="nb">nproc</span><span class="si">)</span>
+
+<span class="c"># Install</span>
+<span class="nb">sudo </span>cmake <span class="nt">--install</span> <span class="nb">.</span>
+
+<span class="c"># List all CMake options</span>
+cmake .. <span class="nt">-LH</span>
+</code></pre></div></div>
+
+<p><strong>Cross-compiling with CMake (for embedded boards):</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># toolchain.cmake</span>
+<span class="nb">set</span><span class="o">(</span>CMAKE_SYSTEM_NAME Linux<span class="o">)</span>
+<span class="nb">set</span><span class="o">(</span>CMAKE_SYSTEM_PROCESSOR arm<span class="o">)</span>
+<span class="nb">set</span><span class="o">(</span>CMAKE_C_COMPILER arm-linux-gnueabihf-gcc<span class="o">)</span>
+<span class="nb">set</span><span class="o">(</span>CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++<span class="o">)</span>
+<span class="nb">set</span><span class="o">(</span>CMAKE_FIND_ROOT_PATH /opt/sysroot<span class="o">)</span>
+
+cmake .. <span class="nt">-DCMAKE_TOOLCHAIN_FILE</span><span class="o">=</span>toolchain.cmake
+</code></pre></div></div>
+
+<h3 id="getting-build-dependencies-automatically">Getting Build Dependencies Automatically</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install build dependencies declared in the source package</span>
+<span class="nb">sudo </span>apt build-dep nginx
+
+<span class="c"># Download source package</span>
+apt <span class="nb">source </span>nginx
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="creating-a-deb-package">Creating a .deb Package</h2>
+
+<p>Packaging your own software allows proper installation, upgrade, and removal via APT.</p>
+
+<h3 id="minimal-deb-structure">Minimal .deb Structure</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>myapp_1.0-1_amd64/
+├── DEBIAN/
+│   ├── control          # required metadata
+│   ├── postinst         # post-install script (optional)
+│   ├── prerm            # pre-remove script (optional)
+│   └── conffiles        # list of config files (optional)
+└── usr/
+    ├── bin/
+    │   └── myapp        # the binary
+    └── share/
+        └── doc/
+            └── myapp/
+                └── copyright
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">DEBIAN/control</code>:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Package: myapp
+Version: 1.0-1
+Architecture: amd64
+Maintainer: Eslam Mohamed &lt;eslam@example.com&gt;
+Depends: libc6 (&gt;= 2.17), libssl3
+Description: My Application
+ This is a longer description of the application.
+ It can span multiple lines (start continuation lines with a space).
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">DEBIAN/postinst</code>:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+<span class="nb">set</span> <span class="nt">-e</span>
+systemctl daemon-reload
+systemctl <span class="nb">enable </span>myapp
+systemctl start myapp
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Set correct permissions</span>
+<span class="nb">chmod </span>755 myapp_1.0-1_amd64/DEBIAN/postinst
+
+<span class="c"># Build the package</span>
+dpkg-deb <span class="nt">--build</span> <span class="nt">--root-owner-group</span> myapp_1.0-1_amd64
+
+<span class="c"># Install it</span>
+<span class="nb">sudo </span>dpkg <span class="nt">-i</span> myapp_1.0-1_amd64.deb
+
+<span class="c"># Verify</span>
+dpkg <span class="nt">-l</span> myapp
+dpkg <span class="nt">-L</span> myapp    <span class="c"># list installed files</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">apt remove</code> and <code class="language-plaintext highlighter-rouge">apt purge</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">apt remove</code> removes the package binary but leaves configuration files on disk (under <code class="language-plaintext highlighter-rouge">/etc</code>). <code class="language-plaintext highlighter-rouge">apt purge</code> removes everything including configuration files. Use <code class="language-plaintext highlighter-rouge">purge</code> when you want a clean slate before reinstalling, or to free disk space completely. You can <code class="language-plaintext highlighter-rouge">purge</code> already-removed packages: <code class="language-plaintext highlighter-rouge">sudo apt purge nginx</code> will clean up configs even after the binary is gone (status shows <code class="language-plaintext highlighter-rouge">rc</code> in <code class="language-plaintext highlighter-rouge">dpkg -l</code>).</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: Why do you need to run <code class="language-plaintext highlighter-rouge">apt update</code> before <code class="language-plaintext highlighter-rouge">apt install</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">apt update</code> synchronises the local package index (stored in <code class="language-plaintext highlighter-rouge">/var/lib/apt/lists/</code>) with the upstream repositories. Without it, APT may install an outdated version, fail to find a new package, or miss security updates. It does NOT upgrade anything — it just refreshes the list of available versions.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: How would you install a specific version of a package?</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># List available versions</span>
+apt-cache policy nginx
+<span class="c"># or</span>
+apt list <span class="nt">-a</span> nginx
+
+<span class="c"># Install specific version</span>
+<span class="nb">sudo </span>apt <span class="nb">install </span><span class="nv">nginx</span><span class="o">=</span>1.22.1-9
+</code></pre></div></div>
+
+<p><strong>Q4 — Intermediate: What happens when you run <code class="language-plaintext highlighter-rouge">dpkg -i package.deb</code> and it fails with “dependency problems”?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">dpkg</code> does not resolve dependencies automatically — it simply refuses to configure the package if dependencies are unmet. Fix it with <code class="language-plaintext highlighter-rouge">sudo apt install -f</code> (or <code class="language-plaintext highlighter-rouge">apt --fix-broken install</code>), which instructs APT to resolve and install the missing dependencies, then retry configuration.</p>
+</blockquote>
+
+<p><strong>Q5 — Advanced: How would you cross-compile a package for an ARM board on an x86 machine?</strong></p>
+
+<blockquote>
+  <ol>
+    <li>Install a cross-toolchain: <code class="language-plaintext highlighter-rouge">sudo apt install gcc-arm-linux-gnueabihf</code>.</li>
+    <li>Set <code class="language-plaintext highlighter-rouge">CC</code>, <code class="language-plaintext highlighter-rouge">CFLAGS</code>, and <code class="language-plaintext highlighter-rouge">--host</code> flags to target the ARM architecture:
+      <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./configure <span class="nt">--host</span><span class="o">=</span>arm-linux-gnueabihf <span class="nt">--prefix</span><span class="o">=</span>/usr <span class="nv">CFLAGS</span><span class="o">=</span><span class="s2">"-march=armv7-a -mfpu=neon"</span>
+make <span class="nt">-j</span><span class="si">$(</span><span class="nb">nproc</span><span class="si">)</span>
+</code></pre></div>      </div>
+    </li>
+    <li>Copy the resulting binary to the target board (via SCP or by mounting the SD card image).
+For complex projects, use a <strong>sysroot</strong> (a copy of the target’s <code class="language-plaintext highlighter-rouge">/usr</code> and <code class="language-plaintext highlighter-rouge">/lib</code>) and point <code class="language-plaintext highlighter-rouge">--sysroot</code> to it to resolve library dependencies correctly.</li>
+  </ol>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 8 apt</code></td>
+      <td>APT command reference</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 1 dpkg</code></td>
+      <td>dpkg command reference</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 5 apt_preferences</code></td>
+      <td>APT pinning documentation</td>
+    </tr>
+    <tr>
+      <td>Debian Policy Manual</td>
+      <td><a href="https://www.debian.org/doc/debian-policy/">debian.org/doc/debian-policy</a></td>
+    </tr>
+    <tr>
+      <td>CMake documentation</td>
+      <td><a href="https://cmake.org/documentation/">cmake.org/documentation</a></td>
+    </tr>
+    <tr>
+      <td>Autotools tutorial</td>
+      <td><a href="https://www.gnu.org/software/automake/manual/automake.html">gnu.org/software/automake/manual</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-terminal"></i>
+        <span>Linux User Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-user/filesystem-navigation/" class="gtn-link ">
+          <i class="fas fa-folder-open"></i> Filesystem Navigation
+        </a>
+        <a href="/linux-user/users-permissions/" class="gtn-link ">
+          <i class="fas fa-user-lock"></i> Users &amp; Permissions
+        </a>
+        <a href="/linux-user/process-management/" class="gtn-link ">
+          <i class="fas fa-microchip"></i> Process Management
+        </a>
+        <a href="/linux-user/package-management/" class="gtn-link gts-active">
+          <i class="fas fa-box"></i> Package Management
+        </a>
+        <a href="/linux-user/networking/" class="gtn-link ">
+          <i class="fas fa-network-wired"></i> Networking Basics
+        </a>
+        <a href="/linux-user/ssh/" class="gtn-link ">
+          <i class="fas fa-lock"></i> SSH &amp; Remote Access
+        </a>
+        <a href="/linux-user/cron/" class="gtn-link ">
+          <i class="fas fa-clock"></i> Cron &amp; Scheduling
+        </a>
+        <a href="/linux-user/bash-scripting/" class="gtn-link ">
+          <i class="fas fa-terminal"></i> Bash Scripting
+        </a>
+        <a href="/linux-user/git/" class="gtn-link ">
+          <i class="fab fa-git-alt"></i> Git Basics
+        </a>
+      </nav>
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-user/process-management/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Process Management</span>
+      </a>
+      
+      
+      <a href="/linux-user/networking/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Networking Basics</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

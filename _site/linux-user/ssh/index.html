@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSH & Remote Access · Eslam Mohamed</title>
+  <meta name="description" content="Master SSH key-based authentication, file transfers with SCP and rsync, SSH config aliases, local and remote port forwarding, sshd hardening, and ProxyJump chains for embedded board access." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-user/">Linux User Guide</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>SSH & Remote Access</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 01 — Linux User</span>
+        <span class="guide-stage-pill">Stage 06</span>
+      </div>
+      <h1 class="guide-title">SSH & Remote Access</h1>
+      <p class="guide-subtitle">Master SSH key-based authentication, file transfers with SCP and rsync, SSH config aliases, local and remote port forwarding, sshd hardening, and ProxyJump chains for embedded board access.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="ssh-basics">SSH Basics</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p><strong>SSH (Secure Shell)</strong> provides an encrypted channel for remote login, command execution, and file transfer. It replaces the insecure <code class="language-plaintext highlighter-rouge">telnet</code> and <code class="language-plaintext highlighter-rouge">rsh</code> tools.</p>
+
+<h3 id="connecting-to-a-remote-host">Connecting to a Remote Host</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh user@hostname
+ssh user@192.168.1.100
+ssh <span class="nt">-p</span> 2222 user@hostname        <span class="c"># non-default port</span>
+ssh <span class="nt">-i</span> ~/.ssh/my_key user@host   <span class="c"># specify private key</span>
+ssh user@host <span class="s2">"uname -a"</span>         <span class="c"># run a command and exit</span>
+ssh <span class="nt">-t</span> user@host <span class="s2">"htop"</span>          <span class="c"># force pseudo-terminal allocation</span>
+</code></pre></div></div>
+
+<h3 id="key-based-authentication-passwordless-login">Key-Based Authentication (Passwordless Login)</h3>
+
+<p>Password authentication is weak (brute-force, phishing). Key-based auth uses asymmetric cryptography — you keep the private key, the server gets the public key.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 1. Generate a key pair (run on YOUR local machine)</span>
+ssh-keygen <span class="nt">-t</span> ed25519 <span class="nt">-C</span> <span class="s2">"eslam@workstation"</span>
+<span class="c"># Stores:  ~/.ssh/id_ed25519      (private key — protect this!)</span>
+<span class="c">#          ~/.ssh/id_ed25519.pub  (public key  — safe to share)</span>
+
+<span class="c"># Use RSA if the remote is an older system</span>
+ssh-keygen <span class="nt">-t</span> rsa <span class="nt">-b</span> 4096 <span class="nt">-C</span> <span class="s2">"eslam@workstation"</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 2. Copy the public key to the remote server</span>
+ssh-copy-id user@hostname
+
+<span class="c"># Manual alternative (if ssh-copy-id isn't available)</span>
+<span class="nb">cat</span> ~/.ssh/id_ed25519.pub | ssh user@host <span class="s2">"mkdir -p ~/.ssh &amp;&amp; cat &gt;&gt; ~/.ssh/authorized_keys &amp;&amp; chmod 600 ~/.ssh/authorized_keys"</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 3. Test (should NOT ask for password)</span>
+ssh user@hostname
+
+<span class="c"># Fix permissions if SSH complains</span>
+<span class="nb">chmod </span>700 ~/.ssh
+<span class="nb">chmod </span>600 ~/.ssh/authorized_keys
+<span class="nb">chmod </span>600 ~/.ssh/id_ed25519
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="file-transfers">File Transfers</h2>
+
+<h3 id="scp--secure-copy"><code class="language-plaintext highlighter-rouge">scp</code> — Secure Copy</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Local → Remote</span>
+scp file.txt user@host:/remote/path/
+
+<span class="c"># Remote → Local</span>
+scp user@host:/remote/file.txt /local/path/
+
+<span class="c"># Recursive (directory)</span>
+scp <span class="nt">-r</span> projects/ user@host:~/
+
+<span class="c"># Non-default port</span>
+scp <span class="nt">-P</span> 2222 file.txt user@host:/tmp/
+</code></pre></div></div>
+
+<h3 id="rsync--efficient-sync-recommended-over-scp"><code class="language-plaintext highlighter-rouge">rsync</code> — Efficient Sync (Recommended over scp)</h3>
+
+<p><code class="language-plaintext highlighter-rouge">rsync</code> only transfers changed bytes, making it much faster for large or repeated transfers.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Sync local dir to remote</span>
+rsync <span class="nt">-avz</span> projects/ user@host:~/projects/
+<span class="c"># -a = archive (recursive, preserve perms/timestamps/symlinks)</span>
+<span class="c"># -v = verbose</span>
+<span class="c"># -z = compress during transfer</span>
+
+<span class="c"># Sync remote to local</span>
+rsync <span class="nt">-avz</span> user@host:~/projects/ ./projects/
+
+<span class="c"># Dry run (preview without making changes)</span>
+rsync <span class="nt">-avzn</span> projects/ user@host:~/projects/
+
+<span class="c"># Delete files on destination that no longer exist at source</span>
+rsync <span class="nt">-avz</span> <span class="nt">--delete</span> projects/ user@host:~/projects/
+
+<span class="c"># Exclude patterns</span>
+rsync <span class="nt">-avz</span> <span class="nt">--exclude</span><span class="o">=</span><span class="s1">'*.o'</span> <span class="nt">--exclude</span><span class="o">=</span><span class="s1">'.git/'</span> projects/ user@host:~/
+
+<span class="c"># Non-default SSH port</span>
+rsync <span class="nt">-avz</span> <span class="nt">-e</span> <span class="s2">"ssh -p 2222"</span> projects/ user@host:~/
+</code></pre></div></div>
+
+<h3 id="sftp--interactive-ftp-over-ssh"><code class="language-plaintext highlighter-rouge">sftp</code> — Interactive FTP over SSH</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sftp user@host
+sftp&gt; <span class="nb">ls</span>                  <span class="c"># list remote</span>
+sftp&gt; lls                 <span class="c"># list local</span>
+sftp&gt; get remote_file.txt
+sftp&gt; put local_file.txt
+sftp&gt; mput <span class="k">*</span>.conf         <span class="c"># multiple upload</span>
+sftp&gt; <span class="nb">exit</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="ssh-config-file">SSH Config File</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<p><code class="language-plaintext highlighter-rouge">~/.ssh/config</code> defines aliases and per-host settings, making complex SSH commands into simple names.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># ~/.ssh/config
+
+# General defaults
+Host *
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+    AddKeysToAgent yes
+
+# Development server
+Host devserver
+    HostName 192.168.1.50
+    User eslam
+    Port 2222
+    IdentityFile ~/.ssh/dev_key
+
+# Raspberry Pi (embedded board)
+Host rpi
+    HostName 192.168.1.100
+    User pi
+    IdentityFile ~/.ssh/rpi_key
+
+# Production via bastion
+Host production
+    HostName 10.0.0.20
+    User deploy
+    ProxyJump bastion
+    IdentityFile ~/.ssh/prod_key
+
+Host bastion
+    HostName jump.company.com
+    User eslam
+    IdentityFile ~/.ssh/bastion_key
+</code></pre></div></div>
+
+<p>Now you can simply type:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh devserver
+rsync <span class="nt">-avz</span> code/ rpi:~/
+ssh production
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="port-forwarding-ssh-tunneling">Port Forwarding (SSH Tunneling)</h2>
+
+<p>SSH can tunnel TCP connections through the encrypted channel — essential for accessing services behind firewalls or on isolated networks.</p>
+
+<h3 id="local-port-forwarding">Local Port Forwarding</h3>
+
+<p>Map a local port to a remote service — useful when the remote service is not publicly accessible.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Forward local port 8080 to remote 192.168.1.10:80 via ssh-server</span>
+ssh <span class="nt">-L</span> 8080:192.168.1.10:80 user@ssh-server
+
+<span class="c"># Now in your browser: http://localhost:8080 reaches the internal web server</span>
+</code></pre></div></div>
+
+<p><strong>Diagram:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[Your PC:8080] --encrypted--&gt; [ssh-server] --&gt; [192.168.1.10:80]
+</code></pre></div></div>
+
+<h3 id="remote-port-forwarding-reverse-tunnel">Remote Port Forwarding (Reverse Tunnel)</h3>
+
+<p>Expose a local service to the remote server — useful for accessing a device behind NAT from the internet.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Expose local port 3000 as port 9000 on the remote server</span>
+ssh <span class="nt">-R</span> 9000:localhost:3000 user@remote-server
+
+<span class="c"># On the remote server: curl http://localhost:9000 reaches your local service</span>
+</code></pre></div></div>
+
+<h3 id="dynamic-port-forwarding-socks-proxy">Dynamic Port Forwarding (SOCKS Proxy)</h3>
+
+<p>Create a SOCKS5 proxy through the SSH server — routes all traffic through it.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh <span class="nt">-D</span> 1080 user@ssh-server
+
+<span class="c"># Configure browser/system to use SOCKS5 proxy on localhost:1080</span>
+<span class="c"># All traffic is tunnelled through ssh-server</span>
+</code></pre></div></div>
+
+<h3 id="background-non-blocking-tunnels">Background (Non-Blocking) Tunnels</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># -N = don't execute a remote command (tunnel only)</span>
+<span class="c"># -f = go to background before exec</span>
+ssh <span class="nt">-N</span> <span class="nt">-f</span> <span class="nt">-L</span> 5432:db-host:5432 user@ssh-server
+<span class="c"># Now: psql -h localhost -p 5432  connects to remote Postgres</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-ssh-for-embedded-development">Advanced: SSH for Embedded Development</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="accessing-an-embedded-board-via-proxyjump">Accessing an Embedded Board via ProxyJump</h3>
+
+<p>When your target board is on an isolated network accessed through a gateway:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Direct: gateway → board</span>
+ssh <span class="nt">-J</span> eslam@gateway.company.com pi@192.168.10.50
+
+<span class="c"># Or in ~/.ssh/config:</span>
+Host board
+    HostName 192.168.10.50
+    User root
+    ProxyJump gateway
+
+Host gateway
+    HostName gateway.company.com
+    User eslam
+    IdentityFile ~/.ssh/gateway_key
+</code></pre></div></div>
+
+<h3 id="remote-gdb-over-ssh-tunnel">Remote GDB over SSH Tunnel</h3>
+
+<p>Debug a process running on an embedded board from your workstation’s IDE:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># On the board: start gdbserver</span>
+gdbserver :3333 ./my_firmware
+
+<span class="c"># On workstation: forward the port</span>
+ssh <span class="nt">-N</span> <span class="nt">-f</span> <span class="nt">-L</span> 3333:localhost:3333 root@board
+
+<span class="c"># In GDB / VS Code / CLion: connect to localhost:3333</span>
+gdb-multiarch ./my_firmware
+<span class="o">(</span>gdb<span class="o">)</span> target remote localhost:3333
+</code></pre></div></div>
+
+<h3 id="hardening-sshd_config">Hardening <code class="language-plaintext highlighter-rouge">sshd_config</code></h3>
+
+<p>Edit <code class="language-plaintext highlighter-rouge">/etc/ssh/sshd_config</code> and restart <code class="language-plaintext highlighter-rouge">sshd</code>:</p>
+
+<div class="language-ini highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Disable password authentication (use keys only)
+</span><span class="err">PasswordAuthentication</span> <span class="err">no</span>
+<span class="err">ChallengeResponseAuthentication</span> <span class="err">no</span>
+
+<span class="c"># Disable root login
+</span><span class="err">PermitRootLogin</span> <span class="err">no</span>
+
+<span class="c"># Allow only specific users
+</span><span class="err">AllowUsers</span> <span class="err">eslam</span> <span class="err">deploy</span>
+
+<span class="c"># Change default port (security through obscurity, helps reduce noise)
+</span><span class="err">Port</span> <span class="err">2222</span>
+
+<span class="c"># Disable X11 forwarding if not needed
+</span><span class="err">X11Forwarding</span> <span class="err">no</span>
+
+<span class="c"># Set idle timeout (disconnect idle sessions after 10 minutes)
+</span><span class="err">ClientAliveInterval</span> <span class="err">300</span>
+<span class="err">ClientAliveCountMax</span> <span class="err">2</span>
+
+<span class="c"># Disable empty passwords
+</span><span class="err">PermitEmptyPasswords</span> <span class="err">no</span>
+
+<span class="c"># Use only strong algorithms
+</span><span class="err">KexAlgorithms</span> <span class="err">curve25519-sha256,diffie-hellman-group14-sha256</span>
+<span class="err">Ciphers</span> <span class="err">chacha20-poly1305@openssh.com,aes256-gcm@openssh.com</span>
+<span class="err">MACs</span> <span class="err">hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Test config before restarting</span>
+<span class="nb">sudo </span>sshd <span class="nt">-t</span>
+
+<span class="c"># Restart sshd</span>
+<span class="nb">sudo </span>systemctl restart sshd
+</code></pre></div></div>
+
+<h3 id="ssh-agent-and-key-management"><code class="language-plaintext highlighter-rouge">ssh-agent</code> and Key Management</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Start agent and add keys</span>
+<span class="nb">eval</span> <span class="si">$(</span>ssh-agent<span class="si">)</span>
+ssh-add ~/.ssh/id_ed25519
+ssh-add <span class="nt">-l</span>              <span class="c"># list loaded keys</span>
+
+<span class="c"># Forward agent to remote (use with care — security risk)</span>
+ssh <span class="nt">-A</span> user@remote
+
+<span class="c"># Or in config:</span>
+Host <span class="k">*</span>
+    ForwardAgent <span class="nb">yes</span>     <span class="c"># careful: only enable for trusted hosts</span>
+</code></pre></div></div>
+
+<h3 id="ssh-certificate-authority-for-teams">SSH Certificate Authority (for Teams)</h3>
+
+<p>Instead of distributing individual public keys, use an SSH CA:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Create a CA key pair (do once, keep private key offline)</span>
+ssh-keygen <span class="nt">-t</span> ed25519 <span class="nt">-f</span> ssh_ca
+
+<span class="c"># Sign a user's public key (valid for 1 day)</span>
+ssh-keygen <span class="nt">-s</span> ssh_ca <span class="nt">-I</span> <span class="s2">"eslam@company"</span> <span class="nt">-n</span> <span class="s2">"eslam"</span> <span class="nt">-V</span> +1d id_ed25519.pub
+
+<span class="c"># On servers: trust the CA (add to sshd_config)</span>
+<span class="c"># TrustedUserCAKeys /etc/ssh/ca.pub</span>
+
+<span class="c"># Users now present their certificate — no need to copy public keys to each server</span>
+ssh <span class="nt">-i</span> id_ed25519-cert.pub user@server
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: How does SSH public-key authentication work?</strong></p>
+
+<blockquote>
+  <ol>
+    <li>The client sends the public key fingerprint to the server.</li>
+    <li>The server checks if that public key is in <code class="language-plaintext highlighter-rouge">~/.ssh/authorized_keys</code>.</li>
+    <li>If found, the server generates a random challenge and encrypts it with the public key.</li>
+    <li>Only the holder of the corresponding <strong>private key</strong> can decrypt the challenge.</li>
+    <li>The client decrypts and proves possession of the private key — without ever transmitting it.</li>
+  </ol>
+</blockquote>
+
+<p><strong>Q2 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">scp</code> and <code class="language-plaintext highlighter-rouge">rsync</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">scp</code> always copies the entire file regardless of changes. <code class="language-plaintext highlighter-rouge">rsync</code> calculates a rolling checksum of file blocks and only transfers the changed blocks, making it much faster for large files or repeated syncs. <code class="language-plaintext highlighter-rouge">rsync</code> also supports <code class="language-plaintext highlighter-rouge">--delete</code> for mirror-style syncs, dry-run mode, and bandwidth limiting. Use <code class="language-plaintext highlighter-rouge">rsync</code> for almost everything except very simple one-off copies.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: What is local port forwarding and give a real use case?</strong></p>
+
+<blockquote>
+  <p>Local port forwarding (<code class="language-plaintext highlighter-rouge">ssh -L local_port:target_host:target_port jump_host</code>) creates a tunnel where connections to <code class="language-plaintext highlighter-rouge">localhost:local_port</code> are forwarded through the SSH connection to <code class="language-plaintext highlighter-rouge">target_host:target_port</code>.</p>
+
+  <p><strong>Real use case:</strong> Your company’s PostgreSQL database runs on an internal server (<code class="language-plaintext highlighter-rouge">db.internal:5432</code>) not exposed to the internet. You can access it from your laptop:</p>
+  <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh <span class="nt">-L</span> 5432:db.internal:5432 eslam@bastion.company.com
+psql <span class="nt">-h</span> localhost <span class="nt">-p</span> 5432 <span class="nt">-U</span> app_user my_db
+</code></pre></div>  </div>
+</blockquote>
+
+<p><strong>Q4 — Advanced: What is a ProxyJump and how does it differ from the older ProxyCommand approach?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">ProxyJump</code> (SSH 7.3+) is a cleaner replacement for the older <code class="language-plaintext highlighter-rouge">ProxyCommand</code> with <code class="language-plaintext highlighter-rouge">ssh -W</code>. Both cause the SSH client to first connect to an intermediate host and then open a TCP connection from there to the target. <code class="language-plaintext highlighter-rouge">ProxyJump</code> handles multi-hop chains natively and uses native SSH protocol operations internally, which is safer and more efficient. The old way:</p>
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ProxyCommand ssh -W %h:%p bastion
+</code></pre></div>  </div>
+  <p>The new way (equivalent but cleaner):</p>
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ProxyJump bastion
+</code></pre></div>  </div>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 1 ssh</code></td>
+      <td>SSH client manual</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 5 ssh_config</code></td>
+      <td>Client config file format</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 5 sshd_config</code></td>
+      <td>Server config file format</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 1 rsync</code></td>
+      <td>rsync manual</td>
+    </tr>
+    <tr>
+      <td>OpenSSH documentation</td>
+      <td><a href="https://www.openssh.com/manual.html">openssh.com/manual.html</a></td>
+    </tr>
+    <tr>
+      <td>SSH Hardening Guide (Mozilla)</td>
+      <td><a href="https://infosec.mozilla.org/guidelines/openssh.html">infosec.mozilla.org/guidelines/openssh</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-terminal"></i>
+        <span>Linux User Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-user/filesystem-navigation/" class="gtn-link ">
+          <i class="fas fa-folder-open"></i> Filesystem Navigation
+        </a>
+        <a href="/linux-user/users-permissions/" class="gtn-link ">
+          <i class="fas fa-user-lock"></i> Users &amp; Permissions
+        </a>
+        <a href="/linux-user/process-management/" class="gtn-link ">
+          <i class="fas fa-microchip"></i> Process Management
+        </a>
+        <a href="/linux-user/package-management/" class="gtn-link ">
+          <i class="fas fa-box"></i> Package Management
+        </a>
+        <a href="/linux-user/networking/" class="gtn-link ">
+          <i class="fas fa-network-wired"></i> Networking Basics
+        </a>
+        <a href="/linux-user/ssh/" class="gtn-link gts-active">
+          <i class="fas fa-lock"></i> SSH &amp; Remote Access
+        </a>
+        <a href="/linux-user/cron/" class="gtn-link ">
+          <i class="fas fa-clock"></i> Cron &amp; Scheduling
+        </a>
+        <a href="/linux-user/bash-scripting/" class="gtn-link ">
+          <i class="fas fa-terminal"></i> Bash Scripting
+        </a>
+        <a href="/linux-user/git/" class="gtn-link ">
+          <i class="fab fa-git-alt"></i> Git Basics
+        </a>
+      </nav>
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-user/networking/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Networking Basics</span>
+      </a>
+      
+      
+      <a href="/linux-user/cron/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Cron & Scheduling</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

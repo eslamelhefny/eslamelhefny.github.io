@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>U-Boot Board Porting · Eslam Mohamed</title>
+  <meta name="description" content="Learn how to add U-Boot support for a new ARM board — from creating the defconfig and board files to initializing DDR, bringing up serial output, and submitting the port upstream." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/embedded-linux/">Embedded Linux Developer</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>U-Boot Board Porting</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 03 — Embedded Linux</span>
+        <span class="guide-stage-pill">Stage 06</span>
+      </div>
+      <h1 class="guide-title">U-Boot Board Porting</h1>
+      <p class="guide-subtitle">Learn how to add U-Boot support for a new ARM board — from creating the defconfig and board files to initializing DDR, bringing up serial output, and submitting the port upstream.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="u-boot-board-support-structure-and-mandatory-files">U-Boot Board Support Structure and Mandatory Files</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>Porting U-Boot to a new board means creating the configuration and code that U-Boot needs to know about your specific hardware. The process follows a well-defined file structure. The fastest approach is to find an existing board port that uses the same SoC as your target board and use it as a template.</p>
+
+<h3 id="the-u-boot-board-support-directory-structure">The U-Boot Board Support Directory Structure</h3>
+
+<p>Every supported board in U-Boot has files in three locations:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>u-boot/
+├── configs/
+│   └── myboard_defconfig         ← Minimal Kconfig configuration
+├── include/configs/
+│   └── myboard.h                 ← C header for board-specific #defines
+└── board/
+    └── myvendor/
+        └── myboard/
+            ├── Makefile          ← Lists which .c files to compile
+            ├── board.c           ← Board initialization functions
+            ├── Kconfig           ← Kconfig entry for this board
+            └── MAINTAINERS       ← Who maintains this port
+</code></pre></div></div>
+
+<p>Let us examine each file in detail using the <strong>BeagleBone Black</strong> (TI AM335x) as a reference.</p>
+
+<hr />
+
+<h3 id="examining-a-reference-board-port-beaglebone-black">Examining a Reference Board Port: BeagleBone Black</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls </span>board/ti/am335x/
+board.c  board.h  Kconfig  MAINTAINERS  Makefile  mux.c  mux.h  pmic.c  u-boot.lds
+
+<span class="nv">$ </span><span class="nb">cat </span>board/ti/am335x/Makefile
+<span class="c"># SPDX-License-Identifier: GPL-2.0+</span>
+obj-y :<span class="o">=</span> board.o mux.o
+obj-<span class="si">$(</span>CONFIG_PMIC_TPS65910<span class="si">)</span> +<span class="o">=</span> pmic.o
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">board.c</code> file contains the board-specific initialization functions.</p>
+
+<hr />
+
+<h3 id="the-defconfig-file">The defconfig File</h3>
+
+<p>The defconfig is the minimal Kconfig configuration. Create it at <code class="language-plaintext highlighter-rouge">configs/myboard_defconfig</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat </span>configs/am335x_boneblack_defconfig
+<span class="nv">CONFIG_ARM</span><span class="o">=</span>y
+<span class="nv">CONFIG_ARCH_OMAP2PLUS</span><span class="o">=</span>y
+<span class="nv">CONFIG_TI_COMMON_CMD_OPTIONS</span><span class="o">=</span>y
+<span class="nv">CONFIG_SOC_AM33XX</span><span class="o">=</span>y
+<span class="nv">CONFIG_TARGET_AM335X_EVM</span><span class="o">=</span>y
+<span class="nv">CONFIG_DEFAULT_DEVICE_TREE</span><span class="o">=</span><span class="s2">"am335x-boneblack"</span>
+<span class="nv">CONFIG_SPL</span><span class="o">=</span>y
+<span class="nv">CONFIG_SYS_MALLOC_F_LEN</span><span class="o">=</span>0x8000
+<span class="nv">CONFIG_SPL_AM33XX_ENABLE_RTC32K_OSC</span><span class="o">=</span>y
+<span class="nv">CONFIG_SPL_SERIAL</span><span class="o">=</span>y
+<span class="nv">CONFIG_SPL_STACK_R</span><span class="o">=</span>y
+<span class="nv">CONFIG_SPL_STACK_R_ADDR</span><span class="o">=</span>0x82000000
+<span class="nv">CONFIG_SPL_OS_BOOT</span><span class="o">=</span>y
+<span class="nv">CONFIG_AUTOBOOT_KEYED</span><span class="o">=</span>y
+<span class="nv">CONFIG_USE_BOOTCOMMAND</span><span class="o">=</span>y
+<span class="nv">CONFIG_BOOTCOMMAND</span><span class="o">=</span><span class="s2">"run findfdt; run distro_bootcmd"</span>
+<span class="nv">CONFIG_SYS_CONSOLE_INFO_QUIET</span><span class="o">=</span>y
+<span class="nv">CONFIG_DISPLAY_BOARDINFO_LATE</span><span class="o">=</span>y
+<span class="nv">CONFIG_SPL_SYS_MALLOC_SIMPLE</span><span class="o">=</span>y
+<span class="nv">CONFIG_SPL_BOARD_INIT</span><span class="o">=</span>y
+<span class="nv">CONFIG_SPL_CPU</span><span class="o">=</span>y
+<span class="nv">CONFIG_SPL_ENV_SUPPORT</span><span class="o">=</span>y
+<span class="nv">CONFIG_SPL_FS_FAT</span><span class="o">=</span>y
+<span class="nv">CONFIG_SPL_LIBCOMMON_SUPPORT</span><span class="o">=</span>y
+<span class="nv">CONFIG_SPL_LIBDISK_SUPPORT</span><span class="o">=</span>y
+<span class="nv">CONFIG_SPL_LIBGENERIC_SUPPORT</span><span class="o">=</span>y
+<span class="nv">CONFIG_SPL_MMC</span><span class="o">=</span>y
+<span class="nv">CONFIG_SPL_POWER</span><span class="o">=</span>y
+<span class="nv">CONFIG_SPL_SERIAL</span><span class="o">=</span>y
+<span class="nv">CONFIG_DISTRO_DEFAULTS</span><span class="o">=</span>y
+<span class="nv">CONFIG_ENV_IS_IN_FAT</span><span class="o">=</span>y
+<span class="nv">CONFIG_ENV_FAT_INTERFACE</span><span class="o">=</span><span class="s2">"mmc"</span>
+<span class="nv">CONFIG_ENV_FAT_DEVICE_AND_PART</span><span class="o">=</span><span class="s2">"0:1"</span>
+<span class="nv">CONFIG_BOOTP_PREFER_SERVERIP</span><span class="o">=</span>y
+</code></pre></div></div>
+
+<p>The absolutely mandatory options for a minimal ARM port:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CONFIG_ARM=y
+CONFIG_ARCH_&lt;PLATFORM&gt;=y
+CONFIG_TARGET_&lt;BOARD&gt;=y
+CONFIG_SPL=y                  # Enable SPL
+CONFIG_DEFAULT_DEVICE_TREE="&lt;your-dtb-name&gt;"
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="the-board-header-file">The Board Header File</h3>
+
+<p><code class="language-plaintext highlighter-rouge">include/configs/myboard.h</code> provides C preprocessor defines for settings not yet migrated to Kconfig:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* include/configs/myboard.h */</span>
+<span class="cp">#ifndef __CONFIG_MYBOARD_H
+#define __CONFIG_MYBOARD_H
+</span>
+<span class="cm">/* Import common AM335x configuration */</span>
+<span class="cp">#include</span> <span class="cpf">&lt;configs/ti_armv7_common.h&gt;</span><span class="cp">
+</span>
+<span class="cm">/* DRAM configuration */</span>
+<span class="cp">#define CONFIG_SYS_SDRAM_BASE       0x80000000
+#define PHYS_SDRAM_1_SIZE           (256 &lt;&lt; 20)    </span><span class="cm">/* 256 MB */</span><span class="cp">
+</span>
+<span class="cm">/* U-Boot memory placement */</span>
+<span class="cp">#define CONFIG_SYS_TEXT_BASE        0x80800000
+#define CONFIG_SYS_MALLOC_LEN       (1 &lt;&lt; 20)      </span><span class="cm">/* 1 MB */</span><span class="cp">
+</span>
+<span class="cm">/* Console */</span>
+<span class="cp">#define CONFIG_SYS_NS16550_COM1     0x44E09000     </span><span class="cm">/* UART0 base */</span><span class="cp">
+#define CONFIG_CONS_INDEX           1
+</span>
+<span class="cm">/* Flash layout — only needed if using raw MMC */</span>
+<span class="cp">#define CONFIG_SYS_MMC_ENV_DEV      0
+#define CONFIG_SYS_MMC_ENV_PART     0
+</span>
+<span class="cp">#endif </span><span class="cm">/* __CONFIG_MYBOARD_H */</span><span class="cp">
+</span></code></pre></div></div>
+
+<p>For a modern board port targeting full Kconfig migration, this file may be minimal or empty.</p>
+
+<hr />
+
+<h3 id="the-board-kconfig-entry">The Board Kconfig Entry</h3>
+
+<p>Add your board to the architecture Kconfig so <code class="language-plaintext highlighter-rouge">make menuconfig</code> knows about it:</p>
+
+<pre><code class="language-kconfig"># board/myvendor/myboard/Kconfig
+
+if TARGET_MYBOARD
+
+config SYS_BOARD
+    default "myboard"
+
+config SYS_VENDOR
+    default "myvendor"
+
+config SYS_SOC
+    default "mysocseries"
+
+config SYS_CONFIG_NAME
+    default "myboard"
+
+config BOARD_SPECIFIC_OPTIONS
+    def_bool y
+    select SUPPORT_SPL
+    imply CMD_DHCP
+    imply CMD_TFTP
+    imply CMD_MMC
+
+endif
+</code></pre>
+
+<p>Reference this from the parent Kconfig (<code class="language-plaintext highlighter-rouge">arch/arm/Kconfig</code> or <code class="language-plaintext highlighter-rouge">board/myvendor/Kconfig</code>):</p>
+
+<pre><code class="language-kconfig"># In arch/arm/Kconfig
+config TARGET_MYBOARD
+    bool "Support myvendor myboard"
+    depends on SOC_MYSOCSERIES
+    select BOARD_LATE_INIT
+    help
+      This enables support for the myvendor myboard development board
+      using the mysocseries SoC.
+      Datasheet: https://example.com/myboard-datasheet
+</code></pre>
+
+<hr />
+
+<h3 id="the-board-init-sequence-board_init_f-and-board_init_r">The Board Init Sequence: board_init_f and board_init_r</h3>
+
+<p>U-Boot has a two-phase initialization:</p>
+
+<p><strong><code class="language-plaintext highlighter-rouge">board_init_f</code> (init_f = “init first phase”)</strong></p>
+<ul>
+  <li>Runs very early, before DRAM is available</li>
+  <li>Executes in place from the load address (SRAM or early DRAM)</li>
+  <li>Sets up the UART for early output</li>
+  <li>Copies U-Boot to its final linked address in DRAM (<code class="language-plaintext highlighter-rouge">reloc</code>)</li>
+  <li>Does NOT use global data (heap) extensively</li>
+</ul>
+
+<p><strong><code class="language-plaintext highlighter-rouge">board_init_r</code> (init_r = “init relocated”)</strong></p>
+<ul>
+  <li>Runs after relocation — U-Boot has moved to its final DRAM address</li>
+  <li>Full DRAM is available</li>
+  <li>Probes all drivers</li>
+  <li>Reads and processes environment</li>
+  <li>Runs <code class="language-plaintext highlighter-rouge">bootcmd</code></li>
+</ul>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* board/myvendor/myboard/board.c */</span>
+<span class="cp">#include</span> <span class="cpf">&lt;common.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;init.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;asm/arch/sys_proto.h&gt;</span><span class="cp">
+</span>
+<span class="cm">/*
+ * board_init_f: Called before DRAM relocation.
+ * Only minimal initialization here.
+ */</span>
+<span class="kt">void</span> <span class="nf">board_init_f</span><span class="p">(</span><span class="n">ulong</span> <span class="n">dummy</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="cm">/* This sequence is defined in include/init.h as init_fnc_t table */</span>
+    <span class="cm">/* For custom early init, implement board-specific init functions */</span>
+
+    <span class="cm">/* Initialize the SoC's internal SRAM allocator */</span>
+    <span class="n">spl_early_init</span><span class="p">();</span>
+
+    <span class="cm">/* Initialize UART for serial output */</span>
+    <span class="n">preloader_console_init</span><span class="p">();</span>
+
+    <span class="cm">/* Initialize DRAM controller */</span>
+    <span class="n">dram_init</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="cm">/*
+ * board_init_r: Called after relocation to DRAM.
+ * Full initialization.
+ */</span>
+<span class="kt">int</span> <span class="nf">board_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="cm">/* Called from board_init_r, after relocation */</span>
+    <span class="cm">/* Set gd-&gt;bd-&gt;bi_boot_params to DRAM base + 0x100 */</span>
+    <span class="n">gd</span><span class="o">-&gt;</span><span class="n">bd</span><span class="o">-&gt;</span><span class="n">bi_boot_params</span> <span class="o">=</span> <span class="n">CONFIG_SYS_SDRAM_BASE</span> <span class="o">+</span> <span class="mh">0x100</span><span class="p">;</span>
+
+    <span class="cm">/* Initialize GPIO, buttons, LEDs here */</span>
+    <span class="n">gpio_request</span><span class="p">(</span><span class="n">LED_GPIO</span><span class="p">,</span> <span class="s">"status_led"</span><span class="p">);</span>
+    <span class="n">gpio_direction_output</span><span class="p">(</span><span class="n">LED_GPIO</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="cm">/*
+ * dram_init: Tell U-Boot how much DRAM is available.
+ */</span>
+<span class="kt">int</span> <span class="nf">dram_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">gd</span><span class="o">-&gt;</span><span class="n">ram_size</span> <span class="o">=</span> <span class="n">get_ram_size</span><span class="p">((</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">CONFIG_SYS_SDRAM_BASE</span><span class="p">,</span>
+                                 <span class="n">PHYS_SDRAM_1_SIZE</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="ddr-initialization-clock-configuration-and-qemu-testing">DDR Initialization, Clock Configuration, and QEMU Testing</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="ddr-initialization-the-hardest-part-of-board-porting">DDR Initialization: The Hardest Part of Board Porting</h3>
+
+<p>Initializing DDR (SDRAM, LPDDR, DDR3, DDR4) is almost always the most complex part of board porting. The DDR controller must be configured with timing parameters that are specific to:</p>
+<ul>
+  <li>The DDR chip model (vendor, part number)</li>
+  <li>The PCB trace lengths and routing</li>
+  <li>The operating frequency</li>
+</ul>
+
+<p><strong>Typical DDR timing parameters needed:</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Parameter</th>
+      <th>Meaning</th>
+      <th>Example Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CL</code></td>
+      <td>CAS Latency</td>
+      <td>11</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">tRCD</code></td>
+      <td>RAS to CAS delay</td>
+      <td>14 ns</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">tRP</code></td>
+      <td>Row precharge time</td>
+      <td>14 ns</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">tRAS</code></td>
+      <td>Row active time</td>
+      <td>33 ns</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">tWR</code></td>
+      <td>Write recovery time</td>
+      <td>15 ns</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">tRFC</code></td>
+      <td>Refresh cycle time</td>
+      <td>260 ns</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">tREFI</code></td>
+      <td>Refresh interval</td>
+      <td>7.8 µs</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>For AM335x, DDR3 initialization in SPL:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* board/ti/am335x/board.c — DDR3 init for BeagleBone Black */</span>
+<span class="cp">#include</span> <span class="cpf">&lt;asm/arch/ddr_defs.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;asm/arch/clock.h&gt;</span><span class="cp">
+</span>
+<span class="k">static</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">ddr_data</span> <span class="n">ddr3_data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">datardsratio0</span>  <span class="o">=</span> <span class="n">MT41K256M16HA125E_RD_DQS</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">datawdsratio0</span>  <span class="o">=</span> <span class="n">MT41K256M16HA125E_WR_DQS</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">datafwsratio0</span>  <span class="o">=</span> <span class="n">MT41K256M16HA125E_PHY_FIFO_WE</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">datawrsratio0</span>  <span class="o">=</span> <span class="n">MT41K256M16HA125E_PHY_WR_DATA</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">cmd_control</span> <span class="n">ddr3_cmd_ctrl_data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">cmd0csratio</span>  <span class="o">=</span> <span class="n">MT41K256M16HA125E_RATIO</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">cmd0iclkout</span>  <span class="o">=</span> <span class="n">MT41K256M16HA125E_INVERT_CLKOUT</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">cmd1csratio</span>  <span class="o">=</span> <span class="n">MT41K256M16HA125E_RATIO</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">cmd1iclkout</span>  <span class="o">=</span> <span class="n">MT41K256M16HA125E_INVERT_CLKOUT</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">cmd2csratio</span>  <span class="o">=</span> <span class="n">MT41K256M16HA125E_RATIO</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">cmd2iclkout</span>  <span class="o">=</span> <span class="n">MT41K256M16HA125E_INVERT_CLKOUT</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="k">struct</span> <span class="n">emif_regs</span> <span class="n">ddr3_emif_reg_data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">sdram_config</span>   <span class="o">=</span> <span class="n">MT41K256M16HA125E_EMIF_SDCFG</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">ref_ctrl</span>       <span class="o">=</span> <span class="n">MT41K256M16HA125E_EMIF_SDREF</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">sdram_tim1</span>     <span class="o">=</span> <span class="n">MT41K256M16HA125E_EMIF_TIM1</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">sdram_tim2</span>     <span class="o">=</span> <span class="n">MT41K256M16HA125E_EMIF_TIM2</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">sdram_tim3</span>     <span class="o">=</span> <span class="n">MT41K256M16HA125E_EMIF_TIM3</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">zq_config</span>      <span class="o">=</span> <span class="n">MT41K256M16HA125E_ZQ_CFG</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">emif_ddr_phy_ctlr_1</span> <span class="o">=</span> <span class="n">MT41K256M16HA125E_EMIF_READ_LATENCY</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="kt">void</span> <span class="nf">sdram_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="cm">/* Configure DDR3 PLL to 400 MHz (DDR3 at 800 MT/s) */</span>
+    <span class="n">configure_ddr_pll</span><span class="p">(</span><span class="n">DPLL_DDR_400</span><span class="p">);</span>
+
+    <span class="cm">/* Write DDR3 PHY settings */</span>
+    <span class="n">config_ddr</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ioregs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ddr3_data</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ddr3_cmd_ctrl_data</span><span class="p">,</span>
+               <span class="o">&amp;</span><span class="n">ddr3_emif_reg_data</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>Where do these magic constant values come from?</strong></p>
+
+<ol>
+  <li><strong>DDR chip datasheet</strong> — timing parameters like tRCD, tRP, tRAS in nanoseconds</li>
+  <li><strong>SoC reference manual</strong> — EMIF register layout and how to convert nanoseconds to register values</li>
+  <li><strong>TI’s AM335x EVM board support package</strong> — example register values for the reference board’s DDR chips</li>
+  <li><strong>JEDEC standards</strong> — DDR3 initialization sequence requirements</li>
+</ol>
+
+<hr />
+
+<h3 id="uart-console-setup-in-spl">UART Console Setup in SPL</h3>
+
+<p>Having serial output during SPL is critical for debugging. Without it, you have no way to know whether SPL is even starting.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* arch/arm/mach-omap2/am33xx/board.c */</span>
+<span class="kt">void</span> <span class="nf">board_init_f</span><span class="p">(</span><span class="n">ulong</span> <span class="n">dummy</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="cm">/* Step 1: Initialize SRAM allocator */</span>
+    <span class="n">spl_early_init</span><span class="p">();</span>
+
+    <span class="cm">/* Step 2: Initialize serial UART — this enables printf() */</span>
+    <span class="cm">/* This initializes UART0 at 115200 baud */</span>
+    <span class="n">preloader_console_init</span><span class="p">();</span>
+
+    <span class="cm">/* Now we can print */</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"SPL: starting DDR init...</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+
+    <span class="cm">/* Step 3: Initialize DDR */</span>
+    <span class="n">timer_init</span><span class="p">();</span>
+    <span class="n">set_uart_mux_conf</span><span class="p">();</span>  <span class="cm">/* Configure UART pin mux */</span>
+    <span class="n">setup_clocks_for_console</span><span class="p">();</span>
+
+    <span class="cm">/* Step 4: Initialize DRAM controller */</span>
+    <span class="n">sdram_init</span><span class="p">();</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"SPL: DDR initialized, %u MB</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+           <span class="p">(</span><span class="kt">unsigned</span><span class="p">)(</span><span class="n">gd</span><span class="o">-&gt;</span><span class="n">ram_size</span> <span class="o">&gt;&gt;</span> <span class="mi">20</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>If you never see the <code class="language-plaintext highlighter-rouge">"SPL: starting DDR init..."</code> line, then either:</p>
+<ul>
+  <li>BootROM did not find or load your SPL</li>
+  <li>The UART pin mux was not set before <code class="language-plaintext highlighter-rouge">preloader_console_init()</code> was called</li>
+  <li>The UART clock is not running</li>
+</ul>
+
+<hr />
+
+<h3 id="clocks-and-pll-configuration">Clocks and PLL Configuration</h3>
+
+<p>SoC boot starts at a low “limp mode” clock. SPL must configure PLLs to run at full speed before DDR initialization (DDR requires stable clocks):</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* arch/arm/mach-omap2/am33xx/clock.c */</span>
+<span class="kt">void</span> <span class="nf">configure_module_pin_mux</span><span class="p">(</span><span class="k">struct</span> <span class="n">module_pin_mux</span> <span class="o">*</span><span class="n">mod_pin_mux</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">mod_pin_mux</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">reg_offset</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+        <span class="n">MUX_CFG</span><span class="p">(</span><span class="n">VALUE_MUX_CONF_REG</span><span class="p">(</span><span class="n">mod_pin_mux</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">mux_val</span><span class="p">),</span>
+                <span class="n">mod_pin_mux</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">reg_offset</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="cm">/* Configure PLLs for AM335x */</span>
+<span class="kt">void</span> <span class="nf">set_mpu_clk_pll</span><span class="p">(</span><span class="n">u32</span> <span class="n">mpupll_m</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">cm_wkuppll</span> <span class="o">*</span><span class="n">cmwkuppll</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">cm_wkuppll</span> <span class="o">*</span><span class="p">)</span><span class="n">CM_WKUP</span><span class="p">;</span>
+
+    <span class="cm">/* Bypass mode */</span>
+    <span class="n">clrsetbits_le32</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cmwkuppll</span><span class="o">-&gt;</span><span class="n">clkmode_dpll_mpu</span><span class="p">,</span>
+                    <span class="n">CM_CLKMODE_DPLL_DPLL_EN_MASK</span><span class="p">,</span>
+                    <span class="n">DPLL_BYPASS_MODE</span><span class="p">);</span>
+
+    <span class="cm">/* Set M/N ratio for desired frequency */</span>
+    <span class="cm">/* MPU at 1000 MHz: M=1000, N=23, M2=1 */</span>
+    <span class="cm">/* Fout = (M / (N+1)) * Fref = (1000/24) * 24MHz = 1000 MHz */</span>
+    <span class="n">clrsetbits_le32</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cmwkuppll</span><span class="o">-&gt;</span><span class="n">clksel_dpll_mpu</span><span class="p">,</span>
+                    <span class="n">CM_CLKSEL_DPLL_M_MASK</span> <span class="o">|</span> <span class="n">CM_CLKSEL_DPLL_N_MASK</span><span class="p">,</span>
+                    <span class="p">((</span><span class="n">mpupll_m</span> <span class="o">&lt;&lt;</span> <span class="n">CM_CLKSEL_DPLL_M_SHIFT</span><span class="p">)</span> <span class="o">|</span>
+                     <span class="p">((</span><span class="n">MPUPLL_N</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">CM_CLKSEL_DPLL_N_SHIFT</span><span class="p">)));</span>
+
+    <span class="cm">/* Lock mode */</span>
+    <span class="n">clrsetbits_le32</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cmwkuppll</span><span class="o">-&gt;</span><span class="n">clkmode_dpll_mpu</span><span class="p">,</span>
+                    <span class="n">CM_CLKMODE_DPLL_DPLL_EN_MASK</span><span class="p">,</span>
+                    <span class="n">DPLL_LOCK_MODE</span><span class="p">);</span>
+
+    <span class="cm">/* Wait for lock */</span>
+    <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">readl</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cmwkuppll</span><span class="o">-&gt;</span><span class="n">idlest_dpll_mpu</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">ST_DPLL_CLK_MASK</span><span class="p">))</span>
+        <span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="adding-the-board-to-kconfig-and-maintainers">Adding the Board to Kconfig and MAINTAINERS</h3>
+
+<p>Every board in U-Boot must have a Kconfig entry and a MAINTAINERS entry:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># board/myvendor/myboard/Kconfig</span>
+config TARGET_MY_CUSTOM_BOARD
+    bool <span class="s2">"Support My Custom Board"</span>
+    depends on SOC_AM33XX
+    <span class="k">select </span>BOARD_LATE_INIT
+    <span class="nb">help
+      </span>My Custom Board based on TI AM335x SoC.
+      Uses 256MB DDR3 <span class="o">(</span>MT41K256M16HA-125<span class="o">)</span>, USB, Ethernet.
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Add to MAINTAINERS
+MY CUSTOM BOARD
+M:  Your Name &lt;your@email.com&gt;
+S:  Maintained
+F:  board/myvendor/myboard/
+F:  configs/my_custom_board_defconfig
+F:  include/configs/my_custom_board.h
+F:  arch/arm/dts/my-custom-board.dts
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="testing-with-qemu-when-hardware-is-unavailable">Testing with QEMU When Hardware Is Unavailable</h3>
+
+<p>QEMU can emulate several ARM boards. This is invaluable for testing logic before real hardware arrives:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Build U-Boot for QEMU vexpress-a9</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm <span class="nv">CROSS_COMPILE</span><span class="o">=</span>arm-linux-gnueabihf- qemu_arm_defconfig
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm <span class="nv">CROSS_COMPILE</span><span class="o">=</span>arm-linux-gnueabihf- <span class="nt">-j4</span>
+
+<span class="c"># Run in QEMU — no hardware needed</span>
+<span class="nv">$ </span>qemu-system-arm <span class="se">\</span>
+    <span class="nt">-machine</span> vexpress-a9 <span class="se">\</span>
+    <span class="nt">-m</span> 256M <span class="se">\</span>
+    <span class="nt">-nographic</span> <span class="se">\</span>
+    <span class="nt">-kernel</span> u-boot <span class="se">\</span>
+    <span class="nt">-serial</span> mon:stdio
+
+U-Boot 2023.10 <span class="o">(</span>Oct 15 2023 - 12:34:56 +0000<span class="o">)</span>
+
+DRAM:  256 MiB
+WARNING: Caches not enabled
+Flash: 128 MiB
+MMC:   MMC: 0
+Loading Environment from Flash... OK
+In:    serial@9000000
+Out:   serial@9000000
+Err:   serial@9000000
+Net:   smc911x-0
+Hit any key to stop autoboot:  3
+<span class="o">=&gt;</span>
+
+<span class="c"># Load a kernel in QEMU</span>
+<span class="nv">$ </span>qemu-system-arm <span class="se">\</span>
+    <span class="nt">-machine</span> vexpress-a9 <span class="se">\</span>
+    <span class="nt">-m</span> 512M <span class="se">\</span>
+    <span class="nt">-nographic</span> <span class="se">\</span>
+    <span class="nt">-kernel</span> u-boot <span class="se">\</span>
+    <span class="nt">-drive</span> <span class="nv">file</span><span class="o">=</span>rootfs.img,format<span class="o">=</span>raw,id<span class="o">=</span>sd0 <span class="se">\</span>
+    <span class="nt">-device</span> sd-card,drive<span class="o">=</span>sd0 <span class="se">\</span>
+    <span class="nt">-serial</span> mon:stdio
+</code></pre></div></div>
+
+<p>For Raspberry Pi emulation:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>qemu-system-arm <span class="se">\</span>
+    <span class="nt">-machine</span> raspi2b <span class="se">\</span>
+    <span class="nt">-m</span> 1G <span class="se">\</span>
+    <span class="nt">-nographic</span> <span class="se">\</span>
+    <span class="nt">-kernel</span> u-boot.bin <span class="se">\</span>
+    <span class="nt">-dtb</span> bcm2836-rpi-2-b.dtb <span class="se">\</span>
+    <span class="nt">-serial</span> stdio
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="dm-driver-porting-bring-up-strategy-jtag-and-upstream-submission">DM Driver Porting, Bring-Up Strategy, JTAG, and Upstream Submission</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="writing-a-dm-uart-driver-for-a-new-soc">Writing a DM UART Driver for a New SoC</h3>
+
+<p>If your SoC has no existing U-Boot driver, you must write one. Here is a minimal Driver Model UART driver skeleton:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* drivers/serial/serial_myuart.c */</span>
+<span class="cp">#include</span> <span class="cpf">&lt;dm.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;serial.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/io.h&gt;</span><span class="cp">
+</span>
+<span class="cm">/* Register offsets */</span>
+<span class="cp">#define MYUART_DR    0x00    </span><span class="cm">/* Data Register */</span><span class="cp">
+#define MYUART_SR    0x04    </span><span class="cm">/* Status Register */</span><span class="cp">
+#define MYUART_CR    0x08    </span><span class="cm">/* Control Register */</span><span class="cp">
+#define MYUART_BR    0x0C    </span><span class="cm">/* Baud Rate */</span><span class="cp">
+</span>
+<span class="cp">#define MYUART_SR_TXFULL  BIT(3)    </span><span class="cm">/* TX FIFO full */</span><span class="cp">
+#define MYUART_SR_RXNE    BIT(0)    </span><span class="cm">/* RX not empty */</span><span class="cp">
+</span>
+<span class="k">struct</span> <span class="n">myuart_priv</span> <span class="p">{</span>
+    <span class="kt">void</span> <span class="n">__iomem</span>    <span class="o">*</span><span class="n">base</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span>    <span class="n">clock</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">myuart_setbrg</span><span class="p">(</span><span class="k">struct</span> <span class="n">udevice</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">int</span> <span class="n">baudrate</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">myuart_priv</span> <span class="o">*</span><span class="n">priv</span> <span class="o">=</span> <span class="n">dev_get_priv</span><span class="p">(</span><span class="n">dev</span><span class="p">);</span>
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">divisor</span> <span class="o">=</span> <span class="n">priv</span><span class="o">-&gt;</span><span class="n">clock</span> <span class="o">/</span> <span class="p">(</span><span class="mi">16</span> <span class="o">*</span> <span class="n">baudrate</span><span class="p">);</span>
+    <span class="n">writel</span><span class="p">(</span><span class="n">divisor</span><span class="p">,</span> <span class="n">priv</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">+</span> <span class="n">MYUART_BR</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">myuart_putc</span><span class="p">(</span><span class="k">struct</span> <span class="n">udevice</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">ch</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">myuart_priv</span> <span class="o">*</span><span class="n">priv</span> <span class="o">=</span> <span class="n">dev_get_priv</span><span class="p">(</span><span class="n">dev</span><span class="p">);</span>
+    <span class="cm">/* Spin until TX FIFO has space */</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">readl</span><span class="p">(</span><span class="n">priv</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">+</span> <span class="n">MYUART_SR</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">MYUART_SR_TXFULL</span><span class="p">)</span>
+        <span class="p">;</span>
+    <span class="n">writel</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">priv</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">+</span> <span class="n">MYUART_DR</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">myuart_getc</span><span class="p">(</span><span class="k">struct</span> <span class="n">udevice</span> <span class="o">*</span><span class="n">dev</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">myuart_priv</span> <span class="o">*</span><span class="n">priv</span> <span class="o">=</span> <span class="n">dev_get_priv</span><span class="p">(</span><span class="n">dev</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">readl</span><span class="p">(</span><span class="n">priv</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">+</span> <span class="n">MYUART_SR</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">MYUART_SR_RXNE</span><span class="p">))</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">EAGAIN</span><span class="p">;</span>    <span class="cm">/* No data available */</span>
+    <span class="k">return</span> <span class="n">readl</span><span class="p">(</span><span class="n">priv</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">+</span> <span class="n">MYUART_DR</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">myuart_pending</span><span class="p">(</span><span class="k">struct</span> <span class="n">udevice</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="n">bool</span> <span class="n">input</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">myuart_priv</span> <span class="o">*</span><span class="n">priv</span> <span class="o">=</span> <span class="n">dev_get_priv</span><span class="p">(</span><span class="n">dev</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">input</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">readl</span><span class="p">(</span><span class="n">priv</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">+</span> <span class="n">MYUART_SR</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">MYUART_SR_RXNE</span><span class="p">)</span> <span class="o">?</span> <span class="mi">1</span> <span class="o">:</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">myuart_probe</span><span class="p">(</span><span class="k">struct</span> <span class="n">udevice</span> <span class="o">*</span><span class="n">dev</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">myuart_priv</span> <span class="o">*</span><span class="n">priv</span> <span class="o">=</span> <span class="n">dev_get_priv</span><span class="p">(</span><span class="n">dev</span><span class="p">);</span>
+
+    <span class="n">priv</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">=</span> <span class="n">dev_read_addr_ptr</span><span class="p">(</span><span class="n">dev</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">priv</span><span class="o">-&gt;</span><span class="n">base</span><span class="p">)</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">EINVAL</span><span class="p">;</span>
+
+    <span class="cm">/* Get clock frequency from device tree */</span>
+    <span class="n">priv</span><span class="o">-&gt;</span><span class="n">clock</span> <span class="o">=</span> <span class="n">dev_read_u32_default</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span> <span class="s">"clock-frequency"</span><span class="p">,</span> <span class="mi">24000000</span><span class="p">);</span>
+
+    <span class="cm">/* Enable UART */</span>
+    <span class="n">writel</span><span class="p">(</span><span class="mh">0x01</span><span class="p">,</span> <span class="n">priv</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">+</span> <span class="n">MYUART_CR</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">dm_serial_ops</span> <span class="n">myuart_ops</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">putc</span>    <span class="o">=</span> <span class="n">myuart_putc</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">getc</span>    <span class="o">=</span> <span class="n">myuart_getc</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">setbrg</span>  <span class="o">=</span> <span class="n">myuart_setbrg</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">pending</span> <span class="o">=</span> <span class="n">myuart_pending</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">udevice_id</span> <span class="n">myuart_ids</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">{</span> <span class="p">.</span><span class="n">compatible</span> <span class="o">=</span> <span class="s">"myvendor,mysoc-uart"</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">U_BOOT_DRIVER</span><span class="p">(</span><span class="n">myuart_serial</span><span class="p">)</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">name</span>      <span class="o">=</span> <span class="s">"myuart_serial"</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">id</span>        <span class="o">=</span> <span class="n">UCLASS_SERIAL</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">of_match</span>  <span class="o">=</span> <span class="n">myuart_ids</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">probe</span>     <span class="o">=</span> <span class="n">myuart_probe</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">ops</span>       <span class="o">=</span> <span class="o">&amp;</span><span class="n">myuart_ops</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">priv_auto</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">myuart_priv</span><span class="p">),</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>Add to <code class="language-plaintext highlighter-rouge">drivers/serial/Kconfig</code>:</p>
+<pre><code class="language-kconfig">config MYUART_SERIAL
+    bool "My SoC UART driver"
+    depends on DM_SERIAL
+    help
+      Enable UART driver for MyVendor MySoC.
+</code></pre>
+
+<p>Add to <code class="language-plaintext highlighter-rouge">drivers/serial/Makefile</code>:</p>
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">obj-$(CONFIG_MYUART_SERIAL)</span> <span class="o">+=</span> serial_myuart.o
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="board-bring-up-a-systematic-approach">Board Bring-Up: A Systematic Approach</h3>
+
+<p>When you have a board with absolutely no output, follow this sequence:</p>
+
+<p><strong>Step 1: Get serial output — the highest priority</strong></p>
+
+<p>Without serial output, you are completely blind. Do whatever it takes:</p>
+<ul>
+  <li>Verify the UART pins are accessible (check schematic)</li>
+  <li>Use a 3.3V USB-UART adapter (never 5V on modern SoCs — it will damage the board)</li>
+  <li>Verify baud rate: try 115200, then 57600, then 9600</li>
+  <li>If still no output: check if SPL is being loaded at all (oscilloscope/logic analyzer on SD card data lines to see if data is being read)</li>
+</ul>
+
+<p><strong>Step 2: Verify DRAM is working</strong></p>
+
+<p>After seeing the SPL line, if U-Boot hangs:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># In SPL, add explicit DRAM test</span>
+void board_init_f<span class="o">(</span>ulong dummy<span class="o">)</span>
+<span class="o">{</span>
+    preloader_console_init<span class="o">()</span><span class="p">;</span>
+    <span class="nb">printf</span><span class="o">(</span><span class="s2">"SPL: before DDR</span><span class="se">\n</span><span class="s2">"</span><span class="o">)</span><span class="p">;</span>    /<span class="k">*</span> Add this <span class="k">*</span>/
+    sdram_init<span class="o">()</span><span class="p">;</span>
+    <span class="nb">printf</span><span class="o">(</span><span class="s2">"SPL: DDR done, %u MB</span><span class="se">\n</span><span class="s2">"</span>, <span class="o">(</span>unsigned<span class="o">)(</span>gd-&gt;ram_size <span class="o">&gt;&gt;</span> 20<span class="o">))</span><span class="p">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>If <code class="language-plaintext highlighter-rouge">"SPL: before DDR"</code> appears but <code class="language-plaintext highlighter-rouge">"SPL: DDR done"</code> does not, the DDR initialization is hanging.</p>
+
+<p><strong>Step 3: Load from storage</strong></p>
+
+<p>Once U-Boot shell appears, test MMC:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">=&gt;</span> mmc list
+<span class="o">=&gt;</span> mmc dev 0
+<span class="o">=&gt;</span> mmc info
+<span class="o">=&gt;</span> fatls mmc 0:1
+</code></pre></div></div>
+
+<p><strong>Step 4: Boot a minimal kernel</strong></p>
+
+<p>Use a known-good prebuilt kernel (e.g., Buildroot minimal) before trying your own:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">=&gt;</span> fatload mmc 0:1 <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span> zImage
+<span class="o">=&gt;</span> fatload mmc 0:1 <span class="k">${</span><span class="nv">fdt_addr_r</span><span class="k">}</span> myboard.dtb
+<span class="o">=&gt;</span> setenv bootargs <span class="s2">"console=ttyS0,115200 root=/dev/mmcblk0p2 rw rootwait"</span>
+<span class="o">=&gt;</span> bootz <span class="k">${</span><span class="nv">kernel_addr_r</span><span class="k">}</span> - <span class="k">${</span><span class="nv">fdt_addr_r</span><span class="k">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="jtag-debugging-of-early-boot-code">JTAG Debugging of Early Boot Code</h3>
+
+<p>For situations where serial output never appears, JTAG is the last resort:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install OpenOCD</span>
+<span class="nv">$ </span><span class="nb">sudo </span>apt <span class="nb">install </span>openocd
+
+<span class="c"># Connect JTAG adapter and start OpenOCD for AM335x</span>
+<span class="nv">$ </span>openocd <span class="se">\</span>
+    <span class="nt">-f</span> interface/ftdi/olimex-arm-usb-ocd-h.cfg <span class="se">\</span>
+    <span class="nt">-f</span> target/am335x.cfg <span class="se">\</span>
+    <span class="nt">-c</span> <span class="s2">"adapter speed 1000"</span>
+
+Open On-Chip Debugger 0.12.0
+Info : JTAG tap: am335x.jrc tap/device found: 0x2b94402f <span class="o">(</span>mfg: 0x017, part: 0xb944, ver: 0x2<span class="o">)</span>
+Info : JTAG tap: am335x.cpu tap/device found: 0x4b6d102f
+Info : am335x.cpu: hardware has 6 breakpoints, 4 watchpoints
+Info : starting gdb server <span class="k">for </span>am335x.cpu on 3333
+
+<span class="c"># In another terminal, connect GDB</span>
+<span class="nv">$ </span>arm-linux-gnueabihf-gdb spl/u-boot-spl
+
+<span class="o">(</span>gdb<span class="o">)</span> target remote :3333
+Remote debugging using :3333
+0x402f04d0 <span class="k">in</span> ?? <span class="o">()</span>
+
+<span class="o">(</span>gdb<span class="o">)</span> symbol-file spl/u-boot-spl
+Reading symbols from spl/u-boot-spl...
+Reading symbols from spl/u-boot-spl.sym...done.
+
+<span class="o">(</span>gdb<span class="o">)</span> <span class="nb">break </span>board_init_f
+Breakpoint 1 at 0x402f12a0: file board/ti/am335x/board.c, line 289.
+
+<span class="o">(</span>gdb<span class="o">)</span> <span class="k">continue
+</span>Continuing.
+
+Breakpoint 1, board_init_f <span class="o">(</span><span class="nv">dummy</span><span class="o">=</span>0<span class="o">)</span>
+    at board/ti/am335x/board.c:289
+289         spl_early_init<span class="o">()</span><span class="p">;</span>
+
+<span class="o">(</span>gdb<span class="o">)</span> next
+290         preloader_console_init<span class="o">()</span><span class="p">;</span>
+<span class="o">(</span>gdb<span class="o">)</span> next
+291         sdram_init<span class="o">()</span><span class="p">;</span>
+<span class="o">(</span>gdb<span class="o">)</span> info registers
+r0             0x0                 0
+r1             0x0                 0
+sp             0x402ff400          0x402ff400
+pc             0x402f1310          0x402f1310 &lt;sdram_init&gt;
+</code></pre></div></div>
+
+<p>This lets you step through SPL line by line to find exactly where it hangs.</p>
+
+<hr />
+
+<h3 id="writing-spl-pinmux-in-c">Writing SPL Pinmux in C</h3>
+
+<p>On SoCs without a device tree in SPL, pin multiplexing is done directly in C:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* board/myvendor/myboard/mux.c */</span>
+<span class="cp">#include</span> <span class="cpf">&lt;asm/arch/mux.h&gt;</span><span class="cp">
+</span>
+<span class="cm">/* UART0 pin mux table */</span>
+<span class="k">static</span> <span class="k">struct</span> <span class="n">module_pin_mux</span> <span class="n">uart0_pin_mux</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">{</span><span class="n">OFFSET</span><span class="p">(</span><span class="n">uart0_rxd</span><span class="p">),</span> <span class="p">(</span><span class="n">MODE</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="n">PULLUP_EN</span> <span class="o">|</span> <span class="n">RXACTIVE</span><span class="p">)},</span>  <span class="cm">/* UART0_RXD */</span>
+    <span class="p">{</span><span class="n">OFFSET</span><span class="p">(</span><span class="n">uart0_txd</span><span class="p">),</span> <span class="p">(</span><span class="n">MODE</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="n">PULLDOWN_EN</span><span class="p">)},</span>            <span class="cm">/* UART0_TXD */</span>
+    <span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">},</span>
+<span class="p">};</span>
+
+<span class="cm">/* DDR3 VTT pin mux (power enable) */</span>
+<span class="k">static</span> <span class="k">struct</span> <span class="n">module_pin_mux</span> <span class="n">ddr3_vtt_pin_mux</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">{</span><span class="n">OFFSET</span><span class="p">(</span><span class="n">gpmc_wen</span><span class="p">),</span> <span class="p">(</span><span class="n">MODE</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="o">|</span> <span class="n">PULLDOWN_EN</span><span class="p">)},</span>   <span class="cm">/* GPIO2_4 — VTT_EN */</span>
+    <span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">},</span>
+<span class="p">};</span>
+
+<span class="cm">/* I2C0 pin mux */</span>
+<span class="k">static</span> <span class="k">struct</span> <span class="n">module_pin_mux</span> <span class="n">i2c0_pin_mux</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">{</span><span class="n">OFFSET</span><span class="p">(</span><span class="n">i2c0_sda</span><span class="p">),</span> <span class="p">(</span><span class="n">MODE</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="n">RXACTIVE</span> <span class="o">|</span> <span class="n">PULLUDEN</span> <span class="o">|</span> <span class="n">SLEWCTRL</span><span class="p">)},</span>
+    <span class="p">{</span><span class="n">OFFSET</span><span class="p">(</span><span class="n">i2c0_scl</span><span class="p">),</span> <span class="p">(</span><span class="n">MODE</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="n">RXACTIVE</span> <span class="o">|</span> <span class="n">PULLUDEN</span> <span class="o">|</span> <span class="n">SLEWCTRL</span><span class="p">)},</span>
+    <span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">},</span>
+<span class="p">};</span>
+
+<span class="kt">void</span> <span class="nf">set_mux_conf_regs</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="cm">/* Configure pin muxes early in SPL */</span>
+    <span class="n">configure_module_pin_mux</span><span class="p">(</span><span class="n">uart0_pin_mux</span><span class="p">);</span>
+    <span class="n">configure_module_pin_mux</span><span class="p">(</span><span class="n">ddr3_vtt_pin_mux</span><span class="p">);</span>
+    <span class="n">configure_module_pin_mux</span><span class="p">(</span><span class="n">i2c0_pin_mux</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="submitting-a-board-port-upstream">Submitting a Board Port Upstream</h3>
+
+<p>Upstream submission requires following specific guidelines:</p>
+
+<p><strong>1. Patch format — one logical change per patch:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Create a patch series</span>
+<span class="nv">$ </span>git format-patch <span class="nt">-8</span> <span class="nt">--subject-prefix</span><span class="o">=</span><span class="s2">"PATCH"</span> <span class="nt">-o</span> /tmp/patches/
+
+<span class="c"># Check patch style</span>
+<span class="nv">$ </span>./scripts/checkpatch.pl /tmp/patches/<span class="k">*</span>.patch
+total: 0 errors, 3 warnings, 412 lines checked
+</code></pre></div></div>
+
+<p><strong>2. Mandatory content in the commit message:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>arm: Add support for MyVendor MyBoard
+
+Add initial support for the MyVendor MyBoard development board
+based on the MyVendor MySoC (ARM Cortex-A9, 512MB DDR3).
+
+Features enabled:
+- DDR3 initialization at 400MHz
+- UART0 console at 115200 baud
+- eMMC and SD card via SDHCI
+- Ethernet via GMAC
+- USB OTG
+
+Tested on hardware revision 1.1 with U-Boot 2023.10.
+
+Signed-off-by: Your Name &lt;your@email.com&gt;
+</code></pre></div></div>
+
+<p><strong>3. Required files per submission:</strong></p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">configs/myboard_defconfig</code> — defconfig</li>
+  <li><code class="language-plaintext highlighter-rouge">board/myvendor/myboard/</code> — board directory</li>
+  <li><code class="language-plaintext highlighter-rouge">arch/arm/dts/myboard.dts</code> — device tree</li>
+  <li><code class="language-plaintext highlighter-rouge">arch/arm/dts/Makefile</code> — add DTB to build</li>
+  <li><code class="language-plaintext highlighter-rouge">MAINTAINERS</code> — your entry</li>
+  <li><code class="language-plaintext highlighter-rouge">doc/board/myvendor/myboard.rst</code> — basic documentation</li>
+</ul>
+
+<p><strong>4. CI requirements:</strong>
+U-Boot uses GitLab CI. Your board must build successfully:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Test build locally before submitting</span>
+<span class="nv">$ </span>./tools/buildman/buildman myboard_defconfig
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-questions">Interview Questions</h2>
+
+<p><strong>1. What are the minimum files you must create to add a new board to U-Boot?</strong></p>
+
+<p>The minimum set is: (1) <code class="language-plaintext highlighter-rouge">configs/myboard_defconfig</code> — Kconfig configuration selecting the SoC and board; (2) <code class="language-plaintext highlighter-rouge">board/myvendor/myboard/board.c</code> — board_init, dram_init functions; (3) <code class="language-plaintext highlighter-rouge">board/myvendor/myboard/Makefile</code> — lists board.c; (4) <code class="language-plaintext highlighter-rouge">board/myvendor/myboard/Kconfig</code> — Kconfig entry; (5) <code class="language-plaintext highlighter-rouge">include/configs/myboard.h</code> — C defines not yet in Kconfig; (6) a DTS file at <code class="language-plaintext highlighter-rouge">arch/arm/dts/myboard.dts</code>. For a working SPL you additionally need DDR initialization code and pin mux configuration.</p>
+
+<p><strong>2. What is the init sequence in U-Boot and what happens in board_init_f vs board_init_r?</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">board_init_f</code> is the “first phase” initialization. It runs before DRAM relocation, in the original load location (SRAM for SPL, or early DRAM for U-Boot proper). Its job is to set up the minimum necessary for relocation: configure GD (global data), set up early malloc, initialize the console, and prepare for the jump to relocated code. <code class="language-plaintext highlighter-rouge">board_init_r</code> is “second phase” after relocation. U-Boot has copied itself to its final linked address in high DRAM. Full initialization happens here: probing all DM devices, loading the environment, initializing Ethernet/USB/storage, and running <code class="language-plaintext highlighter-rouge">bootcmd</code>.</p>
+
+<p><strong>3. How do you bring up a completely new board when you have no serial output?</strong></p>
+
+<p>Start by verifying the hardware: check schematic for the debug UART pins, verify 3.3V level with a multimeter, and confirm the USB-UART adapter is working with a loopback test. Then verify BootROM is loading SPL by watching the SD card data lines with a logic analyzer — you should see reads shortly after power-on. If SPL is loading but producing no output, add the UART GPIO pin mux configuration before <code class="language-plaintext highlighter-rouge">preloader_console_init()</code>. If no SD reads occur, verify the MLO file is present, named correctly on a FAT partition, and boot mode pins select SD boot. As a last resort, use JTAG to halt the CPU and inspect the PC register — this tells you exactly where execution stopped.</p>
+
+<p><strong>4. What is the role of the board header file (include/configs/BOARD.h)?</strong></p>
+
+<p>The board header file is a C preprocessor include that defines board-specific compile-time constants not yet handled by Kconfig. It typically includes a common SoC or family header (e.g., <code class="language-plaintext highlighter-rouge">#include &lt;configs/ti_armv7_common.h&gt;</code>) and then overrides specific values: DRAM base address and size, serial console base address, clock frequencies, and environment offset/size values. As U-Boot’s Kconfig migration progresses, more settings move from these headers to <code class="language-plaintext highlighter-rouge">.config</code>, and new board ports should minimize what they put in the header.</p>
+
+<p><strong>5. How does U-Boot’s driver model differ from how it worked before DM?</strong></p>
+
+<p>Before DM (pre-2014), drivers were written as flat C functions with board-specific <code class="language-plaintext highlighter-rouge">#ifdef</code> guards and platform data passed through global variables or board header defines. There was no unified device abstraction. With DM, every device is a <code class="language-plaintext highlighter-rouge">udevice</code> instance bound to a <code class="language-plaintext highlighter-rouge">driver</code> through <code class="language-plaintext highlighter-rouge">compatible</code> string matching from the device tree (or platform data). Drivers use a standardized <code class="language-plaintext highlighter-rouge">probe/remove</code> lifecycle and implement typed <code class="language-plaintext highlighter-rouge">ops</code> structures (e.g., <code class="language-plaintext highlighter-rouge">dm_serial_ops</code>). This eliminates platform #ifdefs, enables device tree binding, allows multiple instances of the same peripheral, and makes the code more similar to the Linux kernel driver model.</p>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<ul>
+  <li>U-Boot porting guide: <code class="language-plaintext highlighter-rouge">doc/README.porting</code> in the U-Boot source tree</li>
+  <li>“Mastering Embedded Linux Programming” — Chris Simmonds, Chapter 3</li>
+  <li>BeagleBone Black U-Boot port reference: <code class="language-plaintext highlighter-rouge">board/ti/am335x/</code> in U-Boot source</li>
+  <li>U-Boot custodians and MAINTAINERS guidelines: <code class="language-plaintext highlighter-rouge">doc/develop/maintainer.rst</code></li>
+  <li>OpenOCD documentation for JTAG debugging: <a href="https://openocd.org/doc/html/">https://openocd.org/doc/html/</a></li>
+  <li>U-Boot driver model documentation: <code class="language-plaintext highlighter-rouge">doc/driver-model/design.rst</code></li>
+  <li>U-Boot Gitlab CI documentation: <code class="language-plaintext highlighter-rouge">doc/develop/ci_testing.rst</code></li>
+</ul>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-wrench"></i>
+        <span>U-Boot Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/embedded-linux/uboot/boot-sequence/" class="gtn-link ">
+          <i class="fas fa-play"></i> Boot Sequence
+        </a>
+        <a href="/embedded-linux/uboot/uboot-config-build/" class="gtn-link ">
+          <i class="fas fa-wrench"></i> U-Boot Config &amp; Build
+        </a>
+        <a href="/embedded-linux/uboot/uboot-commands/" class="gtn-link ">
+          <i class="fas fa-terminal"></i> U-Boot Commands &amp; Scripting
+        </a>
+        <a href="/embedded-linux/uboot/device-tree/" class="gtn-link ">
+          <i class="fas fa-sitemap"></i> Device Tree (DTS)
+        </a>
+        <a href="/embedded-linux/uboot/board-porting/" class="gtn-link gts-active">
+          <i class="fas fa-puzzle-piece"></i> Board Porting
+        </a>
+        <a href="/embedded-linux/uboot/tftp-boot/" class="gtn-link ">
+          <i class="fas fa-network-wired"></i> TFTP &amp; Network Boot
+        </a>
+      </nav>
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/embedded-linux/uboot/device-tree/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Device Tree (DTS)</span>
+      </a>
+      
+      
+      <a href="/embedded-linux/uboot/tftp-boot/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">TFTP & Network Boot</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

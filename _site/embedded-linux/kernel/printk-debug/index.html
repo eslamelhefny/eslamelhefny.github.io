@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>printk & Dynamic Debug · Eslam Mohamed</title>
+  <meta name="description" content="Master kernel logging with printk, dev_dbg, and dynamic debug — control log levels, read crash messages, decode oops stack traces, and use netconsole for remote logging." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/embedded-linux/">Embedded Linux Developer</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>printk & Dynamic Debug</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 03 — Embedded Linux</span>
+        <span class="guide-stage-pill">Stage 07</span>
+      </div>
+      <h1 class="guide-title">printk & Dynamic Debug</h1>
+      <p class="guide-subtitle">Master kernel logging with printk, dev_dbg, and dynamic debug — control log levels, read crash messages, decode oops stack traces, and use netconsole for remote logging.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="printk-and-log-levels">printk and Log Levels</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p><code class="language-plaintext highlighter-rouge">printk()</code> is the kernel’s equivalent of <code class="language-plaintext highlighter-rouge">printf()</code>. It writes messages to the kernel ring buffer, which is a circular buffer in kernel memory. Unlike <code class="language-plaintext highlighter-rouge">printf()</code>, <code class="language-plaintext highlighter-rouge">printk()</code> works in any context — from process context, interrupt handlers, and even early boot before most of the kernel is initialized.</p>
+
+<p>Every <code class="language-plaintext highlighter-rouge">printk()</code> message has a log level that indicates its severity:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* Log levels — defined in include/linux/kern_levels.h */</span>
+<span class="cp">#define KERN_EMERG    KERN_SOH "0"  </span><span class="cm">/* system is unusable */</span><span class="cp">
+#define KERN_ALERT    KERN_SOH "1"  </span><span class="cm">/* action must be taken immediately */</span><span class="cp">
+#define KERN_CRIT     KERN_SOH "2"  </span><span class="cm">/* critical conditions */</span><span class="cp">
+#define KERN_ERR      KERN_SOH "3"  </span><span class="cm">/* error conditions */</span><span class="cp">
+#define KERN_WARNING  KERN_SOH "4"  </span><span class="cm">/* warning conditions */</span><span class="cp">
+#define KERN_NOTICE   KERN_SOH "5"  </span><span class="cm">/* normal but significant condition */</span><span class="cp">
+#define KERN_INFO     KERN_SOH "6"  </span><span class="cm">/* informational */</span><span class="cp">
+#define KERN_DEBUG    KERN_DEBUG_LOC "7"  </span><span class="cm">/* debug-level messages */</span><span class="cp">
+</span>
+<span class="cm">/* Usage in kernel code */</span>
+<span class="n">printk</span><span class="p">(</span><span class="n">KERN_INFO</span> <span class="s">"mydriver: device initialized, base=0x%08x</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">base_addr</span><span class="p">);</span>
+<span class="n">printk</span><span class="p">(</span><span class="n">KERN_ERR</span>  <span class="s">"mydriver: failed to allocate DMA buffer</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+<span class="n">printk</span><span class="p">(</span><span class="n">KERN_DEBUG</span> <span class="s">"mydriver: register dump: ctrl=0x%x status=0x%x</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+       <span class="n">ctrl_reg</span><span class="p">,</span> <span class="n">status_reg</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>The log level string (<code class="language-plaintext highlighter-rouge">KERN_SOH "0"</code>) is prepended to the message as a prefix byte sequence that the kernel strips when displaying. The number 0-7 corresponds to the priority (lower number = higher priority).</p>
+
+<hr />
+
+<h3 id="pr_-helper-macros">pr_ Helper Macros</h3>
+
+<p>The modern way to call <code class="language-plaintext highlighter-rouge">printk()</code> is through the <code class="language-plaintext highlighter-rouge">pr_*</code> helper macros, which are shorter and automatically include the log level:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* All of these are equivalent to printk(KERN_XXX ...) */</span>
+<span class="n">pr_emerg</span><span class="p">(</span><span class="s">"system is completely broken: %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">err</span><span class="p">);</span>    <span class="cm">/* KERN_EMERG */</span>
+<span class="n">pr_alert</span><span class="p">(</span><span class="s">"critical alert: power failure detected</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>  <span class="cm">/* KERN_ALERT */</span>
+<span class="n">pr_crit</span><span class="p">(</span><span class="s">"critical error in subsystem %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>     <span class="cm">/* KERN_CRIT */</span>
+<span class="n">pr_err</span><span class="p">(</span><span class="s">"failed to initialize device: %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">ret</span><span class="p">);</span>      <span class="cm">/* KERN_ERR */</span>
+<span class="n">pr_warn</span><span class="p">(</span><span class="s">"hardware reported overtemperature</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>         <span class="cm">/* KERN_WARNING */</span>
+<span class="n">pr_notice</span><span class="p">(</span><span class="s">"mydriver version %s loaded</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">VERSION</span><span class="p">);</span>    <span class="cm">/* KERN_NOTICE */</span>
+<span class="n">pr_info</span><span class="p">(</span><span class="s">"device %s probed at address 0x%x</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+        <span class="n">dev_name</span><span class="p">(</span><span class="n">dev</span><span class="p">),</span> <span class="n">reg_base</span><span class="p">);</span>                       <span class="cm">/* KERN_INFO */</span>
+<span class="n">pr_debug</span><span class="p">(</span><span class="s">"entering %s, state=%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">__func__</span><span class="p">,</span> <span class="n">state</span><span class="p">);</span>  <span class="cm">/* KERN_DEBUG */</span>
+
+<span class="cm">/* pr_debug is special: it compiles to nothing unless CONFIG_DYNAMIC_DEBUG=y
+ * or DEBUG is defined for that file */</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="reading-kernel-messages-with-dmesg">Reading Kernel Messages with dmesg</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Show all kernel messages in the ring buffer</span>
+<span class="nv">$ </span>dmesg | <span class="nb">head</span> <span class="nt">-30</span>
+<span class="o">[</span>    0.000000] Booting Linux on physical CPU 0x0
+<span class="o">[</span>    0.000000] Linux version 6.1.55 <span class="o">(</span>user@build<span class="o">)</span> <span class="o">(</span>arm-linux-gnueabihf-gcc 11.4.0<span class="o">)</span>
+<span class="o">[</span>    0.000000] CPU: ARMv7 Processor <span class="o">[</span>410fc090] revision 0
+<span class="o">[</span>    0.000000] Machine model: ARM Versatile Express
+<span class="o">[</span>    0.000000] Memory policy: Data cache writealloc
+<span class="o">[</span>    0.000000] Zone ranges:
+<span class="o">[</span>    0.000000]   Normal   <span class="o">[</span>mem 0x0000000060000000-0x000000007fffffff]
+<span class="o">[</span>    0.000000] Movable zone start <span class="k">for </span>each node
+<span class="o">[</span>    0.000000] Early memory node ranges
+<span class="o">[</span>    0.000000]   node   0: <span class="o">[</span>mem 0x0000000060000000-0x000000007fffffff]
+<span class="o">[</span>    0.000000] Initmem setup node 0 <span class="o">[</span>mem 0x0000000060000000-0x000000007fffffff]
+<span class="o">[</span>    0.217568] clocksource: timer: mask: 0xffffffff max_cycles: 0xffffffff
+<span class="o">[</span>    0.521274] NET: Registered PF_INET protocol family
+<span class="o">[</span>    0.543289] mydriver: device initialized at 0x1c130000
+<span class="o">[</span>    0.543298] mydriver: firmware version 2.3.1
+
+<span class="c"># dmesg with useful options:</span>
+<span class="nv">$ </span>dmesg <span class="nt">--level</span><span class="o">=</span>err,warn    <span class="c"># Show only errors and warnings</span>
+<span class="nv">$ </span>dmesg <span class="nt">--follow</span>            <span class="c"># Like "tail -f" for kernel messages (Ctrl+C to stop)</span>
+<span class="nv">$ </span>dmesg <span class="nt">-w</span>                  <span class="c"># Same as --follow (short form)</span>
+<span class="nv">$ </span>dmesg <span class="nt">--clear</span>             <span class="c"># Clear the ring buffer (requires root)</span>
+<span class="nv">$ </span>dmesg <span class="nt">-C</span>                  <span class="c"># Same as --clear</span>
+
+<span class="c"># Show messages with human-readable timestamps (absolute time):</span>
+<span class="nv">$ </span>dmesg <span class="nt">-T</span> | <span class="nb">tail</span> <span class="nt">-10</span>
+<span class="o">[</span>Sat Mar  7 10:23:45 2026] mydriver: device probed successfully
+<span class="o">[</span>Sat Mar  7 10:23:45 2026] mydriver: registered as /dev/mydev0
+
+<span class="c"># Show messages since last boot with severity colors (modern util-linux):</span>
+<span class="nv">$ </span>dmesg <span class="nt">--color</span><span class="o">=</span>always <span class="nt">--reltime</span> | less
+
+<span class="c"># Filter by keyword</span>
+<span class="nv">$ </span>dmesg | <span class="nb">grep</span> <span class="nt">-i</span> <span class="s2">"error</span><span class="se">\|</span><span class="s2">fail</span><span class="se">\|</span><span class="s2">warn"</span> | <span class="nb">head</span> <span class="nt">-20</span>
+<span class="o">[</span>    0.543105] mydriver: WARNING: DMA not available, falling back to PIO
+<span class="o">[</span>    1.234567] eth0: Link is Down
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="controlling-log-levels-via-proc">Controlling Log Levels via /proc</h3>
+
+<p>The file <code class="language-plaintext highlighter-rouge">/proc/sys/kernel/printk</code> contains four numbers that control which messages appear on the console:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Read current printk settings</span>
+<span class="nv">$ </span><span class="nb">cat</span> /proc/sys/kernel/printk
+4       4       1       7
+<span class="c"># ↑       ↑       ↑       ↑</span>
+<span class="c"># current default minimum boot-time</span>
+<span class="c"># console  log     log    log</span>
+<span class="c"># loglevel level   level  level</span>
+
+<span class="c"># Format: current_loglevel default minimum boot-time</span>
+<span class="c"># current_loglevel: messages with level &lt; this value are printed to console</span>
+<span class="c"># So value 4 means: EMERG(0), ALERT(1), CRIT(2), ERR(3) are shown</span>
+<span class="c"># WARNING(4) and above are NOT shown on console</span>
+
+<span class="c"># Enable all messages on console (including DEBUG)</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"8 4 1 7"</span> <span class="o">&gt;</span> /proc/sys/kernel/printk
+<span class="c"># Now current_loglevel=8 means everything (0-7) appears on console</span>
+
+<span class="c"># Silence everything except emergencies</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"1 4 1 7"</span> <span class="o">&gt;</span> /proc/sys/kernel/printk
+
+<span class="c"># Restore to default (show warnings and above)</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"4 4 1 7"</span> <span class="o">&gt;</span> /proc/sys/kernel/printk
+
+<span class="c"># Also controllable via sysctl</span>
+<span class="nv">$ </span>sysctl kernel.printk
+kernel.printk <span class="o">=</span> 4	4	1	7
+<span class="nv">$ </span>sysctl <span class="nt">-w</span> kernel.printk<span class="o">=</span><span class="s2">"7 4 1 7"</span>    <span class="c"># show all messages</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="using-dmesg-after-module-load">Using dmesg After Module Load</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Load a module and immediately check its output</span>
+<span class="nv">$ </span>modprobe mydevice <span class="o">&amp;&amp;</span> dmesg | <span class="nb">tail</span> <span class="nt">-20</span>
+<span class="o">[</span>  123.456789] mydevice: probe called <span class="k">for </span>device 0-0050
+<span class="o">[</span>  123.456832] mydevice: reading configuration registers
+<span class="o">[</span>  123.456901] mydevice: firmware version 1.4.2
+<span class="o">[</span>  123.456945] mydevice: device ready, <span class="nv">irq</span><span class="o">=</span>76
+
+<span class="c"># Check for errors during driver load</span>
+<span class="nv">$ </span>modprobe my_broken_driver
+modprobe: ERROR: could not insert <span class="s1">'my_broken_driver'</span>: No such device
+
+<span class="nv">$ </span>dmesg | <span class="nb">tail</span> <span class="nt">-5</span>
+<span class="o">[</span>  234.567890] my_broken_driver: failed to request IRQ 83: <span class="nt">-16</span>
+<span class="o">[</span>  234.567894] my_broken_driver: probe failed with error <span class="nt">-16</span>
+
+<span class="c"># -16 = -EBUSY (resource busy)</span>
+<span class="c"># Decode error numbers</span>
+<span class="nv">$ </span>python3 <span class="nt">-c</span> <span class="s2">"import errno; print([k for k,v in errno.errorcode.items() if v=='EBUSY'])"</span>
+<span class="o">[</span>16]
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="device-aware-logging-and-dynamic-debug">Device-Aware Logging and Dynamic Debug</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="dev_dbg-dev_err-dev_info--device-aware-logging">dev_dbg, dev_err, dev_info — Device-Aware Logging</h3>
+
+<p>When writing device drivers, use <code class="language-plaintext highlighter-rouge">dev_*</code> macros instead of <code class="language-plaintext highlighter-rouge">pr_*</code>. They automatically prepend the device name and bus address to every message, making it much easier to identify which device produced a message in multi-device systems:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;linux/device.h&gt;</span><span class="cp">
+</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">mydevice_probe</span><span class="p">(</span><span class="k">struct</span> <span class="n">platform_device</span> <span class="o">*</span><span class="n">pdev</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">device</span> <span class="o">*</span><span class="n">dev</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">pdev</span><span class="o">-&gt;</span><span class="n">dev</span><span class="p">;</span>
+
+    <span class="n">dev_info</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span> <span class="s">"probing device at %pR</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">pdev</span><span class="o">-&gt;</span><span class="n">resource</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+    <span class="cm">/* Output: [    0.543] mydevice 1c130000.mydevice: probing device at [mem 0x1c130000-0x1c130fff] */</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">dev_err</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span> <span class="s">"failed to allocate IRQ: %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">ret</span><span class="p">);</span>
+        <span class="cm">/* Output: [    0.544] mydevice 1c130000.mydevice: failed to allocate IRQ: -16 */</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">dev_warn</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span> <span class="s">"DMA not available, performance will be reduced</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="n">dev_dbg</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span> <span class="s">"register base = 0x%p, irq = %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">irq</span><span class="p">);</span>
+    <span class="cm">/* dev_dbg output only appears when dynamic debug is enabled for this driver */</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The device name format <code class="language-plaintext highlighter-rouge">1c130000.mydevice</code> comes from the Device Tree node address and compatible string — making it instantly clear which hardware instance produced the message.</p>
+
+<hr />
+
+<h3 id="pr_fmt--per-file-message-prefix">pr_fmt — Per-File Message Prefix</h3>
+
+<p>For non-device code (subsystems, core kernel), <code class="language-plaintext highlighter-rouge">pr_fmt()</code> adds a custom prefix to all <code class="language-plaintext highlighter-rouge">pr_*</code> messages in a file:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* Define at the top of the file, BEFORE including linux/printk.h */</span>
+<span class="cp">#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+</span>
+<span class="cp">#include</span> <span class="cpf">&lt;linux/printk.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/module.h&gt;</span><span class="cp">
+</span>
+<span class="cm">/* Now all pr_* calls automatically get the module name prefix */</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="n">__init</span> <span class="nf">mymodule_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">pr_info</span><span class="p">(</span><span class="s">"version %s loaded</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">VERSION</span><span class="p">);</span>
+    <span class="cm">/* Output: mymodule: version 1.2.3 loaded */</span>
+
+    <span class="n">pr_debug</span><span class="p">(</span><span class="s">"debugging: init_data = %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">init_data</span><span class="p">);</span>
+    <span class="cm">/* Output: mymodule: debugging: init_data = 42 */</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="dynamic-debug">Dynamic Debug</h3>
+
+<p>Dynamic debug (<code class="language-plaintext highlighter-rouge">CONFIG_DYNAMIC_DEBUG</code>) transforms all <code class="language-plaintext highlighter-rouge">pr_debug()</code> and <code class="language-plaintext highlighter-rouge">dev_dbg()</code> calls from compile-time eliminated code into runtime-toggleable messages. This is a major improvement over the traditional approach where you had to recompile the kernel with <code class="language-plaintext highlighter-rouge">DEBUG</code> defined to get debug output.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Dynamic debug control interface</span>
+<span class="nv">$ </span><span class="nb">ls</span> /sys/kernel/debug/dynamic_debug/
+control
+
+<span class="c"># Show current state of all dynamic debug sites</span>
+<span class="nv">$ </span><span class="nb">cat</span> /sys/kernel/debug/dynamic_debug/control | <span class="nb">head</span> <span class="nt">-20</span>
+<span class="c"># filename:lineno [module]function flags format</span>
+drivers/gpio/gpiolib.c:1234 <span class="o">[</span>gpio]gpiod_request <span class="o">=</span>_ <span class="s2">"gpiod_request: %s</span><span class="se">\n</span><span class="s2">"</span>
+drivers/gpio/gpiolib.c:1298 <span class="o">[</span>gpio]gpiod_free <span class="o">=</span>_ <span class="s2">"gpiod_free: %s</span><span class="se">\n</span><span class="s2">"</span>
+drivers/i2c/i2c-core-base.c:956 <span class="o">[</span>i2c_core]i2c_register_adapter <span class="o">=</span>_ <span class="s2">"adapter [%s] registered</span><span class="se">\n</span><span class="s2">"</span>
+<span class="c"># The '=_' means disabled (no output)</span>
+<span class="c"># The '=p' would mean printing enabled</span>
+
+<span class="c"># Enable all debug messages from a specific file</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"file drivers/gpio/gpiolib.c +p"</span> <span class="o">&gt;</span> /sys/kernel/debug/dynamic_debug/control
+
+<span class="c"># Enable debug from a specific module</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"module gpio +p"</span> <span class="o">&gt;</span> /sys/kernel/debug/dynamic_debug/control
+
+<span class="c"># Enable debug from a specific function</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"func gpiod_request +p"</span> <span class="o">&gt;</span> /sys/kernel/debug/dynamic_debug/control
+
+<span class="c"># Enable debug for a specific line</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"file drivers/gpio/gpiolib.c line 1234 +p"</span> <span class="o">&gt;</span> /sys/kernel/debug/dynamic_debug/control
+
+<span class="c"># Enable with additional metadata (timestamp, caller, thread)</span>
+<span class="c"># +p = print, +t = include timestamp, +f = include function name, +l = line number</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"file drivers/gpio/gpiolib.c +ptfl"</span> <span class="o">&gt;</span> /sys/kernel/debug/dynamic_debug/control
+
+<span class="c"># Disable</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"file drivers/gpio/gpiolib.c -p"</span> <span class="o">&gt;</span> /sys/kernel/debug/dynamic_debug/control
+
+<span class="c"># Enable ALL dynamic debug messages (produces a lot of output!)</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"module * +p"</span> <span class="o">&gt;</span> /sys/kernel/debug/dynamic_debug/control
+</code></pre></div></div>
+
+<p>After enabling:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>dmesg <span class="nt">-w</span> | <span class="nb">grep </span>gpio
+<span class="o">[</span>   45.123456] gpio gpiolib.c:1234 gpiod_request: spi0_cs0
+<span class="o">[</span>   45.123498] gpio gpiolib.c:1256 gpiochip_find: looking <span class="k">for </span>gpio_chip
+<span class="o">[</span>   45.123502] gpio gpiolib.c:1298 gpiod_request: allocated GPIO 17
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="kernel-ring-buffer-size">Kernel Ring Buffer Size</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># The kernel ring buffer stores recent messages</span>
+<span class="c"># Size is controlled by CONFIG_LOG_BUF_SHIFT (2^N bytes)</span>
+<span class="c"># Default: CONFIG_LOG_BUF_SHIFT=17 = 128KB</span>
+
+<span class="nv">$ </span>dmesg <span class="nt">--buffer-size</span>
+131072  <span class="c"># 128 KB = 2^17</span>
+
+<span class="c"># Check if messages were lost (buffer overflow)</span>
+<span class="nv">$ </span>dmesg | <span class="nb">grep</span> <span class="s2">"messages suppressed"</span>
+
+<span class="c"># Increase ring buffer size in .config for embedded systems with verbose logging</span>
+<span class="c"># CONFIG_LOG_BUF_SHIFT=18   # 256KB</span>
+<span class="c"># CONFIG_LOG_BUF_SHIFT=20   # 1MB (for systems with lots of driver output)</span>
+
+<span class="c"># Or use kernel parameter: log_buf_len=1M</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="logging-from-interrupt-context">Logging from Interrupt Context</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* printk() is safe from interrupt context — it uses a separate buffer
+ * and defers actual output to a separate context */</span>
+<span class="k">static</span> <span class="n">irqreturn_t</span> <span class="nf">mydev_irq_handler</span><span class="p">(</span><span class="kt">int</span> <span class="n">irq</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">dev_id</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">mydev_data</span> <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="n">dev_id</span><span class="p">;</span>
+
+    <span class="cm">/* Safe in interrupt context */</span>
+    <span class="n">dev_dbg</span><span class="p">(</span><span class="n">data</span><span class="o">-&gt;</span><span class="n">dev</span><span class="p">,</span> <span class="s">"interrupt received: status=0x%x</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">read_status</span><span class="p">(</span><span class="n">data</span><span class="p">));</span>
+
+    <span class="cm">/* NOT safe in interrupt context: */</span>
+    <span class="cm">/* msleep(), mutex_lock(), kmalloc(GFP_KERNEL) */</span>
+    <span class="cm">/* These require process context because they can sleep */</span>
+
+    <span class="k">return</span> <span class="n">IRQ_HANDLED</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-debugging-techniques">Advanced Debugging Techniques</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="netconsole--kernel-messages-over-udp">netconsole — Kernel Messages Over UDP</h3>
+
+<p>When your serial console is not available (the UART is dedicated to another purpose, or the board has no serial port), <code class="language-plaintext highlighter-rouge">netconsole</code> sends kernel messages over UDP to a remote machine:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Load the netconsole module</span>
+<span class="c"># Parameters: @&lt;local-IP&gt;/&lt;local-interface&gt;,&lt;target-port&gt;@&lt;target-IP&gt;/&lt;target-MAC&gt;</span>
+<span class="nv">$ </span>modprobe netconsole <span class="nv">netconsole</span><span class="o">=</span>@192.168.1.100/eth0,6666@192.168.1.1/ff:ff:ff:ff:ff:ff
+
+<span class="c"># Or add to kernel command line (for very early messages):</span>
+<span class="nv">netconsole</span><span class="o">=</span>@192.168.1.100/eth0,6666@192.168.1.1/aa:bb:cc:dd:ee:ff
+
+<span class="c"># On the receiving machine, listen on UDP port 6666:</span>
+<span class="nv">$ </span>nc <span class="nt">-ul</span> 6666
+<span class="c"># Or use socat:</span>
+<span class="nv">$ </span>socat UDP-RECV:6666 STDOUT
+
+<span class="c"># Dynamic configuration via configfs</span>
+<span class="nv">$ </span><span class="nb">mkdir</span> /sys/kernel/config/netconsole/target1
+<span class="nv">$ </span><span class="nb">echo </span>192.168.1.100 <span class="o">&gt;</span> /sys/kernel/config/netconsole/target1/local_ip
+<span class="nv">$ </span><span class="nb">echo </span>192.168.1.1   <span class="o">&gt;</span> /sys/kernel/config/netconsole/target1/remote_ip
+<span class="nv">$ </span><span class="nb">echo </span>eth0          <span class="o">&gt;</span> /sys/kernel/config/netconsole/target1/dev_name
+<span class="nv">$ </span><span class="nb">echo </span>6666          <span class="o">&gt;</span> /sys/kernel/config/netconsole/target1/remote_port
+<span class="nv">$ </span><span class="nb">echo </span>1             <span class="o">&gt;</span> /sys/kernel/config/netconsole/target1/enabled
+
+<span class="c"># Verify it's working</span>
+<span class="nv">$ </span>dmesg <span class="nt">-w</span> &amp;     <span class="c"># On host: watch for kernel messages arriving over network</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"test netconsole"</span> <span class="o">&gt;</span> /dev/kmsg    <span class="c"># Inject a test message</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="pstore--persistent-kernel-messages-after-a-panic">pstore — Persistent Kernel Messages After a Panic</h3>
+
+<p><code class="language-plaintext highlighter-rouge">pstore</code> (persistent storage) saves the last kernel messages to non-volatile storage, allowing you to read the crash log after a reboot:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># pstore requires CONFIG_PSTORE=y and a persistent storage backend</span>
+<span class="c"># Common backends: EEPROM (pstore_zone), EFI variables, MTD flash</span>
+
+<span class="c"># After configuring pstore, mount it:</span>
+<span class="nv">$ </span>mount <span class="nt">-t</span> pstore pstore /sys/fs/pstore
+
+<span class="c"># After a panic and reboot, read the saved log:</span>
+<span class="nv">$ </span><span class="nb">ls</span> /sys/fs/pstore/
+console-ramoops-0  dmesg-ramoops-0  dmesg-ramoops-1
+
+<span class="nv">$ </span><span class="nb">cat</span> /sys/fs/pstore/dmesg-ramoops-0
+<span class="o">[</span>12345.678901] BUG: kernel NULL pointer dereference, address: 00000000
+<span class="o">[</span>12345.678902] PC is at mydriver_write+0x48/0x120
+<span class="o">[</span>12345.678903] LR is at vfs_write+0xa4/0x1c4
+...
+
+<span class="c"># RAM-based pstore (ramoops): reserve a region of RAM that survives warm reset</span>
+<span class="c"># Kernel command line or DT: ramoops.mem_address=0x9f000000 ramoops.mem_size=0x100000</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="reading-a-kernel-oops">Reading a Kernel Oops</h3>
+
+<p>A kernel oops is a non-fatal error that corrupts a process but does not crash the system. Understanding how to read one is an essential embedded Linux skill:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[  342.891234] BUG: unable to handle kernel NULL pointer dereference at 00000000
+[  342.891240] pgd = d5820000
+[  342.891243] [00000000] *pgd=00000000
+[  342.891248] Internal error: Oops: 5 [#1] SMP ARM
+[  342.891252] Modules linked in: mydriver myother_mod
+[  342.891258] CPU: 0 PID: 456 Comm: myapp Not tainted 6.1.55 #1
+[  342.891262] Hardware name: ARM Versatile Express
+[  342.891266] task: d5820000 task.stack: d4e40000
+[  342.891270] PC is at mydriver_read+0x48/0x120 [mydriver]
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          Function + offset / function total size
+[  342.891274] LR is at vfs_read+0xa4/0x1c4
+[  342.891278] pc : [&lt;bf001048&gt;] lr : [&lt;c04a12b4&gt;]
+[  342.891282] sp : d4e41e40  ip : 00000000  fp : d4e41e7c
+[  342.891286] r10: d5820000  r9 : d4e40000  r8 : 00000000
+[  342.891290] r7 : d7892a00  r6 : d4e41ea8  r5 : 00000001  r4 : 00000000
+[  342.891294] r3 : 00000000  r2 : d4e41ea8  r1 : 00000001  r0 : d7892a00
+[  342.891298] Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM
+[  342.891302] Process myapp (pid: 456, stack limit = 0xd4e40190)
+[  342.891306] Stack:
+[  342.891310] [&lt;d4e41e40&gt;] 0xd4e41e40
+[  342.891314] Call Trace:
+[  342.891318] [&lt;bf001048&gt;] (mydriver_read) from [&lt;c04a12b4&gt;] (vfs_read+0xa4/0x1c4)
+[  342.891322] [&lt;c04a12b4&gt;] (vfs_read) from [&lt;c04a1580&gt;] (ksys_read+0x68/0xf0)
+[  342.891326] [&lt;c04a1580&gt;] (ksys_read) from [&lt;c04a15e8&gt;] (sys_read+0x10/0x14)
+[  342.891330] [&lt;c04a15e8&gt;] (sys_read) from [&lt;c0107580&gt;] (ret_fast_syscall+0x0/0x28)
+</code></pre></div></div>
+
+<p>Reading the oops:</p>
+<ol>
+  <li>“NULL pointer dereference at 00000000” — a NULL pointer was dereferenced</li>
+  <li>“PC is at mydriver_read+0x48/0x120” — crash is 0x48 bytes into <code class="language-plaintext highlighter-rouge">mydriver_read()</code></li>
+  <li>“r4 : 00000000” — register r4 is NULL (likely the pointer being dereferenced)</li>
+  <li>The call trace shows: <code class="language-plaintext highlighter-rouge">sys_read → ksys_read → vfs_read → mydriver_read</code> (crash)</li>
+</ol>
+
+<hr />
+
+<h3 id="addr2line--decoding-oops-addresses">addr2line — Decoding Oops Addresses</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Convert the crash address to a source line</span>
+<span class="c"># Need: vmlinux with debug info (CONFIG_DEBUG_INFO=y)</span>
+<span class="c"># and the module .ko file with debug info</span>
+
+<span class="c"># For a built-in function (in vmlinux):</span>
+<span class="nv">$ </span>addr2line <span class="nt">-e</span> vmlinux <span class="nt">-f</span> 0xc04a12b4
+vfs_read
+/home/user/linux/fs/read_write.c:469
+
+<span class="c"># For a module function (PC is at mydriver_read+0x48):</span>
+<span class="c"># First, find the load address of the module symbol</span>
+<span class="nv">$ </span><span class="nb">grep </span>mydriver_read /proc/kallsyms
+bf001000 t mydriver_read <span class="o">[</span>mydriver]
+
+<span class="c"># Then: function_start(0xbf001000) + offset(0x48) = 0xbf001048</span>
+<span class="nv">$ </span>addr2line <span class="nt">-e</span> drivers/misc/mydriver/mydriver.ko <span class="nt">-f</span> 0x48
+mydriver_read
+/home/user/linux/drivers/misc/mydriver/mydriver.c:87
+
+<span class="c"># Now you know exactly which line crashed: mydriver.c:87</span>
+<span class="c"># cat drivers/misc/mydriver/mydriver.c | sed -n '85,90p'</span>
+85: static ssize_t mydriver_read<span class="o">(</span>struct file <span class="k">*</span>filp, char __user <span class="k">*</span>buf,
+86:     size_t count, loff_t <span class="k">*</span>ppos<span class="o">)</span>
+87:     <span class="k">return </span>copy_to_user<span class="o">(</span>buf, priv-&gt;data_ptr, count<span class="o">)</span><span class="p">;</span>  /<span class="k">*</span> BUG: priv-&gt;data_ptr is NULL <span class="k">*</span>/
+88: <span class="o">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="trace_printk--low-overhead-logging-in-hot-paths">trace_printk — Low-Overhead Logging in Hot Paths</h3>
+
+<p>Regular <code class="language-plaintext highlighter-rouge">printk()</code> is expensive in high-frequency code paths (interrupt handlers, network receive paths) because it writes to the ring buffer under a lock. <code class="language-plaintext highlighter-rouge">trace_printk()</code> writes to the ftrace ring buffer instead, which is per-CPU and lock-free:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;linux/kernel.h&gt;</span><span class="cp">
+</span>
+<span class="cm">/* In a hot path like an interrupt handler */</span>
+<span class="k">static</span> <span class="n">irqreturn_t</span> <span class="nf">fast_irq_handler</span><span class="p">(</span><span class="kt">int</span> <span class="n">irq</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">u32</span> <span class="n">status</span> <span class="o">=</span> <span class="n">readl</span><span class="p">(</span><span class="n">base</span> <span class="o">+</span> <span class="n">STATUS_REG</span><span class="p">);</span>
+
+    <span class="cm">/* printk here would cause latency issues — avoid in production */</span>
+    <span class="cm">/* printk(KERN_DEBUG "irq status=0x%x\n", status); */</span>
+
+    <span class="cm">/* trace_printk writes to ftrace ring buffer — much lower overhead */</span>
+    <span class="n">trace_printk</span><span class="p">(</span><span class="s">"irq status=0x%x</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="n">IRQ_HANDLED</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Read trace_printk output via tracefs</span>
+<span class="nv">$ </span><span class="nb">cat</span> /sys/kernel/debug/tracing/trace | <span class="nb">head</span> <span class="nt">-20</span>
+<span class="c"># tracer: nop</span>
+<span class="c">#</span>
+<span class="c"># entries-in-buffer/entries-written: 1024/1024   #P:4</span>
+<span class="c">#</span>
+<span class="c">#                              _-----=&gt; irqs-off</span>
+<span class="c">#                             / _----=&gt; need-resched</span>
+<span class="c">#                            | / _---=&gt; hardirq/softirq</span>
+<span class="c">#                            || / _--=&gt; preempt-depth</span>
+<span class="c">#                            ||| /     delay</span>
+<span class="c">#           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION</span>
+<span class="c">#              | |       |   ||||       |         |</span>
+        myapp-456   <span class="o">[</span>000] d...  1234.567890: fast_irq_handler: irq <span class="nv">status</span><span class="o">=</span>0x00000001
+        myapp-456   <span class="o">[</span>000] d...  1234.567894: fast_irq_handler: irq <span class="nv">status</span><span class="o">=</span>0x00000002
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="integrating-with-systemd-journal">Integrating with systemd Journal</h3>
+
+<p>On systems with systemd, kernel messages are automatically forwarded to the journal via <code class="language-plaintext highlighter-rouge">/dev/kmsg</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Read kernel messages via journalctl</span>
+<span class="nv">$ </span>journalctl <span class="nt">-k</span>            <span class="c"># all kernel messages since boot</span>
+<span class="nv">$ </span>journalctl <span class="nt">-k</span> <span class="nt">-b</span> <span class="nt">-1</span>      <span class="c"># kernel messages from the previous boot</span>
+<span class="nv">$ </span>journalctl <span class="nt">-k</span> <span class="nt">-p</span> err     <span class="c"># only kernel error messages</span>
+<span class="nv">$ </span>journalctl <span class="nt">-k</span> <span class="nt">-f</span>         <span class="c"># follow new kernel messages (like dmesg -w)</span>
+<span class="nv">$ </span>journalctl <span class="nt">-k</span> <span class="nt">--since</span> <span class="s2">"10 minutes ago"</span>
+
+<span class="c"># Kernel messages appear with _TRANSPORT=kernel</span>
+<span class="nv">$ </span>journalctl <span class="nt">-k</span> <span class="nt">-o</span> json | python3 <span class="nt">-m</span> json.tool | <span class="nb">head</span> <span class="nt">-30</span>
+
+<span class="c"># Persist kernel logs across reboots (journald by default uses volatile storage)</span>
+<span class="nv">$ </span><span class="nb">mkdir</span> <span class="nt">-p</span> /var/log/journal  <span class="c"># Create this directory to enable persistence</span>
+<span class="nv">$ </span>systemctl restart systemd-journald
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-questions">Interview Questions</h2>
+
+<p><strong>Q: What are the kernel log levels and how do you control which ones appear on the console?</strong></p>
+
+<p>Linux has 8 log levels numbered 0-7: KERN_EMERG(0), KERN_ALERT(1), KERN_CRIT(2), KERN_ERR(3), KERN_WARNING(4), KERN_NOTICE(5), KERN_INFO(6), KERN_DEBUG(7). Lower numbers are higher priority. The file <code class="language-plaintext highlighter-rouge">/proc/sys/kernel/printk</code> contains four values; the first is the “console loglevel”. Messages with a priority number strictly less than this value are printed to the console. So with the default value of 4, only EMERG, ALERT, CRIT, and ERR appear on the console. Set it to 8 to see all messages including DEBUG: <code class="language-plaintext highlighter-rouge">echo "8 4 1 7" &gt; /proc/sys/kernel/printk</code>. All messages regardless of level are always written to the ring buffer and readable with <code class="language-plaintext highlighter-rouge">dmesg</code>.</p>
+
+<p><strong>Q: What is dynamic debug and how is it more flexible than pr_debug()?</strong></p>
+
+<p>Without <code class="language-plaintext highlighter-rouge">CONFIG_DYNAMIC_DEBUG</code>, <code class="language-plaintext highlighter-rouge">pr_debug()</code> calls are completely compiled out of the binary (unless <code class="language-plaintext highlighter-rouge">DEBUG</code> is defined for that compilation unit), making them unavailable at runtime. With <code class="language-plaintext highlighter-rouge">CONFIG_DYNAMIC_DEBUG</code>, all <code class="language-plaintext highlighter-rouge">pr_debug()</code> and <code class="language-plaintext highlighter-rouge">dev_dbg()</code> calls are kept in the binary but disabled. They can be enabled at runtime on a per-file, per-module, per-function, or per-line granularity by writing to <code class="language-plaintext highlighter-rouge">/sys/kernel/debug/dynamic_debug/control</code>. This means you can enable debug output from a specific driver on a running production system without recompiling, rebooting, or enabling all debug messages globally. You can also add metadata like timestamps and function names: <code class="language-plaintext highlighter-rouge">echo "file drivers/gpio/gpiolib.c +ptfl" &gt; /sys/kernel/debug/dynamic_debug/control</code>.</p>
+
+<p><strong>Q: What is the difference between pr_debug() and dev_dbg()?</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">pr_debug()</code> is a generic file-scoped debug macro. It does not include any device context — the output just shows the raw message with the file prefix (if <code class="language-plaintext highlighter-rouge">pr_fmt()</code> is defined). <code class="language-plaintext highlighter-rouge">dev_dbg(dev, ...)</code> takes a <code class="language-plaintext highlighter-rouge">struct device *</code> as the first argument and automatically prepends the device name and address to every message (e.g., <code class="language-plaintext highlighter-rouge">mydevice 1c130000.mydevice: message</code>). In a system with multiple instances of the same driver, <code class="language-plaintext highlighter-rouge">dev_dbg()</code> makes it immediately clear which hardware instance generated each message. The rule is: use <code class="language-plaintext highlighter-rouge">dev_dbg()</code> in device drivers (which always have a <code class="language-plaintext highlighter-rouge">struct device *</code>), and <code class="language-plaintext highlighter-rouge">pr_debug()</code> in core kernel code that is not tied to a specific device.</p>
+
+<p><strong>Q: How do you keep kernel messages visible after a kernel panic?</strong></p>
+
+<p>Several approaches: (1) Enable <code class="language-plaintext highlighter-rouge">CONFIG_PSTORE</code> with a persistent storage backend (ramoops for RAM-based, or EFI variables) — messages are saved automatically on panic and readable after reboot from <code class="language-plaintext highlighter-rouge">/sys/fs/pstore/</code>. (2) Use <code class="language-plaintext highlighter-rouge">netconsole</code> to send kernel messages over UDP to a remote machine in real time — since the network stack is typically still running when the panic occurs, the crash log arrives at the remote machine before the system reboots. (3) Use a JTAG debugger with hardware breakpoint on the panic handler — the debugger stops execution and you can read memory directly. (4) For UART console, add <code class="language-plaintext highlighter-rouge">panic=0</code> to prevent reboot and keep the panic message on screen.</p>
+
+<p><strong>Q: How do you decode a kernel oops/stack trace to find the crashing line of code?</strong></p>
+
+<p>First, identify the crashing function and offset from the oops: “PC is at mydriver_read+0x48/0x120 [mydriver]”. Then use <code class="language-plaintext highlighter-rouge">addr2line</code>: for built-in functions, run <code class="language-plaintext highlighter-rouge">addr2line -e vmlinux -f &lt;absolute_address&gt;</code>; for module functions, find the module symbol base address in <code class="language-plaintext highlighter-rouge">/proc/kallsyms</code> (e.g., <code class="language-plaintext highlighter-rouge">bf001000 t mydriver_read [mydriver]</code>) and run <code class="language-plaintext highlighter-rouge">addr2line -e mydriver.ko -f 0x48</code> (using the relative offset). This requires that the kernel/module was built with <code class="language-plaintext highlighter-rouge">CONFIG_DEBUG_INFO=y</code>. The output is the exact source file and line number where the crash occurred. On modern kernels, the oops output itself often includes the source file and line directly.</p>
+
+<p><strong>Q: What is netconsole and when would you use it?</strong></p>
+
+<p>Netconsole is a kernel feature that sends kernel log messages over UDP to a remote machine in real time, bypassing the need for a physical serial console. It is used when: (1) The board has no serial port or the UART is used for another purpose. (2) You need to capture kernel panic messages before the system reboots (since the network stack is running when the panic occurs). (3) You need to debug a device in the field remotely without physical access. (4) The serial connection is too slow or introduces latency that affects the behavior being debugged. Configure it at boot via kernel command line or with <code class="language-plaintext highlighter-rouge">modprobe netconsole netconsole=@&lt;local-IP&gt;/&lt;iface&gt;,&lt;port&gt;@&lt;remote-IP&gt;/&lt;remote-MAC&gt;</code>.</p>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<ul>
+  <li><strong>Dynamic debug documentation:</strong> <code class="language-plaintext highlighter-rouge">Documentation/admin-guide/dynamic-debug-howto.rst</code> — complete guide to dynamic debug syntax and capabilities</li>
+  <li><strong>“Linux Device Drivers” by Corbet, Rubini, and Kroah-Hartman</strong> (Chapter 4: Debugging Techniques) — printk, oops analysis, and debug techniques: <a href="https://lwn.net/Kernel/LDD3/">https://lwn.net/Kernel/LDD3/</a></li>
+  <li><strong>“Linux Kernel Development” by Robert Love</strong> — kernel debugging and printk usage</li>
+  <li><strong>Kernel parameter loglevel:</strong> <code class="language-plaintext highlighter-rouge">Documentation/admin-guide/kernel-parameters.txt</code> — loglevel, ignore_loglevel, debug parameters</li>
+  <li><strong>netconsole documentation:</strong> <code class="language-plaintext highlighter-rouge">Documentation/networking/netconsole.rst</code> — complete netconsole setup guide</li>
+  <li><strong>pstore documentation:</strong> <code class="language-plaintext highlighter-rouge">Documentation/admin-guide/pstore-blk.rst</code> — persistent storage for crash messages</li>
+  <li><strong>LWN.net Dynamic Debug article:</strong> <a href="https://lwn.net/Articles/434833/">https://lwn.net/Articles/434833/</a> — original dynamic debug introduction</li>
+</ul>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fab fa-linux"></i>
+        <span>Linux Kernel Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/embedded-linux/kernel/kconfig-menuconfig/" class="gtn-link ">
+          <i class="fas fa-sliders"></i> Kconfig &amp; menuconfig
+        </a>
+        <a href="/embedded-linux/kernel/kernel-compilation/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> Kernel Compilation
+        </a>
+        <a href="/embedded-linux/kernel/boot-parameters/" class="gtn-link ">
+          <i class="fas fa-list-check"></i> Boot Parameters
+        </a>
+        <a href="/embedded-linux/kernel/kernel-subsystems/" class="gtn-link ">
+          <i class="fab fa-linux"></i> Kernel Subsystems
+        </a>
+        <a href="/embedded-linux/kernel/printk-debug/" class="gtn-link gts-active">
+          <i class="fas fa-bug"></i> printk &amp; Dynamic Debug
+        </a>
+        <a href="/embedded-linux/kernel/ftrace-kprobes/" class="gtn-link ">
+          <i class="fas fa-chart-line"></i> ftrace &amp; kprobes
+        </a>
+      </nav>
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/embedded-linux/kernel/kernel-subsystems/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Kernel Subsystems</span>
+      </a>
+      
+      
+      <a href="/embedded-linux/kernel/ftrace-kprobes/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">ftrace & kprobes</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Embedded Linux Diploma — Lab 02: Linux Boot Process & U-Boot · Eslam Mohamed</title>
+  <meta name="description" content="Research & Teaching Assistant · Embedded Linux Engineer · MSc CS Researcher" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link active">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <article class="post-page">
+  <div class="post-hero">
+    <div class="post-hero-content">
+      <div class="post-meta-top">
+        <a href="/blog" class="back-link"><i class="fas fa-arrow-left"></i> All Posts</a>
+        
+        <span class="post-category">linux</span>
+        
+      </div>
+      <h1 class="post-title">Embedded Linux Diploma — Lab 02: Linux Boot Process & U-Boot</h1>
+      
+      <p class="post-subtitle">Understanding the full Linux boot sequence: from power-on reset through U-Boot, kernel decompression, and init system startup.</p>
+      
+      <div class="post-info">
+        <span><i class="fas fa-calendar-alt"></i> February 01, 2024</span>
+        <span><i class="fas fa-clock"></i> 4 min read</span>
+        
+        <span><i class="fas fa-tags"></i> u-boot, bootloader, kernel, linux</span>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="post-body">
+    <div class="post-toc" id="toc">
+      <h3><i class="fas fa-list"></i> Contents</h3>
+      <div id="toc-list"></div>
+    </div>
+
+    <div class="post-content markdown-body">
+      <h2 id="the-linux-boot-sequence">The Linux Boot Sequence</h2>
+
+<p>Understanding the boot process is fundamental to embedded Linux development. When power is applied, a precisely ordered sequence of events transforms hardware into a running Linux system.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Power On
+  └─&gt; ROM Bootloader (built-in)
+        └─&gt; SPL (Secondary Program Loader)
+              └─&gt; U-Boot (Bootloader)
+                    └─&gt; Linux Kernel
+                          └─&gt; init / systemd
+                                └─&gt; Userspace Applications
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="1-rom-bootloader">1. ROM Bootloader</h2>
+
+<p>The very first code executed lives in <strong>on-chip ROM</strong>. It:</p>
+<ul>
+  <li>Initializes minimal hardware (clock, DRAM controller basics)</li>
+  <li>Looks for a valid bootloader in predefined locations (SD card, eMMC, NAND, SPI flash)</li>
+  <li>Loads the SPL (or directly U-Boot on simpler SoCs)</li>
+</ul>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* Simplified ROM bootloader logic */</span>
+<span class="kt">void</span> <span class="nf">rom_bootloader</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">hardware_init_minimal</span><span class="p">();</span>
+    
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">NUM_BOOT_SOURCES</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">load_from_source</span><span class="p">(</span><span class="n">boot_sources</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">SPL_LOAD_ADDR</span><span class="p">))</span> <span class="p">{</span>
+            <span class="n">jump_to</span><span class="p">(</span><span class="n">SPL_LOAD_ADDR</span><span class="p">);</span>  <span class="c1">// Never returns</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="n">hang</span><span class="p">();</span>  <span class="c1">// Boot failure</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="2-u-boot">2. U-Boot</h2>
+
+<p>U-Boot is the most widely used bootloader in embedded Linux. It provides:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Common U-Boot commands</span>
+
+<span class="c"># Show environment</span>
+<span class="nb">printenv</span>
+
+<span class="c"># Set boot arguments</span>
+setenv bootargs <span class="s2">"console=ttyS0,115200 root=/dev/mmcblk0p2 rootwait"</span>
+
+<span class="c"># Load kernel from SD card</span>
+fatload mmc 0:1 <span class="k">${</span><span class="nv">loadaddr</span><span class="k">}</span> zImage
+fatload mmc 0:1 <span class="k">${</span><span class="nv">fdtaddr</span><span class="k">}</span> am335x-boneblack.dtb
+
+<span class="c"># Boot</span>
+bootz <span class="k">${</span><span class="nv">loadaddr</span><span class="k">}</span> - <span class="k">${</span><span class="nv">fdtaddr</span><span class="k">}</span>
+</code></pre></div></div>
+
+<h3 id="building-u-boot-for-beaglebone-black">Building U-Boot for BeagleBone Black</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/u-boot/u-boot.git
+<span class="nb">cd </span>u-boot
+
+<span class="c"># Configure</span>
+make <span class="nv">ARCH</span><span class="o">=</span>arm <span class="nv">CROSS_COMPILE</span><span class="o">=</span>arm-none-linux-gnueabihf- <span class="se">\</span>
+    am335x_evm_defconfig
+
+<span class="c"># Build</span>
+make <span class="nv">ARCH</span><span class="o">=</span>arm <span class="nv">CROSS_COMPILE</span><span class="o">=</span>arm-none-linux-gnueabihf- <span class="nt">-j</span><span class="si">$(</span><span class="nb">nproc</span><span class="si">)</span>
+
+<span class="c"># Output files</span>
+<span class="nb">ls </span>MLO u-boot.img
+</code></pre></div></div>
+
+<h3 id="u-boot-environment-variables">U-Boot Environment Variables</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Variable</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">bootcmd</code></td>
+      <td>Command run on autoboot</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">bootargs</code></td>
+      <td>Kernel command line</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">bootdelay</code></td>
+      <td>Seconds before autoboot</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">loadaddr</code></td>
+      <td>Default kernel load address</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">fdtaddr</code></td>
+      <td>Device Tree Blob load address</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="3-linux-kernel-boot">3. Linux Kernel Boot</h2>
+
+<p>When U-Boot hands control to the kernel:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Kernel command line example</span>
+<span class="nv">bootargs</span><span class="o">=</span><span class="s2">"console=ttyS0,115200n8 </span><span class="se">\</span><span class="s2">
+          root=/dev/mmcblk0p2 </span><span class="se">\</span><span class="s2">
+          rootwait </span><span class="se">\</span><span class="s2">
+          rw </span><span class="se">\</span><span class="s2">
+          loglevel=4 </span><span class="se">\</span><span class="s2">
+          init=/sbin/init"</span>
+</code></pre></div></div>
+
+<h3 id="kernel-initialization-sequence">Kernel Initialization Sequence</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>start_kernel()
+  ├── setup_arch()          # Architecture-specific init
+  ├── mm_init()             # Memory management
+  ├── sched_init()          # Scheduler
+  ├── init_IRQ()            # Interrupt controller
+  ├── parse_early_param()   # Early kernel params
+  ├── rest_init()
+  │     └── kernel_init()   # PID 1
+  │           └── execve("/sbin/init")
+  └── cpu_idle()            # Idle loop
+</code></pre></div></div>
+
+<h2 id="4-device-tree">4. Device Tree</h2>
+
+<p>Device Trees describe hardware to the kernel without hardcoding board details.</p>
+
+<pre><code class="language-dts">/* am335x-boneblack.dts (simplified) */
+/dts-v1/;
+
+/ {
+    model = "TI AM335x BeagleBone Black";
+    compatible = "ti,am335x-bone-black", "ti,am33xx";
+    
+    memory@80000000 {
+        device_type = "memory";
+        reg = &lt;0x80000000 0x20000000&gt;; /* 512MB */
+    };
+    
+    cpus {
+        cpu@0 {
+            compatible = "arm,cortex-a8";
+            operating-points = &lt;720000 1285000&gt;;
+        };
+    };
+    
+    leds {
+        compatible = "gpio-leds";
+        
+        led0: user-led0 {
+            label = "beaglebone:green:usr0";
+            gpios = &lt;&amp;gpio1 21 GPIO_ACTIVE_HIGH&gt;;
+            default-state = "off";
+        };
+    };
+};
+</code></pre>
+
+<h2 id="5-init-system-systemd">5. Init System (systemd)</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Check boot time</span>
+systemd-analyze
+
+<span class="c"># Show service startup times</span>
+systemd-analyze blame
+
+<span class="c"># Boot visualization</span>
+systemd-analyze plot <span class="o">&gt;</span> boot.svg
+</code></pre></div></div>
+
+<h2 id="lab-exercises">Lab Exercises</h2>
+
+<ol>
+  <li>Build U-Boot for QEMU <code class="language-plaintext highlighter-rouge">vexpress_ca9x4</code> and boot a kernel</li>
+  <li>Modify U-Boot environment to add a 3-second boot delay</li>
+  <li>Write a minimal Device Tree for a virtual UART device</li>
+  <li>Measure and compare boot times between SysV init and systemd on Buildroot</li>
+</ol>
+
+<hr />
+
+<blockquote>
+  <p>🔍 <strong>Deep Dive:</strong> Use <code class="language-plaintext highlighter-rouge">bootlin.com/elc-europe2021/talks/boot-time-reduction</code> for boot time optimization techniques used in production automotive systems.</p>
+</blockquote>
+
+<h2 id="next-lab">Next Lab</h2>
+
+<p><strong>Lab 03</strong> covers <strong>Linux Kernel Module Development</strong> — writing, compiling, and loading your first kernel module.</p>
+
+    </div>
+  </div>
+
+  <div class="post-nav">
+    
+    <a href="/blog/2024/01/15/lab01-build-environment/" class="post-nav-item prev">
+      <span class="nav-label"><i class="fas fa-arrow-left"></i> Previous</span>
+      <span class="nav-title">Embedded Linux Diploma — Lab 01: Setting Up the Build Environment</span>
+    </a>
+    
+
+    
+    <a href="/blog/2024/02/20/lab03-kernel-modules/" class="post-nav-item next">
+      <span class="nav-label">Next <i class="fas fa-arrow-right"></i></span>
+      <span class="nav-title">Embedded Linux Diploma — Lab 03: Writing Your First Kernel Module</span>
+    </a>
+    
+  </div>
+</article>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

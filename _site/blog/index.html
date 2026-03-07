@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — Embedded Linux Diploma & Technical Notes · Eslam Mohamed</title>
+  <meta name="description" content="Technical notes, lab writeups, and guides from the Embedded Linux Diploma and engineering research." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link active">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="blog-page">
+  <div class="blog-page-header">
+    <div class="section-label">knowledge base</div>
+    <h1 class="section-title">Blog & Technical Notes</h1>
+    <p class="section-subtitle">
+      Lab writeups, deep dives, and guides from the Embedded Linux Diploma, research experiments, and teaching notes.
+    </p>
+  </div>
+
+  <div class="blog-filters">
+    <button class="filter-btn active" data-filter="all">All Posts</button>
+    <button class="filter-btn" data-filter="embedded">Embedded Linux</button>
+    <button class="filter-btn" data-filter="linux">Linux Kernel</button>
+    <button class="filter-btn" data-filter="iot">IoT</button>
+    <button class="filter-btn" data-filter="ml">Machine Learning</button>
+    <button class="filter-btn" data-filter="general">General</button>
+  </div>
+
+  <div class="blog-posts-container">
+    <div class="posts-grid">
+      
+      <div class="post-card fade-up" data-category="">
+        <div class="post-card-header">
+          <div class="post-card-meta">
+            
+            <span class="post-card-date">Feb 01, 2025</span>
+          </div>
+          <h3>Lab4 C++</h3>
+        </div>
+        <p>layout: post title: “CPP reference “ date: 2024-03-01 category: embedded # embedded | linux | iot | ml | general tags: [cpp, modern_cpp] excerpt: “Short...</p>
+        <div class="post-card-footer">
+          <span class="post-read-time">
+            <i class="fas fa-clock"></i>
+            99 min read
+          </span>
+          <a href="/blog/2025/02/01/lab4-c++/" class="post-read-link">
+            Read <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      
+      <div class="post-card fade-up" data-category="linux">
+        <div class="post-card-header">
+          <div class="post-card-meta">
+            
+            <span class="post-card-category cat-linux">
+              linux
+            </span>
+            
+            <span class="post-card-date">Feb 20, 2024</span>
+          </div>
+          <h3>Embedded Linux Diploma — Lab 03: Writing Your First Kernel Module</h3>
+        </div>
+        <p>Hands-on guide to writing, compiling, and loading Linux kernel modules. Covers module lifecycle, parameters, proc filesystem, and basic character drivers.</p>
+        <div class="post-card-footer">
+          <span class="post-read-time">
+            <i class="fas fa-clock"></i>
+            8 min read
+          </span>
+          <a href="/blog/2024/02/20/lab03-kernel-modules/" class="post-read-link">
+            Read <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      
+      <div class="post-card fade-up" data-category="linux">
+        <div class="post-card-header">
+          <div class="post-card-meta">
+            
+            <span class="post-card-category cat-linux">
+              linux
+            </span>
+            
+            <span class="post-card-date">Feb 01, 2024</span>
+          </div>
+          <h3>Embedded Linux Diploma — Lab 02: Linux Boot Process & U-Boot</h3>
+        </div>
+        <p>Understanding the full Linux boot sequence: from power-on reset through U-Boot, kernel decompression, and init system startup.</p>
+        <div class="post-card-footer">
+          <span class="post-read-time">
+            <i class="fas fa-clock"></i>
+            4 min read
+          </span>
+          <a href="/blog/2024/02/01/lab02-uboot-boot-process/" class="post-read-link">
+            Read <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      
+      <div class="post-card fade-up" data-category="embedded">
+        <div class="post-card-header">
+          <div class="post-card-meta">
+            
+            <span class="post-card-category cat-embedded">
+              embedded
+            </span>
+            
+            <span class="post-card-date">Jan 15, 2024</span>
+          </div>
+          <h3>Embedded Linux Diploma — Lab 01: Setting Up the Build Environment</h3>
+        </div>
+        <p>First lab in the Embedded Linux Diploma series. Setting up cross-compilation toolchain, Yocto Project, and Buildroot from scratch on Ubuntu.</p>
+        <div class="post-card-footer">
+          <span class="post-read-time">
+            <i class="fas fa-clock"></i>
+            3 min read
+          </span>
+          <a href="/blog/2024/01/15/lab01-build-environment/" class="post-read-link">
+            Read <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      
+    </div>
+
+    
+  </div>
+</div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TFTP & Network Boot · Eslam Mohamed</title>
+  <meta name="description" content="Configure a TFTP server, set up U-Boot network parameters, and boot your kernel and rootfs over the network for rapid development iteration." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/embedded-linux/">Embedded Linux Developer</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>TFTP & Network Boot</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 03 — Embedded Linux</span>
+        <span class="guide-stage-pill">Stage 06</span>
+      </div>
+      <h1 class="guide-title">TFTP & Network Boot</h1>
+      <p class="guide-subtitle">Configure a TFTP server, set up U-Boot network parameters, and boot your kernel and rootfs over the network for rapid development iteration.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="why-tftp-for-embedded-development">Why TFTP for Embedded Development?</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p><strong>TFTP (Trivial File Transfer Protocol)</strong> is the standard way to load the kernel and device tree from a development host into an embedded board’s RAM during the boot process. Unlike flashing to storage, TFTP lets you:</p>
+
+<ul>
+  <li>Test a new kernel <strong>in seconds</strong> — just build and copy to the TFTP directory</li>
+  <li>Avoid flash wear during development</li>
+  <li>Boot the <strong>exact same binary</strong> on multiple boards</li>
+  <li>Combine with NFS root for a fully diskless development workflow</li>
+</ul>
+
+<table>
+  <thead>
+    <tr>
+      <th>Method</th>
+      <th>Use case</th>
+      <th>Iteration speed</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Flash to eMMC/NAND</td>
+      <td>Production</td>
+      <td>Slow (minutes)</td>
+    </tr>
+    <tr>
+      <td>SD card swap</td>
+      <td>Occasional testing</td>
+      <td>Medium (30-60s)</td>
+    </tr>
+    <tr>
+      <td>TFTP + NFS root</td>
+      <td>Daily development</td>
+      <td>Fast (&lt; 10s)</td>
+    </tr>
+    <tr>
+      <td>TFTP + ramdisk</td>
+      <td>CI / automated tests</td>
+      <td>Fast</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="setting-up-a-tftp-server-ubuntudebian">Setting Up a TFTP Server (Ubuntu/Debian)</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install tftpd-hpa</span>
+<span class="nv">$ </span><span class="nb">sudo </span>apt <span class="nb">install </span>tftpd-hpa
+
+<span class="c"># Default TFTP directory</span>
+<span class="nv">$ </span><span class="nb">cat</span> /etc/default/tftpd-hpa
+<span class="nv">TFTP_USERNAME</span><span class="o">=</span><span class="s2">"tftp"</span>
+<span class="nv">TFTP_DIRECTORY</span><span class="o">=</span><span class="s2">"/srv/tftp"</span>
+<span class="nv">TFTP_ADDRESS</span><span class="o">=</span><span class="s2">":69"</span>
+<span class="nv">TFTP_OPTIONS</span><span class="o">=</span><span class="s2">"--secure"</span>
+
+<span class="c"># Create the directory and set permissions</span>
+<span class="nv">$ </span><span class="nb">sudo mkdir</span> <span class="nt">-p</span> /srv/tftp
+<span class="nv">$ </span><span class="nb">sudo chown </span>tftp:tftp /srv/tftp
+<span class="nv">$ </span><span class="nb">sudo chmod </span>755 /srv/tftp
+
+<span class="c"># Start and enable the service</span>
+<span class="nv">$ </span><span class="nb">sudo </span>systemctl <span class="nb">enable </span>tftpd-hpa
+<span class="nv">$ </span><span class="nb">sudo </span>systemctl start tftpd-hpa
+<span class="nv">$ </span><span class="nb">sudo </span>systemctl status tftpd-hpa
+● tftpd-hpa.service - LSB: HPA<span class="s1">'s tftp server
+     Loaded: loaded (/etc/init.d/tftpd-hpa; generated)
+     Active: active (running) since Sat 2024-03-09 10:00:00 UTC; 2s ago
+
+# Test the TFTP server from the host itself
+$ echo "hello" &gt; /srv/tftp/test.txt
+$ tftp localhost
+tftp&gt; get test.txt
+Received 6 bytes in 0.0 seconds
+tftp&gt; quit
+$ cat test.txt
+hello
+</span></code></pre></div></div>
+
+<h3 id="copy-build-artifacts-to-tftp-directory">Copy Build Artifacts to TFTP Directory</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># After cross-compiling the kernel</span>
+<span class="nv">$ </span><span class="nb">cp arch</span>/arm/boot/zImage          /srv/tftp/
+<span class="nv">$ </span><span class="nb">cp arch</span>/arm/boot/dts/am335x-boneblack.dtb  /srv/tftp/
+
+<span class="c"># For 64-bit ARM (AArch64)</span>
+<span class="nv">$ </span><span class="nb">cp arch</span>/arm64/boot/Image         /srv/tftp/
+<span class="nv">$ </span><span class="nb">cp arch</span>/arm64/boot/dts/ti/k3-am64-evm.dtb  /srv/tftp/
+
+<span class="c"># Verify the files are there</span>
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-lh</span> /srv/tftp/
+<span class="nt">-rw-r--r--</span> 1 root root 7.2M Mar  9 10:05 zImage
+<span class="nt">-rw-r--r--</span> 1 root root  42K Mar  9 10:05 am335x-boneblack.dtb
+</code></pre></div></div>
+
+<h3 id="u-boot-network-environment-variables">U-Boot Network Environment Variables</h3>
+
+<p>Connect a serial console to the board and enter the U-Boot prompt (press any key during countdown). Set up networking:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=&gt; # Set the board's MAC address (if not set by factory)
+=&gt; setenv ethaddr DE:AD:BE:EF:00:01
+
+=&gt; # Static IP configuration
+=&gt; setenv ipaddr      192.168.1.100    # board IP
+=&gt; setenv serverip    192.168.1.1      # TFTP server (your host)
+=&gt; setenv gatewayip   192.168.1.1      # default gateway
+=&gt; setenv netmask     255.255.255.0
+
+=&gt; # Test connectivity
+=&gt; ping 192.168.1.1
+Using ethernet@4a100000 device
+host 192.168.1.1 is alive
+
+=&gt; # Save to persistent environment
+=&gt; saveenv
+Saving Environment to MMC... Writing to MMC(0)... OK
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="tftp-boot-sequence">TFTP Boot Sequence</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="manual-tftp-boot-step-by-step">Manual TFTP Boot Step by Step</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=&gt; # Step 1: Load kernel from TFTP into RAM
+=&gt; tftp ${loadaddr} zImage
+Using ethernet@4a100000 device
+TFTP from server 192.168.1.1; our IP address is 192.168.1.100
+Filename 'zImage'.
+Load address: 0x82000000
+Loading: #################################################################
+         ###############################
+         4.3 MiB/s
+done
+Bytes transferred = 7340032 (700000 hex)
+
+=&gt; # Step 2: Load DTB
+=&gt; tftp ${fdtaddr} am335x-boneblack.dtb
+...
+Bytes transferred = 43008 (a800 hex)
+
+=&gt; # Step 3: Set kernel boot arguments
+=&gt; setenv bootargs console=ttyO0,115200n8 root=/dev/mmcblk0p2 rootwait rw
+
+=&gt; # Step 4: Boot (bootz for zImage, bootz addr [initrd] dtb)
+=&gt; bootz ${loadaddr} - ${fdtaddr}
+   Kernel image @ 0x82000000 [ 0x000000 - 0x700000 ]
+## Flattened Device Tree blob at 83000000
+   Booting using the fdt blob at 0x83000000
+   Loading Device Tree to 8fff6000, end 8ffff7ff ... OK
+
+Starting kernel ...
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.000000] Linux version 6.1.46 (gcc version 12.3.0)
+</code></pre></div></div>
+
+<h3 id="key-u-boot-address-variables">Key U-Boot Address Variables</h3>
+
+<p>Most boards pre-define these — check with <code class="language-plaintext highlighter-rouge">printenv</code>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Variable</th>
+      <th>Typical value</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">loadaddr</code></td>
+      <td><code class="language-plaintext highlighter-rouge">0x82000000</code></td>
+      <td>Default load address for kernel</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">fdtaddr</code></td>
+      <td><code class="language-plaintext highlighter-rouge">0x83000000</code></td>
+      <td>Load address for DTB</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">ramdisk_addr_r</code></td>
+      <td><code class="language-plaintext highlighter-rouge">0x88000000</code></td>
+      <td>Load address for initramfs</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">serverip</code></td>
+      <td><code class="language-plaintext highlighter-rouge">192.168.1.1</code></td>
+      <td>TFTP server IP</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">ipaddr</code></td>
+      <td><code class="language-plaintext highlighter-rouge">192.168.1.100</code></td>
+      <td>Board IP address</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=&gt; printenv loadaddr fdtaddr
+loadaddr=0x82000000
+fdtaddr=0x88000000
+</code></pre></div></div>
+
+<h3 id="automating-tftp-boot-via-bootcmd">Automating TFTP Boot via bootcmd</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=&gt; setenv tftp_boot \
+   'tftp ${loadaddr} zImage; \
+    tftp ${fdtaddr} ${fdtfile}; \
+    setenv bootargs console=${console} root=/dev/mmcblk0p2 rootwait rw; \
+    bootz ${loadaddr} - ${fdtaddr}'
+
+=&gt; setenv bootcmd 'run tftp_boot'
+=&gt; setenv fdtfile 'am335x-boneblack.dtb'
+=&gt; setenv console 'ttyO0,115200n8'
+=&gt; saveenv
+</code></pre></div></div>
+
+<p>Now every boot automatically TFTPs and boots. No more manual commands.</p>
+
+<h3 id="tftp--nfs-root--the-developer-dream-setup">TFTP + NFS Root — The Developer Dream Setup</h3>
+
+<p>With NFS root, your <strong>entire rootfs lives on the host machine</strong> — no reflashing, instant file changes:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 1. Install NFS server on host</span>
+<span class="nv">$ </span><span class="nb">sudo </span>apt <span class="nb">install </span>nfs-kernel-server
+
+<span class="c"># 2. Create a rootfs directory (or export Buildroot/Yocto output)</span>
+<span class="nv">$ </span><span class="nb">sudo mkdir</span> <span class="nt">-p</span> /srv/nfs/rootfs
+<span class="nv">$ </span><span class="nb">sudo chown</span> <span class="nt">-R</span> nobody:nogroup /srv/nfs/rootfs
+
+<span class="c"># 3. Configure NFS exports</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s1">'/srv/nfs/rootfs *(rw,sync,no_subtree_check,no_root_squash)'</span> <span class="se">\</span>
+    | <span class="nb">sudo tee</span> <span class="nt">-a</span> /etc/exports
+
+<span class="nv">$ </span><span class="nb">sudo </span>exportfs <span class="nt">-ra</span>
+<span class="nv">$ </span><span class="nb">sudo </span>systemctl restart nfs-kernel-server
+
+<span class="c"># 4. Populate the rootfs (example: from Buildroot output)</span>
+<span class="nv">$ </span><span class="nb">sudo tar</span> <span class="nt">-xf</span> buildroot/output/images/rootfs.tar <span class="nt">-C</span> /srv/nfs/rootfs/
+</code></pre></div></div>
+
+<p>In U-Boot, set the kernel boot args to use NFS root:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=&gt; setenv nfs_boot \
+   'tftp ${loadaddr} zImage; \
+    tftp ${fdtaddr} ${fdtfile}; \
+    setenv bootargs console=${console} \
+      root=/dev/nfs \
+      nfsroot=${serverip}:/srv/nfs/rootfs,v3,tcp \
+      ip=dhcp rw; \
+    bootz ${loadaddr} - ${fdtaddr}'
+
+=&gt; setenv bootcmd 'run nfs_boot'
+=&gt; saveenv
+</code></pre></div></div>
+
+<p>Expected kernel boot output:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[    3.256] VFS: Mounted root (nfs filesystem) on device 0:16.
+[    3.310] devtmpfs: mounted
+[    3.381] Freeing unused kernel image (initmem) memory: 1024K
+[    3.390] Run /sbin/init as init process
+</code></pre></div></div>
+
+<h3 id="dhcp--let-the-network-assign-the-ip">DHCP — Let the Network Assign the IP</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=&gt; # Get IP via DHCP and also download boot files (if DHCP server has options set)
+=&gt; dhcp
+Using ethernet@4a100000 device
+BOOTP broadcast 1
+DHCP client bound to address 192.168.1.105 (5 ms)
+
+=&gt; # serverip is automatically set from DHCP reply
+=&gt; printenv ipaddr serverip
+ipaddr=192.168.1.105
+serverip=192.168.1.1
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-pxe-boot--troubleshooting">Advanced: PXE Boot &amp; Troubleshooting</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="setting-up-dnsmasq-as-dhcp--tftp-server">Setting Up dnsmasq as DHCP + TFTP Server</h3>
+
+<p><code class="language-plaintext highlighter-rouge">dnsmasq</code> is simpler than running separate ISC DHCP + tftpd-hpa:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sudo </span>apt <span class="nb">install </span>dnsmasq
+
+<span class="nv">$ </span><span class="nb">cat</span> /etc/dnsmasq.conf
+<span class="c"># Serve DHCP on this interface only</span>
+<span class="nv">interface</span><span class="o">=</span>eth0
+bind-interfaces
+
+<span class="c"># DHCP range</span>
+dhcp-range<span class="o">=</span>192.168.7.100,192.168.7.200,12h
+
+<span class="c"># Set TFTP server option</span>
+dhcp-option<span class="o">=</span>66,192.168.7.1
+
+<span class="c"># Enable built-in TFTP server</span>
+enable-tftp
+tftp-root<span class="o">=</span>/srv/tftp
+
+<span class="c"># Optional: always assign the same IP to your board by MAC</span>
+dhcp-host<span class="o">=</span>DE:AD:BE:EF:00:01,192.168.7.100,bbb
+
+<span class="nv">$ </span><span class="nb">sudo </span>systemctl restart dnsmasq
+</code></pre></div></div>
+
+<p>With this setup, the board gets IP + <code class="language-plaintext highlighter-rouge">serverip</code> from DHCP — no manual U-Boot config needed.</p>
+
+<h3 id="pxe-boot--automatic-board-configuration">PXE Boot — Automatic Board Configuration</h3>
+
+<p>U-Boot’s <code class="language-plaintext highlighter-rouge">distro_bootcmd</code> includes PXE support. With a PXE server, you can:</p>
+<ol>
+  <li>Board gets IP via DHCP</li>
+  <li>U-Boot downloads <code class="language-plaintext highlighter-rouge">/pxelinux.cfg/default</code> via TFTP</li>
+  <li>U-Boot reads the config and boots the specified kernel/DTB</li>
+</ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># PXE config file at /srv/tftp/pxelinux.cfg/default</span>
+<span class="nv">$ </span><span class="nb">cat</span> /srv/tftp/pxelinux.cfg/default
+default Linux
+<span class="nb">timeout </span>30
+label Linux
+  kernel zImage
+  fdt am335x-boneblack.dtb
+  append <span class="nv">console</span><span class="o">=</span>ttyO0,115200n8 <span class="nv">root</span><span class="o">=</span>/dev/nfs <span class="nv">nfsroot</span><span class="o">=</span>192.168.7.1:/srv/nfs/rootfs <span class="nv">ip</span><span class="o">=</span>dhcp rw
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=&gt; # U-Boot automatically tries PXE if distro_bootcmd is set
+=&gt; run distro_bootcmd
+BOOTP broadcast 1
+DHCP client bound to address 192.168.7.100
+Retrieving file: pxelinux.cfg/01-de-ad-be-ef-00-01
+Retrieving file: pxelinux.cfg/default
+Config file found
+Retrieving file: zImage
+Retrieving file: am335x-boneblack.dtb
+...
+</code></pre></div></div>
+
+<p>PXE config files are tried in order of specificity:</p>
+<ol>
+  <li>MAC address: <code class="language-plaintext highlighter-rouge">01-de-ad-be-ef-00-01</code></li>
+  <li>IP hex: <code class="language-plaintext highlighter-rouge">C0A80764</code> (192.168.7.100)</li>
+  <li><code class="language-plaintext highlighter-rouge">default</code></li>
+</ol>
+
+<h3 id="troubleshooting-tftp-failures">Troubleshooting TFTP Failures</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># On host: watch TFTP requests with tcpdump</span>
+<span class="nv">$ </span><span class="nb">sudo </span>tcpdump <span class="nt">-i</span> eth0 <span class="nt">-n</span> udp port 69
+15:30:01.234 IP 192.168.1.100.50234 <span class="o">&gt;</span> 192.168.1.1.69: TFTP, length 30
+15:30:01.235 IP 192.168.1.1.69 <span class="o">&gt;</span> 192.168.1.100.50234: TFTP, length 516
+
+<span class="c"># If no packets seen → check cable, IP config, firewall</span>
+<span class="nv">$ </span><span class="nb">sudo </span>ufw allow from 192.168.1.0/24 to any port 69 proto udp
+
+<span class="c"># Check tftpd is listening</span>
+<span class="nv">$ </span>ss <span class="nt">-ulnp</span> | <span class="nb">grep</span> :69
+UNCONN 0 0 0.0.0.0:69 0.0.0.0:<span class="k">*</span> <span class="nb">users</span>:<span class="o">((</span><span class="s2">"in.tftpd"</span>,pid<span class="o">=</span>1234,fd<span class="o">=</span>4<span class="o">))</span>
+
+<span class="c"># U-Boot error messages and their meaning</span>
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th>U-Boot error</th>
+      <th>Cause</th>
+      <th>Fix</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">TFTP error: 'File not found'</code></td>
+      <td>File not in <code class="language-plaintext highlighter-rouge">/srv/tftp/</code></td>
+      <td>Copy file, check filename case</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">host ... is not alive</code></td>
+      <td>Network not reachable</td>
+      <td>Check IP config, cable, switch</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Aborting</code> + timeout</td>
+      <td>TFTP server not running</td>
+      <td><code class="language-plaintext highlighter-rouge">systemctl start tftpd-hpa</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Bad Magic Number</code></td>
+      <td>Wrong load address or corrupted image</td>
+      <td>Verify <code class="language-plaintext highlighter-rouge">loadaddr</code>, rebuild kernel</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">ERROR: Did not find a cmdline Flattened Device Tree</code></td>
+      <td>Wrong <code class="language-plaintext highlighter-rouge">fdtaddr</code> or DTB corrupted</td>
+      <td>Verify <code class="language-plaintext highlighter-rouge">fdtaddr</code>, check DTB size</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="link-speed-negotiation-issues">Link Speed Negotiation Issues</h3>
+
+<p>Gigabit switches sometimes fail to negotiate properly with embedded boards that only support 100Mbps:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=&gt; # Force 100Mbps full-duplex in U-Boot (board-specific)
+=&gt; setenv ethact ethernet@4a100000
+=&gt; mii write 0 0 0x2100    # Force 100M FD on PHY register 0
+</code></pre></div></div>
+
+<p>Or set in Device Tree:</p>
+<pre><code class="language-dts">&amp;mac {
+    phy-mode = "mii";
+    /* Force link speed if autoneg fails */
+    max-speed = &lt;100&gt;;
+};
+</code></pre>
+
+<h3 id="build-system-integration--auto-copy-on-build">Build System Integration — Auto-Copy on Build</h3>
+
+<p>Add to your build script or Makefile to automatically push new kernels to the TFTP server:</p>
+
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">TFTP_DIR</span>  <span class="o">:=</span> /srv/tftp
+<span class="nv">KERNEL</span>    <span class="o">:=</span> <span class="nb">arch</span>/arm/boot/zImage
+<span class="nv">DTB</span>       <span class="o">:=</span> <span class="nb">arch</span>/arm/boot/dts/am335x-boneblack.dtb
+
+<span class="nl">tftp-deploy</span><span class="o">:</span> <span class="nf">$(KERNEL) $(DTB)</span>
+	<span class="nb">sudo cp</span> <span class="nv">$(KERNEL)</span> <span class="nv">$(TFTP_DIR)</span>/zImage
+	<span class="nb">sudo cp</span> <span class="nv">$(DTB)</span>    <span class="nv">$(TFTP_DIR)</span>/am335x-boneblack.dtb
+	<span class="p">@</span><span class="nb">echo</span> <span class="s2">"Kernel deployed to TFTP server. Boot the board."</span>
+
+<span class="nl">.PHONY</span><span class="o">:</span> <span class="nf">tftp-deploy</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># One-liner workflow</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm <span class="nv">CROSS_COMPILE</span><span class="o">=</span>arm-linux-gnueabihf- <span class="nt">-j</span><span class="si">$(</span><span class="nb">nproc</span><span class="si">)</span> <span class="o">&amp;&amp;</span> make tftp-deploy
+</code></pre></div></div>
+
+<p>Then just reset the board — it picks up the new kernel immediately.</p>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-questions">Interview Questions</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q: Why is TFTP preferred over HTTP or SCP for embedded boot loading?</strong></p>
+
+<p>TFTP is extremely simple — it runs over UDP and has almost no overhead or handshaking. U-Boot’s bootloader has tight code size constraints and a minimal network stack, making TFTP easy to implement. It also doesn’t require authentication, TLS, or complex connection management. The simplicity is a feature: less code, fewer failure modes at boot time. HTTP and SCP add complexity that is unnecessary for loading a single file during the boot process.</p>
+
+<p><strong>Q: How do you set up a development environment using TFTP and NFS root?</strong></p>
+
+<p>You need: (1) a TFTP server (<code class="language-plaintext highlighter-rouge">tftpd-hpa</code>) with the kernel and DTB, (2) an NFS server exporting the rootfs directory, (3) U-Boot configured with the board’s IP and host’s IP, (4) <code class="language-plaintext highlighter-rouge">bootargs</code> set to <code class="language-plaintext highlighter-rouge">root=/dev/nfs nfsroot=&lt;host-ip&gt;:&lt;path&gt;,v3,tcp ip=dhcp</code>. With this setup, you rebuild the kernel → copy to <code class="language-plaintext highlighter-rouge">/srv/tftp/</code>, reset the board, and it boots the new kernel in under 10 seconds. Rootfs changes (edit files in <code class="language-plaintext highlighter-rouge">/srv/nfs/rootfs/</code>) are visible immediately.</p>
+
+<p><strong>Q: What are the U-Boot environment variables needed for TFTP boot?</strong></p>
+
+<p>The essential variables are: <code class="language-plaintext highlighter-rouge">ipaddr</code> (board IP), <code class="language-plaintext highlighter-rouge">serverip</code> (TFTP server IP), <code class="language-plaintext highlighter-rouge">loadaddr</code> (RAM address for kernel), <code class="language-plaintext highlighter-rouge">fdtaddr</code> (RAM address for DTB), <code class="language-plaintext highlighter-rouge">bootargs</code> (kernel command line), and <code class="language-plaintext highlighter-rouge">bootcmd</code> (the automated boot command). Optionally <code class="language-plaintext highlighter-rouge">ethaddr</code> (MAC address) if not set by factory, and <code class="language-plaintext highlighter-rouge">gatewayip</code>/<code class="language-plaintext highlighter-rouge">netmask</code> for routed networks.</p>
+
+<p><strong>Q: What is the difference between DHCP-assigned and static IP configuration in U-Boot?</strong></p>
+
+<p>With static IP (<code class="language-plaintext highlighter-rouge">setenv ipaddr 192.168.1.100; setenv serverip 192.168.1.1</code>), the board always uses the same addresses regardless of network infrastructure — simple but inflexible. With DHCP (<code class="language-plaintext highlighter-rouge">run dhcp</code> or <code class="language-plaintext highlighter-rouge">dhcp</code> command), the board requests an IP from a DHCP server, which also provides the <code class="language-plaintext highlighter-rouge">serverip</code> via DHCP option 66. DHCP is better for labs with multiple boards, or when you want all network configuration centralized in one dnsmasq config.</p>
+
+<p><strong>Q: How do you troubleshoot a TFTP connection that isn’t working?</strong></p>
+
+<p>Systematic debugging: (1) <code class="language-plaintext highlighter-rouge">ping &lt;serverip&gt;</code> from U-Boot — if it fails, the problem is layer 2/3 (cable, IP config, firewall). (2) On the host, run <code class="language-plaintext highlighter-rouge">tcpdump -i eth0 udp port 69</code> — if TFTP request packets arrive but nothing responds, <code class="language-plaintext highlighter-rouge">tftpd-hpa</code> isn’t running or is listening on the wrong interface. (3) If requests arrive and responses are sent but U-Boot reports “File not found”, verify the exact filename and path in <code class="language-plaintext highlighter-rouge">/srv/tftp/</code>. (4) Check that the firewall allows UDP port 69 inbound.</p>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<ul>
+  <li><strong>tftpd-hpa man page</strong> — <code class="language-plaintext highlighter-rouge">man tftpd-hpa</code> — server configuration options</li>
+  <li><strong>“Mastering Embedded Linux Programming” by Chris Simmonds</strong> (3rd ed.) — Chapter on U-Boot network booting</li>
+  <li><strong>U-Boot networking documentation</strong> — doc/README.tftp in U-Boot source</li>
+  <li><strong>Embedded Linux Wiki: TFTP</strong> — https://elinux.org/TFTP_Boot</li>
+  <li><strong>dnsmasq documentation</strong> — http://www.thekelleys.org.uk/dnsmasq/doc.html — combined DHCP+TFTP setup</li>
+  <li><strong>U-Boot distro_bootcmd / PXE</strong> — doc/README.pxe in U-Boot source</li>
+  <li><strong>“Building Embedded Linux Systems” by Karim Yaghmour</strong> — network-based development workflow</li>
+</ul>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-wrench"></i>
+        <span>U-Boot Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/embedded-linux/uboot/boot-sequence/" class="gtn-link ">
+          <i class="fas fa-play"></i> Boot Sequence
+        </a>
+        <a href="/embedded-linux/uboot/uboot-config-build/" class="gtn-link ">
+          <i class="fas fa-wrench"></i> U-Boot Config &amp; Build
+        </a>
+        <a href="/embedded-linux/uboot/uboot-commands/" class="gtn-link ">
+          <i class="fas fa-terminal"></i> U-Boot Commands &amp; Scripting
+        </a>
+        <a href="/embedded-linux/uboot/device-tree/" class="gtn-link ">
+          <i class="fas fa-sitemap"></i> Device Tree (DTS)
+        </a>
+        <a href="/embedded-linux/uboot/board-porting/" class="gtn-link ">
+          <i class="fas fa-puzzle-piece"></i> Board Porting
+        </a>
+        <a href="/embedded-linux/uboot/tftp-boot/" class="gtn-link gts-active">
+          <i class="fas fa-network-wired"></i> TFTP &amp; Network Boot
+        </a>
+      </nav>
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/embedded-linux/uboot/board-porting/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Board Porting</span>
+      </a>
+      
+      
+      <a href="/embedded-linux/kernel/kconfig-menuconfig/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Kconfig & menuconfig</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

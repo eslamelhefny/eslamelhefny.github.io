@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Root Filesystem & Init Systems — Stage 09 · Eslam Mohamed</title>
+  <meta name="description" content="Build minimal root filesystems with BusyBox, manage init systems (systemd, SysVinit), choose filesystem types, and set up NFS and initramfs." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <style>
+.stage-hero {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(244,114,182,0.08) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 3.5rem 2rem 2.75rem; text-align: center;
+}
+.stage-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: #f472b6; background: rgba(244,114,182,.1); border: 1px solid rgba(244,114,182,.25);
+  border-radius: 2rem; padding: .28rem .9rem; margin-bottom: 1rem;
+}
+.stage-hero h1 { font-size: clamp(1.6rem,3.5vw,2.4rem); font-weight: 800; margin: 0 0 .8rem; }
+.stage-hero p  { font-size: 1rem; color: var(--text-muted); max-width: 620px; margin: 0 auto 1.5rem; }
+.stage-hero-back {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-size: .8rem; font-weight: 600; color: var(--text-muted);
+  text-decoration: none; margin-bottom: 1.5rem;
+}
+.stage-hero-back:hover { color: #f472b6; text-decoration: none; }
+.stage-grid-wrap { max-width: 1060px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+.stage-section-label {
+  font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: #f472b6; margin-bottom: 1.4rem;
+}
+.stage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px,1fr)); gap: 1.2rem; }
+.sc-card {
+  --sc: #f472b6;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 13px;
+  padding: 1.5rem; text-decoration: none; color: inherit;
+  display: flex; flex-direction: column; gap: .65rem;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.sc-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background: var(--sc); border-radius:13px 13px 0 0;
+}
+.sc-card:hover { transform:translateY(-4px); border-color:var(--sc); box-shadow:0 8px 28px rgba(0,0,0,.25); text-decoration:none; }
+.sc-card-top { display:flex; align-items:center; gap:.8rem; }
+.sc-icon {
+  width:40px; height:40px; border-radius:9px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+  background:rgba(244,114,182,.12); color:#f472b6;
+}
+.sc-num  { font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:.15rem; }
+.sc-card h3 { font-size:.95rem; font-weight:700; margin:0; }
+.sc-card p  { font-size:.83rem; color:var(--text-muted); margin:0; line-height:1.55; }
+.sc-arrow   { margin-top:auto; padding-top:.4rem; font-size:.78rem; font-weight:600; color:#f472b6; display:flex; align-items:center; gap:.3rem; }
+@media(max-width:600px){ .stage-grid{ grid-template-columns:1fr; } }
+</style>
+
+<div class="stage-hero">
+  <a href="/kernel-developer/" class="stage-hero-back"><i class="fas fa-arrow-left"></i> Kernel Developer Guide</a>
+  <div class="stage-hero-eyebrow"><i class="fas fa-folder-open"></i> Stage 09</div>
+  <h1>Root Filesystem &amp; Init Systems</h1>
+  <p>Build the environment your applications run in. Understand filesystem types, init systems, and how to create minimal rootfs images for production embedded targets.</p>
+</div>
+
+<div class="stage-grid-wrap">
+  <div class="stage-section-label"><i class="fas fa-map"></i> All Topics</div>
+  <div class="stage-grid">
+
+    <a href="/kernel-developer/rootfs/busybox/" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-box"></i></div>
+        <div><div class="sc-num">Topic 01</div><h3>BusyBox</h3></div></div>
+      <p>Configure and compile BusyBox, build a minimal rootfs from scratch, set up init scripts, and create a bootable image.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="/kernel-developer/rootfs/systemd/" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-gears"></i></div>
+        <div><div class="sc-num">Topic 02</div><h3>systemd</h3></div></div>
+      <p>Unit files, service management, targets, socket activation, journald, and minimizing boot time with systemd on embedded.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="/kernel-developer/rootfs/sysvinit/" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-play-circle"></i></div>
+        <div><div class="sc-num">Topic 03</div><h3>SysVinit &amp; Runlevels</h3></div></div>
+      <p>Init scripts, runlevels, /etc/inittab, rc.d directories, and writing portable init scripts for legacy embedded systems.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="/kernel-developer/rootfs/filesystems/" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-hard-drive"></i></div>
+        <div><div class="sc-num">Topic 04</div><h3>Filesystem Types</h3></div></div>
+      <p>ext4, squashfs, tmpfs, overlayfs — when to use each, creating images, mounting, and flash storage wear-leveling.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="/kernel-developer/rootfs/nfs-initramfs/" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-network-wired"></i></div>
+        <div><div class="sc-num">Topic 05</div><h3>NFS &amp; initramfs</h3></div></div>
+      <p>NFS root for rapid development, creating initramfs images, pivot_root, and in-memory rootfs for production systems.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+  </div>
+</div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

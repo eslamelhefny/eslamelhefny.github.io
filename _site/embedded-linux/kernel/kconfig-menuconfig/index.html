@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kconfig & menuconfig · Eslam Mohamed</title>
+  <meta name="description" content="Master the Linux kernel configuration system — from navigating menuconfig to writing Kconfig entries and generating minimal embedded configs." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/embedded-linux/">Embedded Linux Developer</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Kconfig & menuconfig</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 03 — Embedded Linux</span>
+        <span class="guide-stage-pill">Stage 07</span>
+      </div>
+      <h1 class="guide-title">Kconfig & menuconfig</h1>
+      <p class="guide-subtitle">Master the Linux kernel configuration system — from navigating menuconfig to writing Kconfig entries and generating minimal embedded configs.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="what-is-kconfig">What Is Kconfig?</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>The Linux kernel is an enormous codebase with thousands of configurable options. Kconfig is the configuration language and tooling that manages this complexity. Every subsystem, driver, and feature in the kernel has a corresponding <code class="language-plaintext highlighter-rouge">Kconfig</code> file that declares what options exist, what types they are, what their dependencies are, and what help text to display.</p>
+
+<p>When you run <code class="language-plaintext highlighter-rouge">make menuconfig</code>, you are interacting with the Kconfig system through a text-based UI. The result of your choices is written to a file named <code class="language-plaintext highlighter-rouge">.config</code> in the kernel source root. The build system reads <code class="language-plaintext highlighter-rouge">.config</code> to decide exactly what code to compile.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># The .config file is just a text file of KEY=VALUE pairs</span>
+<span class="nv">$ </span><span class="nb">head</span> <span class="nt">-30</span> .config
+<span class="c">#</span>
+<span class="c"># Automatically generated file; DO NOT EDIT.</span>
+<span class="c"># Linux/arm 6.1.55 Kernel Configuration</span>
+<span class="c">#</span>
+<span class="nv">CONFIG_CC_VERSION_TEXT</span><span class="o">=</span><span class="s2">"arm-linux-gnueabihf-gcc (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"</span>
+<span class="nv">CONFIG_CC_IS_GCC</span><span class="o">=</span>y
+<span class="nv">CONFIG_GCC_VERSION</span><span class="o">=</span>110400
+<span class="nv">CONFIG_CLANG_VERSION</span><span class="o">=</span>0
+<span class="nv">CONFIG_AS_IS_GNU</span><span class="o">=</span>y
+<span class="nv">CONFIG_LD_IS_BFD</span><span class="o">=</span>y
+<span class="nv">CONFIG_LD_VERSION</span><span class="o">=</span>23900
+<span class="nv">CONFIG_LLD_VERSION</span><span class="o">=</span>0
+<span class="nv">CONFIG_CC_CAN_LINK</span><span class="o">=</span>y
+<span class="nv">CONFIG_CC_CAN_LINK_STATIC</span><span class="o">=</span>y
+<span class="nv">CONFIG_CC_HAS_ASM_GOTO_OUTPUT</span><span class="o">=</span>y
+<span class="nv">CONFIG_CC_HAS_ASM_GOTO_TIED_OUTPUT</span><span class="o">=</span>y
+<span class="nv">CONFIG_CC_HAS_COUNTED_BY</span><span class="o">=</span>y
+<span class="nv">CONFIG_IRQ_WORK</span><span class="o">=</span>y
+<span class="nv">CONFIG_BUILDTIME_TABLE_SORT</span><span class="o">=</span>y
+<span class="nv">CONFIG_THREAD_INFO_IN_TASK</span><span class="o">=</span>y
+<span class="c">#</span>
+<span class="c"># General setup</span>
+<span class="c">#</span>
+<span class="nv">CONFIG_INIT_ENV_ARG_LIMIT</span><span class="o">=</span>32
+<span class="c"># CONFIG_COMPILE_TEST is not set</span>
+<span class="nv">CONFIG_WERROR</span><span class="o">=</span>y
+<span class="c"># CONFIG_LOCALVERSION_AUTO is not set</span>
+<span class="nv">CONFIG_LOCALVERSION</span><span class="o">=</span><span class="s2">""</span>
+<span class="nv">CONFIG_HAVE_KERNEL_GZIP</span><span class="o">=</span>y
+<span class="nv">CONFIG_HAVE_KERNEL_BZIP2</span><span class="o">=</span>y
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">.config</code> file controls the kernel compilation entirely. Every <code class="language-plaintext highlighter-rouge">CONFIG_FOO=y</code> line tells the build system to compile that feature into the kernel. Every <code class="language-plaintext highlighter-rouge"># CONFIG_FOO is not set</code> line means it was explicitly disabled.</p>
+
+<hr />
+
+<h3 id="kconfig-option-types">Kconfig Option Types</h3>
+
+<p>Kconfig supports several option types:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Values</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">bool</code></td>
+      <td><code class="language-plaintext highlighter-rouge">y</code> or <code class="language-plaintext highlighter-rouge">n</code></td>
+      <td>Feature is either compiled in or not</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">tristate</code></td>
+      <td><code class="language-plaintext highlighter-rouge">y</code>, <code class="language-plaintext highlighter-rouge">m</code>, or <code class="language-plaintext highlighter-rouge">n</code></td>
+      <td>Built-in, loadable module, or disabled</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td><code class="language-plaintext highlighter-rouge">"text"</code></td>
+      <td>A string value, e.g., local version tag</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">int</code></td>
+      <td>integer</td>
+      <td>A numeric value, e.g., buffer size</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">hex</code></td>
+      <td><code class="language-plaintext highlighter-rouge">0x...</code></td>
+      <td>A hexadecimal value, e.g., a base address</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The <code class="language-plaintext highlighter-rouge">tristate</code> type is unique to the kernel. It allows a feature to be compiled directly into the kernel image (<code class="language-plaintext highlighter-rouge">y</code>), compiled as a separate loadable kernel module (<code class="language-plaintext highlighter-rouge">m</code>), or completely excluded (<code class="language-plaintext highlighter-rouge">n</code>). Modules can be loaded at runtime with <code class="language-plaintext highlighter-rouge">modprobe</code> and unloaded with <code class="language-plaintext highlighter-rouge">rmmod</code>, which is extremely useful for driver development.</p>
+
+<hr />
+
+<h3 id="navigating-menuconfig">Navigating menuconfig</h3>
+
+<p><code class="language-plaintext highlighter-rouge">make menuconfig</code> opens an ncurses-based text UI that is the most commonly used Kconfig front-end.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Start menuconfig for a native x86 build</span>
+<span class="nv">$ </span>make menuconfig
+
+<span class="c"># For cross-compilation targeting ARM 32-bit</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm menuconfig
+
+<span class="c"># For cross-compilation targeting AArch64</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm64 menuconfig
+</code></pre></div></div>
+
+<p>Key bindings in menuconfig:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Key</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Arrow keys</td>
+      <td>Navigate menus</td>
+    </tr>
+    <tr>
+      <td>Enter</td>
+      <td>Enter submenu or toggle</td>
+    </tr>
+    <tr>
+      <td>Space</td>
+      <td>Toggle option (y/m/n cycle)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/</code></td>
+      <td>Search for a config symbol by name</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">?</code></td>
+      <td>Show help for selected option</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Y</code></td>
+      <td>Set to built-in (y)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">M</code></td>
+      <td>Set to module (m)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">N</code></td>
+      <td>Set to disabled (n)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Esc Esc</code></td>
+      <td>Go back / exit</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Searching with <code class="language-plaintext highlighter-rouge">/</code> is particularly powerful. Type a symbol name (without the <code class="language-plaintext highlighter-rouge">CONFIG_</code> prefix) and menuconfig will list all matching options along with their current value, location in the menu tree, and dependencies.</p>
+
+<hr />
+
+<h3 id="applying-a-defconfig">Applying a defconfig</h3>
+
+<p>Most boards and architectures provide a pre-made <code class="language-plaintext highlighter-rouge">defconfig</code> that provides a sensible starting point. These live under <code class="language-plaintext highlighter-rouge">arch/&lt;arch&gt;/configs/</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># List available defconfigs for ARM</span>
+<span class="nv">$ </span><span class="nb">ls arch</span>/arm/configs/ | <span class="nb">head</span> <span class="nt">-20</span>
+am200epdkit_defconfig
+armadillo800eva_defconfig
+aspeed_g4_defconfig
+aspeed_g5_defconfig
+at91_dt_defconfig
+axm55xx_defconfig
+badge4_defconfig
+bcm2835_defconfig
+bcm_defconfig
+cns3420vb_defconfig
+cm_x300_defconfig
+corgi_defconfig
+davinci_all_defconfig
+dove_defconfig
+ebsa110_defconfig
+efm32_defconfig
+ep93xx_defconfig
+eseries_pxa_defconfig
+exynos_defconfig
+footbridge_defconfig
+
+<span class="c"># Apply the ARM Versatile Express defconfig</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm vexpress_defconfig
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/kconfig/conf.o
+  HOSTCC  scripts/kconfig/confdata.o
+  HOSTCC  scripts/kconfig/expr.o
+  HOSTCC  scripts/kconfig/lexer.lex.o
+  HOSTCC  scripts/kconfig/menu.o
+  HOSTCC  scripts/kconfig/parser.tab.o
+  HOSTCC  scripts/kconfig/preprocess.o
+  HOSTCC  scripts/kconfig/symbol.o
+  HOSTCC  scripts/kconfig/util.o
+  HOSTCC  scripts/kconfig/conf
+<span class="c">#</span>
+<span class="c"># configuration written to .config</span>
+<span class="c">#</span>
+
+<span class="c"># For Raspberry Pi 3/4 (64-bit)</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm64 bcm2711_defconfig
+</code></pre></div></div>
+
+<p>After applying a defconfig, you can refine it further with <code class="language-plaintext highlighter-rouge">make menuconfig</code>.</p>
+
+<hr />
+
+<h3 id="saving-a-minimal-defconfig">Saving a Minimal defconfig</h3>
+
+<p>The full <code class="language-plaintext highlighter-rouge">.config</code> file contains thousands of lines, most of them auto-set by dependencies. The <code class="language-plaintext highlighter-rouge">make savedefconfig</code> command creates a minimal <code class="language-plaintext highlighter-rouge">defconfig</code> containing only the options that differ from the defaults — this is what you should store in version control.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Save a minimal defconfig</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm savedefconfig
+<span class="nv">$ </span><span class="nb">cat </span>defconfig | <span class="nb">wc</span> <span class="nt">-l</span>
+87
+
+<span class="c"># The full .config has thousands of lines</span>
+<span class="nv">$ </span><span class="nb">cat</span> .config | <span class="nb">wc</span> <span class="nt">-l</span>
+4821
+
+<span class="c"># Save to the arch configs directory (for mainlining)</span>
+<span class="nv">$ </span><span class="nb">cp </span>defconfig <span class="nb">arch</span>/arm/configs/myboard_defconfig
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="grepping-config">Grepping .config</h3>
+
+<p>When you need to quickly check whether a specific option is set without opening menuconfig:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Check if a specific option is set</span>
+<span class="nv">$ </span><span class="nb">grep </span>CONFIG_MODULES .config
+<span class="nv">CONFIG_MODULES</span><span class="o">=</span>y
+
+<span class="c"># Check all options related to USB</span>
+<span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-i</span> usb .config | <span class="nb">grep</span> <span class="nt">-v</span> <span class="s2">"^#"</span> | <span class="nb">head</span> <span class="nt">-15</span>
+<span class="nv">CONFIG_USB_SUPPORT</span><span class="o">=</span>y
+<span class="nv">CONFIG_USB</span><span class="o">=</span>y
+<span class="nv">CONFIG_USB_ANNOUNCEDEVICE</span><span class="o">=</span>y
+<span class="nv">CONFIG_USB_DEFAULT_PERSIST</span><span class="o">=</span>y
+<span class="nv">CONFIG_USB_DYNAMIC_MINORS</span><span class="o">=</span>y
+<span class="nv">CONFIG_USB_EHCI_HCD</span><span class="o">=</span>y
+<span class="nv">CONFIG_USB_EHCI_ROOT_HUB_TT</span><span class="o">=</span>y
+<span class="nv">CONFIG_USB_EHCI_TT_NEWSCHED</span><span class="o">=</span>y
+<span class="nv">CONFIG_USB_OHCI_HCD</span><span class="o">=</span>y
+<span class="nv">CONFIG_USB_OHCI_HCD_PLATFORM</span><span class="o">=</span>y
+<span class="nv">CONFIG_USB_UHCI_HCD</span><span class="o">=</span>y
+<span class="nv">CONFIG_USB_STORAGE</span><span class="o">=</span>y
+<span class="nv">CONFIG_USB_UAS</span><span class="o">=</span>y
+<span class="nv">CONFIG_USB_SERIAL</span><span class="o">=</span>y
+<span class="nv">CONFIG_USB_SERIAL_GENERIC</span><span class="o">=</span>y
+
+<span class="c"># Check if a config is explicitly disabled</span>
+<span class="nv">$ </span><span class="nb">grep </span>CONFIG_KGDB .config
+<span class="c"># CONFIG_KGDB is not set</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="kconfig-dependency-system">Kconfig Dependency System</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<p>Kconfig options rarely exist in isolation. They have relationships with other options that control when they can be enabled.</p>
+
+<h3 id="depends-on-select-and-imply">depends on, select, and imply</h3>
+
+<pre><code class="language-kconfig"># From drivers/net/ethernet/intel/Kconfig
+config E1000
+    tristate "Intel(R) PRO/1000 Gigabit Ethernet support"
+    depends on PCI
+    select PHYLIB
+    help
+      This driver supports Intel(R) PRO/1000 gigabit ethernet family of
+      adapters.
+
+config E1000E
+    tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
+    depends on PCI &amp;&amp; (!SPARC32)
+    select CRC32
+    select PHYLIB
+    depends on NET_CORE
+</code></pre>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">depends on PCI</code> — this option is only available if <code class="language-plaintext highlighter-rouge">CONFIG_PCI=y</code> or <code class="language-plaintext highlighter-rouge">CONFIG_PCI=m</code>. If the dependency is not met, the option is hidden entirely.</li>
+  <li><code class="language-plaintext highlighter-rouge">select PHYLIB</code> — when <code class="language-plaintext highlighter-rouge">E1000</code> is enabled, <code class="language-plaintext highlighter-rouge">CONFIG_PHYLIB</code> is automatically forced on. Use <code class="language-plaintext highlighter-rouge">select</code> for options that the current feature absolutely requires and the user should not be bothered with.</li>
+  <li><code class="language-plaintext highlighter-rouge">imply FOO</code> — a softer version of <code class="language-plaintext highlighter-rouge">select</code>. It suggests that <code class="language-plaintext highlighter-rouge">FOO</code> should be enabled but the user can still override it.</li>
+</ul>
+
+<p>The key difference: <code class="language-plaintext highlighter-rouge">depends on</code> hides an option when the dependency is unmet. <code class="language-plaintext highlighter-rouge">select</code> forces another option on. <code class="language-plaintext highlighter-rouge">imply</code> sets a default but allows override.</p>
+
+<hr />
+
+<h3 id="writing-a-kconfig-entry">Writing a Kconfig Entry</h3>
+
+<p>When you write a new kernel driver, you need to add a Kconfig entry and a Makefile entry:</p>
+
+<pre><code class="language-kconfig"># drivers/misc/mydevice/Kconfig
+
+config MY_DEVICE_DRIVER
+    tristate "My custom device driver"
+    depends on I2C
+    select REGMAP_I2C
+    default n
+    help
+      This driver supports the MyDevice XYZ sensor connected
+      via I2C bus.
+
+      To compile this driver as a module, choose M here.
+      The module will be called mydevice.
+
+config MY_DEVICE_DEBUG
+    bool "Enable debug output for My Device"
+    depends on MY_DEVICE_DRIVER
+    default n
+    help
+      Enable verbose debug logging from the My Device driver.
+      This should not be enabled in production builds.
+</code></pre>
+
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># drivers/misc/mydevice/Makefile
+</span><span class="nv">obj-$(CONFIG_MY_DEVICE_DRIVER)</span> <span class="o">+=</span> mydevice.o
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="config-fragments-and-merging">Config Fragments and Merging</h3>
+
+<p>Config fragments are partial <code class="language-plaintext highlighter-rouge">.config</code> files that override specific settings. They are invaluable for automated build systems and CI pipelines.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># A config fragment (e.g., debug.config)</span>
+<span class="nv">$ </span><span class="nb">cat </span>debug.config
+<span class="nv">CONFIG_DEBUG_INFO</span><span class="o">=</span>y
+<span class="nv">CONFIG_DEBUG_KERNEL</span><span class="o">=</span>y
+<span class="nv">CONFIG_KGDB</span><span class="o">=</span>y
+<span class="nv">CONFIG_KGDB_SERIAL_CONSOLE</span><span class="o">=</span>y
+<span class="c"># CONFIG_RANDOMIZE_BASE is not set</span>
+
+<span class="c"># Another fragment for networking</span>
+<span class="nv">$ </span><span class="nb">cat </span>net-features.config
+<span class="nv">CONFIG_NETFILTER</span><span class="o">=</span>y
+<span class="nv">CONFIG_IP_NF_IPTABLES</span><span class="o">=</span>y
+<span class="nv">CONFIG_NF_CONNTRACK</span><span class="o">=</span>y
+
+<span class="c"># Merge fragments on top of a base defconfig</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm vexpress_defconfig
+<span class="nv">$ </span>scripts/kconfig/merge_config.sh .config debug.config net-features.config
+  Using .config as base
+  Merging debug.config
+  Merging net-features.config
+  Value of CONFIG_DEBUG_INFO is redefined by fragment debug.config:
+  Previous value: <span class="c"># CONFIG_DEBUG_INFO is not set</span>
+  New value: <span class="nv">CONFIG_DEBUG_INFO</span><span class="o">=</span>y
+  <span class="c">#</span>
+  <span class="c"># merged configuration written to .config (needs make)</span>
+  <span class="c">#</span>
+
+<span class="c"># Now run make to finalize the config (resolve new dependencies)</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm olddefconfig
+</code></pre></div></div>
+
+<p>This workflow is common in Yocto, Buildroot, and CI systems where you have a base board config and overlay fragments for specific builds (debug, production, testing).</p>
+
+<hr />
+
+<h3 id="config_-macros-in-c-code">CONFIG_ Macros in C Code</h3>
+
+<p>Every <code class="language-plaintext highlighter-rouge">CONFIG_FOO</code> option becomes a preprocessor macro available in kernel C source files. This is how features are conditionally compiled:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* drivers/gpio/gpio-myboard.c */</span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;linux/module.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/gpio.h&gt;</span><span class="cp">
+</span>
+<span class="cm">/* Code only compiled when CONFIG_MY_GPIO_IRQS=y */</span>
+<span class="cp">#ifdef CONFIG_MY_GPIO_IRQS
+</span><span class="k">static</span> <span class="n">irqreturn_t</span> <span class="nf">myboard_gpio_irq</span><span class="p">(</span><span class="kt">int</span> <span class="n">irq</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">myboard_gpio</span> <span class="o">*</span><span class="n">mgpio</span> <span class="o">=</span> <span class="n">data</span><span class="p">;</span>
+    <span class="cm">/* handle interrupt */</span>
+    <span class="k">return</span> <span class="n">IRQ_HANDLED</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">myboard_gpio_setup_irq</span><span class="p">(</span><span class="k">struct</span> <span class="n">myboard_gpio</span> <span class="o">*</span><span class="n">mgpio</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="n">devm_request_irq</span><span class="p">(</span><span class="n">mgpio</span><span class="o">-&gt;</span><span class="n">dev</span><span class="p">,</span> <span class="n">mgpio</span><span class="o">-&gt;</span><span class="n">irq</span><span class="p">,</span>
+                            <span class="n">myboard_gpio_irq</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">"myboard-gpio"</span><span class="p">,</span> <span class="n">mgpio</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="cp">#else
+</span><span class="k">static</span> <span class="kr">inline</span> <span class="kt">int</span> <span class="nf">myboard_gpio_setup_irq</span><span class="p">(</span><span class="k">struct</span> <span class="n">myboard_gpio</span> <span class="o">*</span><span class="n">mgpio</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>  <span class="cm">/* no-op when IRQ support disabled */</span>
+<span class="p">}</span>
+<span class="cp">#endif
+</span>
+<span class="cm">/* IS_ENABLED() works for both bool and tristate configs */</span>
+<span class="k">static</span> <span class="kt">void</span> <span class="nf">myboard_init_features</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">IS_ENABLED</span><span class="p">(</span><span class="n">CONFIG_MY_GPIO_IRQS</span><span class="p">))</span>
+        <span class="n">pr_info</span><span class="p">(</span><span class="s">"myboard: IRQ support compiled in</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">IS_ENABLED</span><span class="p">(</span><span class="n">CONFIG_MY_GPIO_DEBUG</span><span class="p">))</span>
+        <span class="n">pr_info</span><span class="p">(</span><span class="s">"myboard: debug mode enabled</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">IS_ENABLED()</code> macro is preferred in modern kernel code over raw <code class="language-plaintext highlighter-rouge">#ifdef</code> because it allows the compiler to check the syntax of both branches even when one is disabled, catching more bugs at build time.</p>
+
+<hr />
+
+<h3 id="make-oldconfig-and-make-olddefconfig">make oldconfig and make olddefconfig</h3>
+
+<p>When you update the kernel to a new version, the <code class="language-plaintext highlighter-rouge">.config</code> from the old version may be missing options that are new in the new kernel:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Copy your existing .config from the old kernel tree to the new one</span>
+<span class="nv">$ </span><span class="nb">cp</span> /path/to/old-kernel/.config <span class="nb">.</span>
+
+<span class="c"># make oldconfig: asks you about each NEW option interactively</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm oldconfig
+scripts/kconfig/conf <span class="nt">--oldconfig</span> Kconfig
+<span class="k">*</span>
+<span class="k">*</span> Restart config...
+<span class="k">*</span>
+<span class="k">*</span>
+<span class="k">*</span> Memory Management options
+<span class="k">*</span>
+Transparent Hugepage Support <span class="o">(</span>TRANSPARENT_HUGEPAGE<span class="o">)</span> <span class="o">[</span>Y/n/?] <span class="o">(</span>NEW<span class="o">)</span>
+...
+
+<span class="c"># make olddefconfig: silently sets all new options to their defaults</span>
+<span class="c"># This is the non-interactive version, preferred for automated builds</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm olddefconfig
+scripts/kconfig/conf <span class="nt">--olddefconfig</span> Kconfig
+<span class="c">#</span>
+<span class="c"># configuration written to .config</span>
+<span class="c">#</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">make olddefconfig</code> is the standard choice in CI/automated build environments because it never blocks waiting for user input.</p>
+
+<hr />
+
+<h3 id="tracking-config-changes-with-git">Tracking Config Changes with git</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># If you track .config in git (or use git diff against a known-good config)</span>
+<span class="nv">$ </span>git diff .config | <span class="nb">head</span> <span class="nt">-40</span>
+diff <span class="nt">--git</span> a/.config b/.config
+index 3f2a1b4..8d9e2c1 100644
+<span class="nt">---</span> a/.config
++++ b/.config
+@@ <span class="nt">-512</span>,7 +512,7 @@
+ <span class="nv">CONFIG_NETFILTER</span><span class="o">=</span>y
+-# CONFIG_NF_CONNTRACK is not <span class="nb">set</span>
++CONFIG_NF_CONNTRACK<span class="o">=</span>y
++CONFIG_NF_CONNTRACK_MARK<span class="o">=</span>y
++CONFIG_NF_CONNTRACK_SECMARK<span class="o">=</span>y
+ <span class="nv">CONFIG_NF_TABLES</span><span class="o">=</span>y
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="important-kernel-configs-to-know">Important Kernel Configs to Know</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Check several important configs at once</span>
+<span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-E</span> <span class="s2">"^(CONFIG_MODULES|CONFIG_DEVTMPFS|CONFIG_PROC_FS|CONFIG_SYSFS|CONFIG_OF|CONFIG_TMPFS)"</span> .config
+<span class="nv">CONFIG_MODULES</span><span class="o">=</span>y
+<span class="nv">CONFIG_DEVTMPFS</span><span class="o">=</span>y
+<span class="nv">CONFIG_DEVTMPFS_MOUNT</span><span class="o">=</span>y
+<span class="nv">CONFIG_PROC_FS</span><span class="o">=</span>y
+<span class="nv">CONFIG_SYSFS</span><span class="o">=</span>y
+<span class="nv">CONFIG_OF</span><span class="o">=</span>y
+<span class="nv">CONFIG_TMPFS</span><span class="o">=</span>y
+</code></pre></div></div>
+
+<p>Key configs explained:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Config</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_MODULES</code></td>
+      <td>Enables loadable kernel module support (without this, everything must be built-in)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_DEVTMPFS</code></td>
+      <td>Creates <code class="language-plaintext highlighter-rouge">/dev</code> entries automatically for devices at boot</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_DEVTMPFS_MOUNT</code></td>
+      <td>Automatically mounts devtmpfs at <code class="language-plaintext highlighter-rouge">/dev</code> during boot</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_PROC_FS</code></td>
+      <td>Enables the <code class="language-plaintext highlighter-rouge">/proc</code> filesystem (required by many tools)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_SYSFS</code></td>
+      <td>Enables the <code class="language-plaintext highlighter-rouge">/sys</code> filesystem (required by udev, systemd)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_OF</code></td>
+      <td>Device Tree support (essential for most embedded platforms)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CONFIG_TMPFS</code></td>
+      <td>Enables tmpfs (needed for <code class="language-plaintext highlighter-rouge">/run</code>, <code class="language-plaintext highlighter-rouge">/tmp</code> in systemd systems)</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-adv" id="kconfig-deep-dive">Kconfig Deep Dive</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="kconfig-language-menuconfig-choice-ifendif">Kconfig Language: menuconfig, choice, if/endif</h3>
+
+<p>Beyond simple <code class="language-plaintext highlighter-rouge">config</code> entries, Kconfig supports more complex constructs:</p>
+
+<pre><code class="language-kconfig"># menuconfig creates a submenu that can also be toggled on/off
+menuconfig I2C
+    tristate "I2C support"
+    select RT_MUTEXES
+    help
+      I2C (normally pronounced i-squared-c) implements a protocol
+      originating from Philips.
+
+if I2C
+# Everything inside this block only appears if I2C is enabled
+config I2C_BOARDINFO
+    bool
+    default y
+
+config I2C_CHARDEV
+    tristate "I2C device interface"
+    help
+      Say Y here to use i2c-* device files
+
+endif # I2C
+
+# choice creates a single-selection menu (radio buttons)
+choice
+    prompt "Kernel compression mode"
+    default KERNEL_GZIP
+    help
+      The kernel gets compressed during build.
+
+config KERNEL_GZIP
+    bool "Gzip"
+    depends on HAVE_KERNEL_GZIP
+
+config KERNEL_BZIP2
+    bool "Bzip2"
+    depends on HAVE_KERNEL_BZIP2
+
+config KERNEL_LZMA
+    bool "LZMA"
+    depends on HAVE_KERNEL_LZMA
+
+endchoice
+</code></pre>
+
+<hr />
+
+<h3 id="dependency-warnings-and-loops">Dependency Warnings and Loops</h3>
+
+<p>When Kconfig dependency rules are violated, you get warnings:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>WARNING: unmet direct dependencies detected for USB_EHCI_HCD
+  Depends on [n]: USB_SUPPORT [=y] &amp;&amp; USB [=n]
+  Selected by [y]:
+  - USB_EHCI_PLATFORM [=y] &amp;&amp; USB_SUPPORT [=y] &amp;&amp; OF [=y]
+</code></pre></div></div>
+
+<p>This warning means: <code class="language-plaintext highlighter-rouge">USB_EHCI_HCD</code> was selected by <code class="language-plaintext highlighter-rouge">USB_EHCI_PLATFORM</code>, but <code class="language-plaintext highlighter-rouge">USB</code> (which <code class="language-plaintext highlighter-rouge">USB_EHCI_HCD</code> depends on) is currently disabled. The solution is to also enable <code class="language-plaintext highlighter-rouge">CONFIG_USB=y</code>.</p>
+
+<hr />
+
+<h3 id="allmodconfig-allnoconfig-tinyconfig">allmodconfig, allnoconfig, tinyconfig</h3>
+
+<p>These special targets are used for build testing:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Enable all possible options as modules — tests that all drivers compile</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm allmodconfig
+<span class="c"># Warning: this creates a very large kernel and takes a long time to build</span>
+
+<span class="c"># Disable everything possible — creates the smallest possible kernel</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm allnoconfig
+
+<span class="c"># Absolute minimum config for a bootable kernel (even smaller than allnoconfig)</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm tinyconfig
+
+<span class="c"># Check how many options each generates</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm allnoconfig <span class="o">&amp;&amp;</span> <span class="nb">grep</span> <span class="nt">-c</span> <span class="s2">"^CONFIG"</span> .config
+83
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm tinyconfig <span class="o">&amp;&amp;</span> <span class="nb">grep</span> <span class="nt">-c</span> <span class="s2">"^CONFIG"</span> .config
+21
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">allmodconfig</code> is used by kernel developers and CI systems (like the 0-day bot) to ensure that all new code compiles correctly under all configurations.</p>
+
+<hr />
+
+<h3 id="generating-a-minimal-embedded-config">Generating a Minimal Embedded Config</h3>
+
+<p>The workflow for creating a minimal config for a custom embedded target:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Start from absolute minimum</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm allnoconfig
+
+<span class="c"># Open menuconfig and enable only what you need</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm menuconfig
+
+<span class="c"># Essential options for a minimal embedded system:</span>
+<span class="c"># - Platform/board support (your specific SoC)</span>
+<span class="c"># - CONFIG_PROC_FS=y (needed by many tools)</span>
+<span class="c"># - CONFIG_SYSFS=y (needed by udev)</span>
+<span class="c"># - CONFIG_DEVTMPFS=y + CONFIG_DEVTMPFS_MOUNT=y</span>
+<span class="c"># - CONFIG_OF=y (Device Tree)</span>
+<span class="c"># - CONFIG_SERIAL_8250=y (or your UART driver)</span>
+<span class="c"># - CONFIG_SERIAL_8250_CONSOLE=y</span>
+<span class="c"># - CONFIG_EXT4_FS=y (or your rootfs type)</span>
+<span class="c"># - CONFIG_TMPFS=y</span>
+<span class="c"># - CONFIG_NET=y (if networking needed)</span>
+
+<span class="c"># After menuconfig, save minimal defconfig</span>
+<span class="nv">$ </span>make <span class="nv">ARCH</span><span class="o">=</span>arm savedefconfig
+<span class="nv">$ </span><span class="nb">wc</span> <span class="nt">-l</span> defconfig
+94 defconfig
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="scriptsdiffconfig">scripts/diffconfig</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Compare two config files to see what changed</span>
+<span class="nv">$ </span>scripts/diffconfig .config.old .config.new
+ CONFIG_NETFILTER n -&gt; y
++CONFIG_NF_CONNTRACK n
++CONFIG_NF_TABLES n
+<span class="nt">-CONFIG_KGDB</span> y
+ CONFIG_DEBUG_INFO n -&gt; y
+
+<span class="c"># The format is:</span>
+<span class="c"># +FOO  (added, was not set)</span>
+<span class="c"># -FOO  (removed, was set)</span>
+<span class="c"># FOO x -&gt; y  (changed from x to y)</span>
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="kconfig-hardened-check">kconfig-hardened-check</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">kconfig-hardened-check</code> tool audits a <code class="language-plaintext highlighter-rouge">.config</code> file against a list of security-hardening recommendations:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install the tool</span>
+<span class="nv">$ </span>pip <span class="nb">install </span>git+https://github.com/a13xp0p0v/kconfig-hardened-check
+
+<span class="c"># Check your config against security recommendations</span>
+<span class="nv">$ </span>kconfig-hardened-check <span class="nt">-c</span> .config <span class="nt">-a</span> ARM64 | <span class="nb">head</span> <span class="nt">-40</span>
+
+<span class="o">[</span>+] Special report mode: verbose
+<span class="o">[</span>+] Kernel version: 6.1
+<span class="o">[</span>+] Architecture: ARM64
+<span class="o">[</span>+] Config file: .config
+
+<span class="o">========================================================================================================================</span>
+              option name               | <span class="nb">type</span>  |desired val | decision |      reason      | check result
+<span class="o">========================================================================================================================</span>
+CONFIG_BUG                              |kconfig|     y      |defconfig | self_protection  | OK
+CONFIG_SLUB_DEBUG                       |kconfig|     y      |defconfig | self_protection  | OK
+CONFIG_GCC_PLUGINS                      |kconfig|     y      | hardened | self_protection  | FAIL: not found
+CONFIG_STACKPROTECTOR_STRONG            |kconfig|     y      | hardened | self_protection  | OK
+CONFIG_STRICT_KERNEL_RWX                |kconfig|     y      |defconfig | self_protection  | OK
+CONFIG_STRICT_MODULE_RWX                |kconfig|     y      |defconfig | self_protection  | OK
+CONFIG_IOMMU_SUPPORT                    |kconfig|     y      | hardened | self_protection  | OK
+CONFIG_RANDOMIZE_BASE                   |kconfig|     y      | hardened | self_protection  | FAIL: not found
+CONFIG_RANDOMIZE_MEMORY                 |kconfig|     y      | hardened | self_protection  | FAIL: not <span class="nb">set
+</span>CONFIG_CC_HAS_RANDSTRUCT                |kconfig|     y      | hardened | self_protection  | OK
+CONFIG_RANDSTRUCT_FULL                  |kconfig|     y      | hardened | self_protection  | FAIL: not found
+</code></pre></div></div>
+
+<p>This is essential for production embedded systems where security matters — IoT devices, automotive, medical equipment.</p>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-questions">Interview Questions</h2>
+
+<p><strong>Q: What is the difference between tristate y, m, and n in Kconfig?</strong></p>
+
+<p>A tristate option with <code class="language-plaintext highlighter-rouge">y</code> (yes) compiles the feature directly into the kernel image — it is always present and cannot be removed at runtime. With <code class="language-plaintext highlighter-rouge">m</code> (module), the feature is compiled as a separate <code class="language-plaintext highlighter-rouge">.ko</code> file that can be loaded with <code class="language-plaintext highlighter-rouge">modprobe</code> and unloaded with <code class="language-plaintext highlighter-rouge">rmmod</code>. With <code class="language-plaintext highlighter-rouge">n</code> (no), the feature is completely excluded from the build. <code class="language-plaintext highlighter-rouge">bool</code> options only support <code class="language-plaintext highlighter-rouge">y</code> and <code class="language-plaintext highlighter-rouge">n</code> since they cannot be modularized.</p>
+
+<p><strong>Q: How do you find a specific Kconfig option in menuconfig?</strong></p>
+
+<p>Press the <code class="language-plaintext highlighter-rouge">/</code> key while in menuconfig to open the search dialog. Type the symbol name (without the <code class="language-plaintext highlighter-rouge">CONFIG_</code> prefix) — for example, type <code class="language-plaintext highlighter-rouge">KGDB</code> to find <code class="language-plaintext highlighter-rouge">CONFIG_KGDB</code>. The results show the option’s current value, its location in the menu tree, and any unmet dependencies. You can navigate directly to the option from the search results.</p>
+
+<p><strong>Q: What does make olddefconfig do and when would you use it?</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">make olddefconfig</code> reads an existing <code class="language-plaintext highlighter-rouge">.config</code> file (typically copied from a previous kernel version) and silently sets any new options that are not present in the old config to their default values. It is used when upgrading to a newer kernel version while preserving your existing configuration choices. It is preferred over <code class="language-plaintext highlighter-rouge">make oldconfig</code> in automated/CI environments because it does not prompt for input.</p>
+
+<p><strong>Q: What is the purpose of the select keyword vs depends on?</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">depends on FOO</code> makes a Kconfig option invisible and unconfigurable unless <code class="language-plaintext highlighter-rouge">FOO</code> is already enabled — it is a prerequisite check. <code class="language-plaintext highlighter-rouge">select FOO</code> forces <code class="language-plaintext highlighter-rouge">CONFIG_FOO</code> to be enabled whenever the current option is enabled, without requiring the user to manually enable it. <code class="language-plaintext highlighter-rouge">select</code> is used for library-like dependencies that are implementation details. The rule of thumb: use <code class="language-plaintext highlighter-rouge">depends on</code> for options the user chooses, and <code class="language-plaintext highlighter-rouge">select</code> for mandatory internal dependencies.</p>
+
+<p><strong>Q: How do you create a minimal kernel config for a custom embedded target?</strong></p>
+
+<p>Start with <code class="language-plaintext highlighter-rouge">make ARCH=&lt;arch&gt; allnoconfig</code> to disable everything, then use <code class="language-plaintext highlighter-rouge">make ARCH=&lt;arch&gt; menuconfig</code> to enable only what is needed: the SoC platform, UART driver and console, Device Tree support, root filesystem type, devtmpfs, proc, sysfs, and any specific drivers for your hardware. After finalizing, run <code class="language-plaintext highlighter-rouge">make ARCH=&lt;arch&gt; savedefconfig</code> to generate a minimal <code class="language-plaintext highlighter-rouge">defconfig</code> file for version control.</p>
+
+<p><strong>Q: How do CONFIG_ macros work in kernel C source code?</strong></p>
+
+<p>Every <code class="language-plaintext highlighter-rouge">CONFIG_FOO=y</code> in <code class="language-plaintext highlighter-rouge">.config</code> causes <code class="language-plaintext highlighter-rouge">CONFIG_FOO</code> to be defined as <code class="language-plaintext highlighter-rouge">1</code> for the C preprocessor during compilation. Every <code class="language-plaintext highlighter-rouge"># CONFIG_FOO is not set</code> means <code class="language-plaintext highlighter-rouge">CONFIG_FOO</code> is undefined. Code can use <code class="language-plaintext highlighter-rouge">#ifdef CONFIG_FOO ... #endif</code> for conditional compilation. The preferred modern approach is <code class="language-plaintext highlighter-rouge">IS_ENABLED(CONFIG_FOO)</code>, which evaluates to a compile-time constant (1 or 0) allowing the compiler to dead-code-eliminate the disabled branch while still syntax-checking it. <code class="language-plaintext highlighter-rouge">IS_BUILTIN(CONFIG_FOO)</code> is true only for <code class="language-plaintext highlighter-rouge">y</code>, and <code class="language-plaintext highlighter-rouge">IS_MODULE(CONFIG_FOO)</code> is true only for <code class="language-plaintext highlighter-rouge">m</code>.</p>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<ul>
+  <li><strong>Linux kernel Kconfig documentation:</strong> <code class="language-plaintext highlighter-rouge">Documentation/kbuild/kconfig-language.rst</code> in the kernel source tree</li>
+  <li><strong>“Linux Kernel Development” by Robert Love</strong> (3rd edition) — comprehensive coverage of the build system and configuration</li>
+  <li><strong>“Mastering Embedded Linux Programming” by Chris Simmonds</strong> — practical defconfig and fragment workflows for embedded targets</li>
+  <li><strong>kconfig-hardened-check tool:</strong> <a href="https://github.com/a13xp0p0v/kconfig-hardened-check">https://github.com/a13xp0p0v/kconfig-hardened-check</a> — security configuration auditing</li>
+  <li><strong>Kernel Kconfig online documentation:</strong> <a href="https://www.kernel.org/doc/html/latest/kbuild/kconfig.html">https://www.kernel.org/doc/html/latest/kbuild/kconfig.html</a></li>
+  <li><strong>LWN.net Kconfig articles:</strong> <a href="https://lwn.net/Kernel/Index/#Configuration">https://lwn.net/Kernel/Index/#Configuration</a></li>
+</ul>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fab fa-linux"></i>
+        <span>Linux Kernel Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/embedded-linux/kernel/kconfig-menuconfig/" class="gtn-link gts-active">
+          <i class="fas fa-sliders"></i> Kconfig &amp; menuconfig
+        </a>
+        <a href="/embedded-linux/kernel/kernel-compilation/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> Kernel Compilation
+        </a>
+        <a href="/embedded-linux/kernel/boot-parameters/" class="gtn-link ">
+          <i class="fas fa-list-check"></i> Boot Parameters
+        </a>
+        <a href="/embedded-linux/kernel/kernel-subsystems/" class="gtn-link ">
+          <i class="fab fa-linux"></i> Kernel Subsystems
+        </a>
+        <a href="/embedded-linux/kernel/printk-debug/" class="gtn-link ">
+          <i class="fas fa-bug"></i> printk &amp; Dynamic Debug
+        </a>
+        <a href="/embedded-linux/kernel/ftrace-kprobes/" class="gtn-link ">
+          <i class="fas fa-chart-line"></i> ftrace &amp; kprobes
+        </a>
+      </nav>
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/embedded-linux/uboot/tftp-boot/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">TFTP & Network Boot</span>
+      </a>
+      
+      
+      <a href="/embedded-linux/kernel/kernel-compilation/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Kernel Compilation</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

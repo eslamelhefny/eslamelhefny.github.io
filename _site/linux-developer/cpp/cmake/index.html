@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CMake · Eslam Mohamed</title>
+  <meta name="description" content="Build cross-platform C++ projects with CMake — targets, properties, find_package, toolchain files for cross-compilation, CTest, CPack, and modern CMake best practices." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/cpp/">C++ Programming</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>CMake</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 03</span>
+      </div>
+      <h1 class="guide-title">CMake</h1>
+      <p class="guide-subtitle">Build cross-platform C++ projects with CMake — targets, properties, find_package, toolchain files for cross-compilation, CTest, CPack, and modern CMake best practices.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="what-is-cmake">What is CMake?</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>CMake is a <strong>build system generator</strong> — it generates native build files (Makefiles, Ninja, Visual Studio projects) from a platform-independent description (<code class="language-plaintext highlighter-rouge">CMakeLists.txt</code>). It is the de facto standard build system for C++ projects.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Source + CMakeLists.txt  →  CMake  →  Makefile / build.ninja / .sln
+                                         ↓
+                                      Compiler / Linker → Binary
+</code></pre></div></div>
+
+<h3 id="cmake-workflow">CMake Workflow</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Configure (generate build files)</span>
+cmake <span class="nt">-B</span> build <span class="nt">-S</span> <span class="nb">.</span>
+
+<span class="c"># Build</span>
+cmake <span class="nt">--build</span> build
+
+<span class="c"># Install</span>
+cmake <span class="nt">--install</span> build
+
+<span class="c"># Or use specific generator</span>
+cmake <span class="nt">-B</span> build <span class="nt">-G</span> Ninja <span class="nt">-DCMAKE_BUILD_TYPE</span><span class="o">=</span>Release
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="modern-cmake-targets-and-properties">Modern CMake: Targets and Properties</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p><strong>Modern CMake (3.x+)</strong> thinks in <strong>targets</strong> — each target has properties that describe how to build it and how consumers should use it.</p>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cmake_minimum_required</span><span class="p">(</span>VERSION 3.16<span class="p">)</span>
+<span class="nb">project</span><span class="p">(</span>MyApp VERSION 1.0.0 LANGUAGES CXX<span class="p">)</span>
+
+<span class="c1"># Require C++17</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_CXX_STANDARD 17<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_CXX_STANDARD_REQUIRED ON<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_CXX_EXTENSIONS OFF<span class="p">)</span>   <span class="c1"># -std=c++17, not -std=gnu++17</span>
+
+<span class="c1"># --- Library target ---</span>
+<span class="nb">add_library</span><span class="p">(</span>sensor_lib STATIC
+    src/sensor.cpp
+    src/calibration.cpp
+<span class="p">)</span>
+
+<span class="c1"># PRIVATE: only for building sensor_lib itself</span>
+<span class="c1"># INTERFACE: only for consumers of sensor_lib</span>
+<span class="c1"># PUBLIC: both</span>
+<span class="nb">target_include_directories</span><span class="p">(</span>sensor_lib
+    PUBLIC  include/          <span class="c1"># consumers get this include path</span>
+    PRIVATE src/              <span class="c1"># only this library sees it</span>
+<span class="p">)</span>
+
+<span class="nb">target_compile_options</span><span class="p">(</span>sensor_lib
+    PRIVATE -Wall -Wextra -Wpedantic
+<span class="p">)</span>
+
+<span class="nb">target_compile_definitions</span><span class="p">(</span>sensor_lib
+    PUBLIC  SENSOR_LIB_VERSION=1
+    PRIVATE SENSOR_DEBUG=0
+<span class="p">)</span>
+
+<span class="c1"># --- Executable target ---</span>
+<span class="nb">add_executable</span><span class="p">(</span>myapp main.cpp<span class="p">)</span>
+
+<span class="nb">target_link_libraries</span><span class="p">(</span>myapp
+    PRIVATE sensor_lib   <span class="c1"># links sensor_lib; inherits its PUBLIC properties</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="directory-structure">Directory Structure</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>project/
+├── CMakeLists.txt        ← top-level
+├── include/
+│   └── sensor.h
+├── src/
+│   ├── CMakeLists.txt    ← optional sub-directory
+│   ├── sensor.cpp
+│   └── calibration.cpp
+├── tests/
+│   ├── CMakeLists.txt
+│   └── test_sensor.cpp
+└── build/                ← out-of-source build dir (never commit!)
+</code></pre></div></div>
+
+<h3 id="multi-directory-project">Multi-Directory Project</h3>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Top-level CMakeLists.txt</span>
+<span class="nb">cmake_minimum_required</span><span class="p">(</span>VERSION 3.16<span class="p">)</span>
+<span class="nb">project</span><span class="p">(</span>MyProject<span class="p">)</span>
+
+<span class="nb">add_subdirectory</span><span class="p">(</span>src<span class="p">)</span>
+<span class="nb">add_subdirectory</span><span class="p">(</span>tests<span class="p">)</span>
+
+<span class="c1"># src/CMakeLists.txt</span>
+<span class="nb">add_library</span><span class="p">(</span>mylib sensor.cpp<span class="p">)</span>
+<span class="nb">target_include_directories</span><span class="p">(</span>mylib PUBLIC <span class="si">${</span><span class="nv">CMAKE_SOURCE_DIR</span><span class="si">}</span>/include<span class="p">)</span>
+
+<span class="c1"># tests/CMakeLists.txt</span>
+<span class="nb">add_executable</span><span class="p">(</span>test_sensor test_sensor.cpp<span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span>test_sensor PRIVATE mylib<span class="p">)</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="finding-and-using-libraries">Finding and Using Libraries</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="find_package"><code class="language-plaintext highlighter-rouge">find_package</code></h3>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Find OpenSSL (system library)</span>
+<span class="nb">find_package</span><span class="p">(</span>OpenSSL REQUIRED<span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span>myapp PRIVATE OpenSSL::SSL OpenSSL::Crypto<span class="p">)</span>
+
+<span class="c1"># Find Threads (pthreads)</span>
+<span class="nb">find_package</span><span class="p">(</span>Threads REQUIRED<span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span>myapp PRIVATE Threads::Threads<span class="p">)</span>
+
+<span class="c1"># Find Qt6</span>
+<span class="nb">find_package</span><span class="p">(</span>Qt6 REQUIRED COMPONENTS Core Widgets<span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span>myapp PRIVATE Qt6::Core Qt6::Widgets<span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="fetchcontent--embedded-dependencies">FetchContent — Embedded Dependencies</h3>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">include</span><span class="p">(</span>FetchContent<span class="p">)</span>
+
+<span class="nf">FetchContent_Declare</span><span class="p">(</span>
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG        v1.14.0
+<span class="p">)</span>
+<span class="nf">FetchContent_MakeAvailable</span><span class="p">(</span>googletest<span class="p">)</span>
+
+<span class="nb">add_executable</span><span class="p">(</span>tests test_main.cpp<span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span>tests PRIVATE GTest::gtest_main<span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="pkg-config">pkg-config</h3>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">find_package</span><span class="p">(</span>PkgConfig REQUIRED<span class="p">)</span>
+<span class="nf">pkg_check_modules</span><span class="p">(</span>LIBSYSTEMD REQUIRED libsystemd<span class="p">)</span>
+
+<span class="nb">target_include_directories</span><span class="p">(</span>myapp PRIVATE <span class="si">${</span><span class="nv">LIBSYSTEMD_INCLUDE_DIRS</span><span class="si">}</span><span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span>myapp PRIVATE <span class="si">${</span><span class="nv">LIBSYSTEMD_LIBRARIES</span><span class="si">}</span><span class="p">)</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="build-types-and-compiler-flags">Build Types and Compiler Flags</h2>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Set default build type</span>
+<span class="nb">if</span><span class="p">(</span>NOT CMAKE_BUILD_TYPE<span class="p">)</span>
+    <span class="nb">set</span><span class="p">(</span>CMAKE_BUILD_TYPE <span class="s2">"Debug"</span> CACHE STRING <span class="s2">""</span> FORCE<span class="p">)</span>
+<span class="nb">endif</span><span class="p">()</span>
+
+<span class="c1"># Common build types:</span>
+<span class="c1"># Debug        → -g -O0</span>
+<span class="c1"># Release      → -O3 -DNDEBUG</span>
+<span class="c1"># RelWithDebInfo → -O2 -g -DNDEBUG</span>
+<span class="c1"># MinSizeRel   → -Os -DNDEBUG</span>
+
+<span class="c1"># Custom flags per config</span>
+<span class="nb">target_compile_options</span><span class="p">(</span>myapp PRIVATE
+    $&lt;$&lt;CONFIG:Debug&gt;:-O0 -g3 -fsanitize=address,undefined&gt;
+    $&lt;$&lt;CONFIG:Release&gt;:-O3 -march=native&gt;
+<span class="p">)</span>
+<span class="nb">target_link_options</span><span class="p">(</span>myapp PRIVATE
+    $&lt;$&lt;CONFIG:Debug&gt;:-fsanitize=address,undefined&gt;
+<span class="p">)</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="cross-compilation-toolchain-files">Cross-Compilation Toolchain Files</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># toolchain-arm-linux.cmake</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_SYSTEM_NAME Linux<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_SYSTEM_PROCESSOR arm<span class="p">)</span>
+
+<span class="nb">set</span><span class="p">(</span>CROSS_PREFIX arm-linux-gnueabihf-<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_C_COMPILER   <span class="si">${</span><span class="nv">CROSS_PREFIX</span><span class="si">}</span>gcc<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_CXX_COMPILER <span class="si">${</span><span class="nv">CROSS_PREFIX</span><span class="si">}</span>g++<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_STRIP        <span class="si">${</span><span class="nv">CROSS_PREFIX</span><span class="si">}</span>strip<span class="p">)</span>
+
+<span class="c1"># Sysroot — where to find cross-compiled libraries</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_SYSROOT /opt/arm-sysroot<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH <span class="si">${</span><span class="nv">CMAKE_SYSROOT</span><span class="si">}</span><span class="p">)</span>
+
+<span class="c1"># Only search in sysroot for headers and libs</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY<span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Configure with toolchain</span>
+cmake <span class="nt">-B</span> build-arm <span class="se">\</span>
+      <span class="nt">-DCMAKE_TOOLCHAIN_FILE</span><span class="o">=</span>toolchain-arm-linux.cmake <span class="se">\</span>
+      <span class="nt">-DCMAKE_BUILD_TYPE</span><span class="o">=</span>Release
+
+cmake <span class="nt">--build</span> build-arm
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="ctest--testing">CTest — Testing</h2>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Enable testing</span>
+<span class="nb">enable_testing</span><span class="p">()</span>
+
+<span class="nb">add_executable</span><span class="p">(</span>test_sensor tests/test_sensor.cpp<span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span>test_sensor PRIVATE mylib GTest::gtest_main<span class="p">)</span>
+
+<span class="c1"># Register with CTest</span>
+<span class="nb">add_test</span><span class="p">(</span>NAME SensorTests COMMAND test_sensor<span class="p">)</span>
+
+<span class="c1"># Test with labels, timeout</span>
+<span class="nb">add_test</span><span class="p">(</span>NAME HardwareTests COMMAND test_hw<span class="p">)</span>
+<span class="nb">set_tests_properties</span><span class="p">(</span>HardwareTests PROPERTIES TIMEOUT 30 LABELS <span class="s2">"hardware"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Run tests</span>
+ctest <span class="nt">--test-dir</span> build
+ctest <span class="nt">--test-dir</span> build <span class="nt">-R</span> <span class="s2">"Sensor"</span>   <span class="c"># filter by regex</span>
+ctest <span class="nt">--test-dir</span> build <span class="nt">-V</span>             <span class="c"># verbose output</span>
+ctest <span class="nt">--test-dir</span> build <span class="nt">--parallel</span> 4   <span class="c"># parallel execution</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="useful-cmake-variables">Useful CMake Variables</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Variable</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CMAKE_SOURCE_DIR</code></td>
+      <td>Top-level source directory</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CMAKE_BINARY_DIR</code></td>
+      <td>Top-level build directory</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CMAKE_CURRENT_SOURCE_DIR</code></td>
+      <td>Current CMakeLists.txt source dir</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CMAKE_CURRENT_BINARY_DIR</code></td>
+      <td>Current CMakeLists.txt build dir</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CMAKE_BUILD_TYPE</code></td>
+      <td>Debug / Release / RelWithDebInfo</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CMAKE_CXX_STANDARD</code></td>
+      <td>11, 14, 17, 20, 23</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CMAKE_INSTALL_PREFIX</code></td>
+      <td>Installation prefix (default <code class="language-plaintext highlighter-rouge">/usr/local</code>)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">BUILD_SHARED_LIBS</code></td>
+      <td>Default library type (ON = shared)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CMAKE_EXPORT_COMPILE_COMMANDS</code></td>
+      <td>Generate <code class="language-plaintext highlighter-rouge">compile_commands.json</code> for IDEs</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Always generate compile_commands.json (for clangd, VS Code)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_EXPORT_COMPILE_COMMANDS ON<span class="p">)</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between CMake and Make?</strong></p>
+
+<blockquote>
+  <p>CMake is a <strong>build system generator</strong> — it reads <code class="language-plaintext highlighter-rouge">CMakeLists.txt</code> and outputs native build files for Makefiles, Ninja, or IDE project files. Make is a <strong>build system</strong> that reads the generated Makefile and actually invokes the compiler. CMake adds platform independence (the same <code class="language-plaintext highlighter-rouge">CMakeLists.txt</code> works on Linux, macOS, Windows), dependency tracking between targets, and a higher-level API. You typically run <code class="language-plaintext highlighter-rouge">cmake</code> first, then <code class="language-plaintext highlighter-rouge">make</code> (or <code class="language-plaintext highlighter-rouge">ninja</code>) in the generated build directory.</p>
+</blockquote>
+
+<p><strong>Q2 — Intermediate: What is the difference between <code class="language-plaintext highlighter-rouge">PRIVATE</code>, <code class="language-plaintext highlighter-rouge">PUBLIC</code>, and <code class="language-plaintext highlighter-rouge">INTERFACE</code> in <code class="language-plaintext highlighter-rouge">target_link_libraries</code> and <code class="language-plaintext highlighter-rouge">target_include_directories</code>?</strong></p>
+
+<blockquote>
+  <p>These keywords control <strong>transitive propagation</strong> of properties. <code class="language-plaintext highlighter-rouge">PRIVATE</code> — used only when building the target itself (not propagated to consumers). <code class="language-plaintext highlighter-rouge">INTERFACE</code> — not used when building the target, but propagated to targets that link to it. <code class="language-plaintext highlighter-rouge">PUBLIC</code> — used both when building the target AND propagated to consumers. Example: a library’s public header directory should be <code class="language-plaintext highlighter-rouge">PUBLIC</code> (consumers need it to include headers); implementation-only source directories should be <code class="language-plaintext highlighter-rouge">PRIVATE</code> (consumers don’t need them).</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: How do you cross-compile with CMake?</strong></p>
+
+<blockquote>
+  <p>Create a toolchain file (<code class="language-plaintext highlighter-rouge">.cmake</code>) that sets <code class="language-plaintext highlighter-rouge">CMAKE_SYSTEM_NAME</code> and <code class="language-plaintext highlighter-rouge">CMAKE_SYSTEM_PROCESSOR</code> to the target platform, sets <code class="language-plaintext highlighter-rouge">CMAKE_C_COMPILER</code>/<code class="language-plaintext highlighter-rouge">CMAKE_CXX_COMPILER</code> to the cross toolchain binaries, and sets <code class="language-plaintext highlighter-rouge">CMAKE_SYSROOT</code> to a directory with target libraries and headers. Pass it to CMake with <code class="language-plaintext highlighter-rouge">-DCMAKE_TOOLCHAIN_FILE=toolchain.cmake</code>. CMake will use the cross compiler and look for libraries in the sysroot, not the host system.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: What is <code class="language-plaintext highlighter-rouge">compile_commands.json</code> and why is it important?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">compile_commands.json</code> is a compilation database — a JSON file listing the exact compiler command used to build each source file (flags, include paths, defines). It is generated by CMake when <code class="language-plaintext highlighter-rouge">CMAKE_EXPORT_COMPILE_COMMANDS=ON</code>. Tools like <code class="language-plaintext highlighter-rouge">clangd</code> (LSP), <code class="language-plaintext highlighter-rouge">clang-tidy</code>, <code class="language-plaintext highlighter-rouge">cppcheck</code>, and IDE extensions use this file for accurate code analysis, auto-completion, and linting. Without it, these tools have to guess include paths and flags, leading to false positives and missing diagnostics.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>CMake Official Docs</td>
+      <td><a href="https://cmake.org/cmake/help/latest/">cmake.org/cmake/help/latest</a></td>
+    </tr>
+    <tr>
+      <td>Modern CMake (free book)</td>
+      <td><a href="https://cliutils.gitlab.io/modern-cmake/">cliutils.gitlab.io/modern-cmake</a></td>
+    </tr>
+    <tr>
+      <td>CMake Tutorial</td>
+      <td><a href="https://cmake.org/cmake/help/latest/guide/tutorial/index.html">cmake.org/cmake/help/latest/guide/tutorial</a></td>
+    </tr>
+    <tr>
+      <td>C++ Core Guidelines Build</td>
+      <td><a href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines">isocpp.github.io/CppCoreGuidelines</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-code"></i>
+        <span>C++ Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/cpp/oop-raii/" class="gtn-link ">
+          <i class="fas fa-object-group"></i> OOP &amp; RAII
+        </a>
+        <a href="/linux-developer/cpp/templates-stl/" class="gtn-link ">
+          <i class="fas fa-shapes"></i> Templates &amp; STL
+        </a>
+        <a href="/linux-developer/cpp/smart-pointers/" class="gtn-link ">
+          <i class="fas fa-wand-magic-sparkles"></i> Smart Pointers
+        </a>
+        <a href="/linux-developer/cpp/move-semantics/" class="gtn-link ">
+          <i class="fas fa-right-left"></i> Move Semantics
+        </a>
+        <a href="/linux-developer/cpp/cmake/" class="gtn-link gts-active">
+          <i class="fas fa-hammer"></i> CMake
+        </a>
+        <a href="/linux-developer/cpp/qt/" class="gtn-link ">
+          <i class="fas fa-window-maximize"></i> Qt Framework
+        </a>
+        <a href="/linux-developer/cpp/cpp17-cpp20/" class="gtn-link ">
+          <i class="fas fa-star"></i> C++17 / C++20
+        </a>
+      </nav>
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/cpp/move-semantics/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Move Semantics</span>
+      </a>
+      
+      
+      <a href="/linux-developer/cpp/qt/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Qt Framework</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eslam Mohamed — Portfolio · Eslam Mohamed</title>
+  <meta name="description" content="Software Engineer, Researcher & Educator specializing in Embedded Linux, Autonomous Systems, and IoT." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link active">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <!-- HERO -->
+<section class="hero">
+  <canvas id="heroBgCanvas"></canvas>
+  <div class="hero-grid-bg"></div>
+
+  <div class="hero-container">
+
+    <!-- LEFT: Photo + Text -->
+    <div class="hero-content">
+      <div class="hero-content-photo">
+        <img src="/assets/images/eslam.png" alt="Eslam Mohamed" />
+      </div>
+
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        <span>Open to research &amp; engineering opportunities</span>
+      </div>
+
+      <h1 class="hero-title">
+        Hi, I'm <span class="name-accent">Eslam</span>
+        <span class="title-line"> Software Engineer | Researcher | Instructor </span>
+      </h1>
+
+      <p class="hero-description">
+        I build things that run close to the hardware and think at the edge.
+        Specializing in <strong>Embedded Linux</strong>, <strong>autonomous systems</strong>,
+        and <strong>IoT</strong> — I bridge deep technical engineering with hands-on teaching
+        for the next generation of engineers.
+      </p>
+
+      <div class="hero-pills">
+        <span class="hero-pill featured">Embedded Linux</span>
+        <span class="hero-pill featured">Federated Learning</span>
+        <span class="hero-pill">Autonomous Vehicles</span>
+        <span class="hero-pill">FreeRTOS / ARM</span>
+        <span class="hero-pill">PyTorch</span>
+        <span class="hero-pill">IoT / MQTT</span>
+        <span class="hero-pill">Yocto / Buildroot</span>
+      </div>
+
+      <div class="hero-actions">
+        <a href="/roadmap" class="btn-primary">
+          <i class="fas fa-map"></i> View Roadmap
+        </a>
+        <a href="https://embeddexai.com/" class="btn-secondary">
+          Go To EmbeddexAi <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- RIGHT: Terminal (full height) -->
+    <div class="hero-photo-side">
+      <div class="hero-terminal">
+        <div class="terminal-titlebar">
+          <span class="terminal-dot td-red"></span>
+          <span class="terminal-dot td-yellow"></span>
+          <span class="terminal-dot td-green"></span>
+          <span class="terminal-title">bash — eslam@eslam</span>
+        </div>
+        <div class="terminal-body" id="heroTerminal"></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-number" data-count="1000" data-suffix="+">1000+</div>
+      <div class="stat-label">students trained</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number" data-count="5">5</div>
+      <div class="stat-label">institutions</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number" data-count="3">3</div>
+      <div class="stat-label">research streams</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number" data-count="8" data-suffix="+">8+</div>
+      <div class="stat-label">years embedded exp.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SKILLS -->
+<section class="skills-section">
+  <div class="section-container">
+    <div class="section-eyebrow">expertise</div>
+    <h2 class="section-title">What I Build &amp; Teach</h2>
+    <p class="section-sub">From bare-metal microcontrollers to distributed ML systems — a full-stack embedded engineer.</p>
+
+    <div class="skills-grid">
+      <div class="skill-card fade-up">
+        <div class="skill-icon"><i class="fab fa-linux"></i></div>
+        <h3>Embedded Linux</h3>
+        <p>Kernel development, device drivers, BSPs, and custom Linux distributions with Yocto and Buildroot.</p>
+        <div class="skill-tags">
+          <span class="skill-tag">Yocto</span>
+          <span class="skill-tag">Buildroot</span>
+          <span class="skill-tag">Kernel Dev</span>
+          <span class="skill-tag">Device Drivers</span>
+        </div>
+      </div>
+      <div class="skill-card fade-up">
+        <div class="skill-icon"><i class="fas fa-microchip"></i></div>
+        <h3>Microcontrollers & RTOS</h3>
+        <p>ARM Cortex-M, AVR, FreeRTOS task scheduling, interrupt handling, and bare-metal systems programming.</p>
+        <div class="skill-tags">
+          <span class="skill-tag">ARM Cortex-M</span>
+          <span class="skill-tag">AVR</span>
+          <span class="skill-tag">FreeRTOS</span>
+          <span class="skill-tag">Assembly</span>
+        </div>
+      </div>
+      <div class="skill-card fade-up">
+        <div class="skill-icon"><i class="fas fa-brain"></i></div>
+        <h3>Machine Learning Research</h3>
+        <p>Two-stream CNN for steering prediction, federated learning, optical flow methods, and model compression.</p>
+        <div class="skill-tags">
+          <span class="skill-tag">PyTorch</span>
+          <span class="skill-tag">CNN</span>
+          <span class="skill-tag">Federated Learning</span>
+          <span class="skill-tag">OpenCV</span>
+        </div>
+      </div>
+      <div class="skill-card fade-up">
+        <div class="skill-icon"><i class="fas fa-satellite-dish"></i></div>
+        <h3>IoT Systems</h3>
+        <p>ESP32 firmware, MQTT messaging, Node-RED dashboards, LoRa/NB-IoT for Egyptian networks, TinyML.</p>
+        <div class="skill-tags">
+          <span class="skill-tag">MQTT</span>
+          <span class="skill-tag">ESP32</span>
+          <span class="skill-tag">Node-RED</span>
+          <span class="skill-tag">LoRa</span>
+        </div>
+      </div>
+      <div class="skill-card fade-up">
+        <div class="skill-icon"><i class="fas fa-terminal"></i></div>
+        <h3>Systems Programming</h3>
+        <p>C/C++ systems development, Qt framework for embedded UIs, Linux IPC, and POSIX APIs.</p>
+        <div class="skill-tags">
+          <span class="skill-tag">C/C++</span>
+          <span class="skill-tag">Qt</span>
+          <span class="skill-tag">POSIX</span>
+          <span class="skill-tag">Linux IPC</span>
+        </div>
+      </div>
+      <div class="skill-card fade-up">
+        <div class="skill-icon"><i class="fas fa-graduation-cap"></i></div>
+        <h3>Teaching & Curriculum</h3>
+        <p>500+ students trained across Zewail City, ITI, IMT School, and Amit Learning in embedded, IoT, and C++.</p>
+        <div class="skill-tags">
+          <span class="skill-tag">Embedded Systems</span>
+          <span class="skill-tag">IoT</span>
+          <span class="skill-tag">C++ Training</span>
+          <span class="skill-tag">Lab Design</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP PREVIEW -->
+<section class="research-section">
+  <div class="section-container">
+    <div class="section-eyebrow">roadmap</div>
+    <h2 class="section-title">Embedded Linux Roadmap</h2>
+    <p class="section-sub">A structured path from C fundamentals to production-grade embedded Linux systems — built from 8+ years of teaching and engineering.</p>
+
+    <div class="roadmap-preview-grid">
+      <div class="roadmap-preview-card fade-up">
+        <span class="rp-num">01</span>
+        <span class="rp-icon"><i class="fas fa-code"></i></span>
+        <h3>C & Linux Basics</h3>
+        <p>Pointers, memory, Makefiles, POSIX APIs, and the Linux command line.</p>
+      </div>
+      <div class="roadmap-preview-card fade-up">
+        <span class="rp-num">03</span>
+        <span class="rp-icon"><i class="fas fa-wrench"></i></span>
+        <h3>Bootloaders</h3>
+        <p>Boot sequence, U-Boot configuration, Device Tree, and board porting.</p>
+      </div>
+      <div class="roadmap-preview-card fade-up">
+        <span class="rp-num">05</span>
+        <span class="rp-icon"><i class="fas fa-puzzle-piece"></i></span>
+        <h3>Device Drivers</h3>
+        <p>Kernel modules, character drivers, platform drivers, I2C/SPI/UART.</p>
+      </div>
+      <div class="roadmap-preview-card fade-up">
+        <span class="rp-num">07</span>
+        <span class="rp-icon"><i class="fas fa-layer-group"></i></span>
+        <h3>Yocto & Buildroot</h3>
+        <p>Custom distros, layers, recipes, BitBake, and SDK generation.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 2.5rem;">
+      <a href="/roadmap" class="btn-secondary">View Full Roadmap <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- BLOG PREVIEW -->
+<section class="blog-section">
+  <div class="section-container">
+    <div class="section-eyebrow">blog</div>
+    <h2 class="section-title">Embedded Linux Notes</h2>
+    <p class="section-sub">Lab writeups and technical guides from the Embedded Linux Diploma.</p>
+
+    <div class="posts-grid">
+      
+      <div class="post-card fade-up">
+        <div class="post-card-header">
+          <div class="post-card-meta">
+            
+            <span class="post-card-date">Feb 01, 2025</span>
+          </div>
+          <h3>Lab4 C++</h3>
+        </div>
+        <p>layout: post title: “CPP reference “ date: 2024-03-01 category: embedded # embedded | linux | iot | ml | general tags: [cpp,...</p>
+        <div class="post-card-footer">
+          <span class="post-read-time"><i class="fas fa-clock"></i> 99 min read</span>
+          <a href="/blog/2025/02/01/lab4-c++/" class="post-read-link">Read <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+      
+      <div class="post-card fade-up">
+        <div class="post-card-header">
+          <div class="post-card-meta">
+            
+            <span class="post-card-category cat-linux">linux</span>
+            
+            <span class="post-card-date">Feb 20, 2024</span>
+          </div>
+          <h3>Embedded Linux Diploma — Lab 03: Writing Your First Kernel Module</h3>
+        </div>
+        <p>Hands-on guide to writing, compiling, and loading Linux kernel modules. Covers module lifecycle, parameters, proc filesystem, and basic character drivers.</p>
+        <div class="post-card-footer">
+          <span class="post-read-time"><i class="fas fa-clock"></i> 8 min read</span>
+          <a href="/blog/2024/02/20/lab03-kernel-modules/" class="post-read-link">Read <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+      
+      <div class="post-card fade-up">
+        <div class="post-card-header">
+          <div class="post-card-meta">
+            
+            <span class="post-card-category cat-linux">linux</span>
+            
+            <span class="post-card-date">Feb 01, 2024</span>
+          </div>
+          <h3>Embedded Linux Diploma — Lab 02: Linux Boot Process & U-Boot</h3>
+        </div>
+        <p>Understanding the full Linux boot sequence: from power-on reset through U-Boot, kernel decompression, and init system startup.</p>
+        <div class="post-card-footer">
+          <span class="post-read-time"><i class="fas fa-clock"></i> 4 min read</span>
+          <a href="/blog/2024/02/01/lab02-uboot-boot-process/" class="post-read-link">Read <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+      
+    </div>
+
+    <div class="view-all-wrapper">
+      <a href="/blog" class="btn-secondary">View All Posts <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

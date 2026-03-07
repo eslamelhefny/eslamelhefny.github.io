@@ -1,0 +1,114 @@
+---
+layout: default
+title: "C++ & Modern Systems Programming — Stage 03"
+description: "Level up to modern C++ — OOP, RAII, templates, smart pointers, move semantics, CMake, Qt, and C++17/20 features."
+permalink: /linux-developer/cpp/
+---
+
+<style>
+.stage-hero {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(99,102,241,0.08) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 3.5rem 2rem 2.75rem; text-align: center;
+}
+.stage-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: #6366f1; background: rgba(99,102,241,.1); border: 1px solid rgba(99,102,241,.25);
+  border-radius: 2rem; padding: .28rem .9rem; margin-bottom: 1rem;
+}
+.stage-hero h1 { font-size: clamp(1.6rem,3.5vw,2.4rem); font-weight: 800; margin: 0 0 .8rem; }
+.stage-hero p  { font-size: 1rem; color: var(--text-muted); max-width: 620px; margin: 0 auto 1.5rem; }
+.stage-hero-back {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-size: .8rem; font-weight: 600; color: var(--text-muted);
+  text-decoration: none; margin-bottom: 1.5rem;
+}
+.stage-hero-back:hover { color: #6366f1; text-decoration: none; }
+.stage-grid-wrap { max-width: 1060px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+.stage-section-label {
+  font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: #6366f1; margin-bottom: 1.4rem;
+}
+.stage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px,1fr)); gap: 1.2rem; }
+.sc-card {
+  --sc: #6366f1;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 13px;
+  padding: 1.5rem; text-decoration: none; color: inherit;
+  display: flex; flex-direction: column; gap: .65rem;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.sc-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--sc); border-radius:13px 13px 0 0; }
+.sc-card:hover { transform:translateY(-4px); border-color:var(--sc); box-shadow:0 8px 28px rgba(0,0,0,.25); text-decoration:none; }
+.sc-card-top { display:flex; align-items:center; gap:.8rem; }
+.sc-icon { width:40px; height:40px; border-radius:9px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.1rem; background:rgba(99,102,241,.12); color:#6366f1; }
+.sc-num  { font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:.15rem; }
+.sc-card h3 { font-size:.95rem; font-weight:700; margin:0; }
+.sc-card p  { font-size:.83rem; color:var(--text-muted); margin:0; line-height:1.55; }
+.sc-arrow   { margin-top:auto; padding-top:.4rem; font-size:.78rem; font-weight:600; color:#6366f1; display:flex; align-items:center; gap:.3rem; }
+@media(max-width:600px){ .stage-grid{ grid-template-columns:1fr; } }
+</style>
+
+<div class="stage-hero">
+  <a href="{{ '/linux-developer/' | relative_url }}" class="stage-hero-back"><i class="fas fa-arrow-left"></i> Linux Developer Guide</a>
+  <div class="stage-hero-eyebrow"><i class="fas fa-code"></i> Stage 03</div>
+  <h1>C++ &amp; Modern Systems Programming</h1>
+  <p>Object-oriented design, resource management, the standard library, modern C++17/20 features, CMake, and Qt for embedded UIs.</p>
+</div>
+
+<div class="stage-grid-wrap">
+  <div class="stage-section-label"><i class="fas fa-map"></i> All Topics</div>
+  <div class="stage-grid">
+
+    <a href="{{ '/linux-developer/cpp/oop-raii/' | relative_url }}" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-object-group"></i></div>
+        <div><div class="sc-num">Topic 01</div><h3>OOP &amp; RAII</h3></div></div>
+      <p>Classes, inheritance, virtual dispatch, RAII, Rule of Five, and strong exception safety guarantees.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="{{ '/linux-developer/cpp/templates-stl/' | relative_url }}" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-shapes"></i></div>
+        <div><div class="sc-num">Topic 02</div><h3>Templates &amp; STL</h3></div></div>
+      <p>Function/class templates, specialisation, STL containers, iterators, algorithms, and SFINAE basics.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="{{ '/linux-developer/cpp/smart-pointers/' | relative_url }}" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+        <div><div class="sc-num">Topic 03</div><h3>Smart Pointers</h3></div></div>
+      <p>unique_ptr, shared_ptr, weak_ptr, make_unique/make_shared, custom deleters, and cyclic references.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="{{ '/linux-developer/cpp/move-semantics/' | relative_url }}" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-right-left"></i></div>
+        <div><div class="sc-num">Topic 04</div><h3>Move Semantics</h3></div></div>
+      <p>lvalue/rvalue references, move constructor/assignment, std::move, perfect forwarding, and RVO/NRVO.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="{{ '/linux-developer/cpp/cmake/' | relative_url }}" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-hammer"></i></div>
+        <div><div class="sc-num">Topic 05</div><h3>CMake</h3></div></div>
+      <p>Targets, properties, find_package, FetchContent, toolchain files for cross-compilation, and CPack.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="{{ '/linux-developer/cpp/qt/' | relative_url }}" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-window-maximize"></i></div>
+        <div><div class="sc-num">Topic 06</div><h3>Qt Framework</h3></div></div>
+      <p>Signals &amp; slots, QObject hierarchy, QML, Qt for embedded (eglfs/wayland), and serial/network I/O.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <a href="{{ '/linux-developer/cpp/cpp17-cpp20/' | relative_url }}" class="sc-card">
+      <div class="sc-card-top"><div class="sc-icon"><i class="fas fa-star"></i></div>
+        <div><div class="sc-num">Topic 07</div><h3>C++17 / C++20</h3></div></div>
+      <p>Structured bindings, if-constexpr, std::optional/variant/any, concepts, ranges, and coroutines.</p>
+      <div class="sc-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+  </div>
+</div>

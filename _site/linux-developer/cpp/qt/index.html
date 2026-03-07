@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Qt Framework · Eslam Mohamed</title>
+  <meta name="description" content="Build cross-platform applications with Qt — signals & slots, the event loop, QObject hierarchy, widgets, QML, serial port and embedded Linux integration." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/cpp/">C++ Programming</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Qt Framework</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 03</span>
+      </div>
+      <h1 class="guide-title">Qt Framework</h1>
+      <p class="guide-subtitle">Build cross-platform applications with Qt — signals & slots, the event loop, QObject hierarchy, widgets, QML, serial port and embedded Linux integration.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="qt-overview">Qt Overview</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>Qt is a <strong>cross-platform C++ framework</strong> used in embedded Linux HMIs, desktop applications, and industrial control systems. It extends C++ with a meta-object system that enables signals &amp; slots, reflection, and QML.</p>
+
+<p><strong>Key modules:</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Module</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">QtCore</code></td>
+      <td>QObject, signals/slots, event loop, threads, containers</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">QtWidgets</code></td>
+      <td>Desktop GUI widgets (QPushButton, QLabel, QMainWindow)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">QtQuick/QML</code></td>
+      <td>Fluid, declarative UI for touch/embedded</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">QtSerialPort</code></td>
+      <td>UART/serial communication</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">QtNetwork</code></td>
+      <td>TCP/UDP sockets, HTTP</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">QtDBus</code></td>
+      <td>IPC via D-Bus (Linux)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="hello-qt">Hello Qt</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// main.cpp</span>
+<span class="cp">#include</span> <span class="cpf">&lt;QApplication&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;QLabel&gt;</span><span class="cp">
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+    <span class="n">QApplication</span> <span class="n">app</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
+
+    <span class="n">QLabel</span> <span class="n">label</span><span class="p">(</span><span class="s">"Hello, Qt!"</span><span class="p">);</span>
+    <span class="n">label</span><span class="p">.</span><span class="n">show</span><span class="p">();</span>
+
+    <span class="k">return</span> <span class="n">app</span><span class="p">.</span><span class="n">exec</span><span class="p">();</span>   <span class="c1">// starts the event loop</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># CMakeLists.txt</span>
+<span class="nb">cmake_minimum_required</span><span class="p">(</span>VERSION 3.16<span class="p">)</span>
+<span class="nb">project</span><span class="p">(</span>HelloQt<span class="p">)</span>
+
+<span class="nb">find_package</span><span class="p">(</span>Qt6 REQUIRED COMPONENTS Widgets<span class="p">)</span>
+<span class="nf">qt_standard_project_setup</span><span class="p">()</span>
+
+<span class="nb">add_executable</span><span class="p">(</span>helloqt main.cpp<span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span>helloqt PRIVATE Qt6::Widgets<span class="p">)</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="signals--slots">Signals &amp; Slots</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>Qt’s <strong>signals &amp; slots</strong> is a type-safe, loosely coupled event/callback system. Objects emit signals; connected slots are called automatically.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;QObject&gt;</span><span class="cp">
+</span>
+<span class="k">class</span> <span class="nc">Sensor</span> <span class="o">:</span> <span class="k">public</span> <span class="n">QObject</span> <span class="p">{</span>
+    <span class="n">Q_OBJECT</span>   <span class="c1">// REQUIRED macro — enables meta-object features</span>
+
+    <span class="kt">float</span> <span class="n">value_</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">f</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+    <span class="k">explicit</span> <span class="n">Sensor</span><span class="p">(</span><span class="n">QObject</span><span class="o">*</span> <span class="n">parent</span> <span class="o">=</span> <span class="nb">nullptr</span><span class="p">)</span> <span class="o">:</span> <span class="n">QObject</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span> <span class="p">{}</span>
+
+    <span class="kt">float</span> <span class="n">value</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">value_</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="k">public</span> <span class="n">slots</span><span class="o">:</span>
+    <span class="kt">void</span> <span class="n">setValue</span><span class="p">(</span><span class="kt">float</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">v</span> <span class="o">!=</span> <span class="n">value_</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">value_</span> <span class="o">=</span> <span class="n">v</span><span class="p">;</span>
+            <span class="n">emit</span> <span class="n">valueChanged</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>   <span class="c1">// emit the signal</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+<span class="nl">signals:</span>
+    <span class="kt">void</span> <span class="n">valueChanged</span><span class="p">(</span><span class="kt">float</span> <span class="n">newValue</span><span class="p">);</span>    <span class="c1">// declaration only — Qt generates body</span>
+    <span class="kt">void</span> <span class="n">alarmTriggered</span><span class="p">(</span><span class="k">const</span> <span class="n">QString</span><span class="o">&amp;</span> <span class="n">msg</span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<h3 id="connecting-signals-to-slots">Connecting Signals to Slots</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Sensor</span><span class="o">*</span> <span class="n">sensor</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Sensor</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+<span class="n">QLabel</span><span class="o">*</span> <span class="n">label</span>  <span class="o">=</span> <span class="k">new</span> <span class="nf">QLabel</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+
+<span class="c1">// Syntax 1: Qt5+ function pointer (compile-time checked)</span>
+<span class="n">connect</span><span class="p">(</span><span class="n">sensor</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Sensor</span><span class="o">::</span><span class="n">valueChanged</span><span class="p">,</span>
+        <span class="n">label</span><span class="p">,</span>  <span class="p">[</span><span class="n">label</span><span class="p">](</span><span class="kt">float</span> <span class="n">v</span><span class="p">){</span>
+            <span class="n">label</span><span class="o">-&gt;</span><span class="n">setText</span><span class="p">(</span><span class="n">QString</span><span class="o">::</span><span class="n">number</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="sc">'f'</span><span class="p">,</span> <span class="mi">2</span><span class="p">));</span>
+        <span class="p">});</span>
+
+<span class="c1">// Syntax 2: Old-style SIGNAL/SLOT macros (runtime string match)</span>
+<span class="n">connect</span><span class="p">(</span><span class="n">sensor</span><span class="p">,</span> <span class="n">SIGNAL</span><span class="p">(</span><span class="n">valueChanged</span><span class="p">(</span><span class="kt">float</span><span class="p">)),</span>
+        <span class="n">label</span><span class="p">,</span>  <span class="n">SLOT</span><span class="p">(</span><span class="n">setText</span><span class="p">(</span><span class="n">QString</span><span class="p">)));</span>   <span class="c1">// type mismatch only caught at runtime!</span>
+
+<span class="c1">// Connecting to a lambda</span>
+<span class="n">connect</span><span class="p">(</span><span class="n">sensor</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Sensor</span><span class="o">::</span><span class="n">alarmTriggered</span><span class="p">,</span>
+        <span class="p">[](</span><span class="k">const</span> <span class="n">QString</span><span class="o">&amp;</span> <span class="n">msg</span><span class="p">){</span> <span class="n">qWarning</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">"ALARM:"</span> <span class="o">&lt;&lt;</span> <span class="n">msg</span><span class="p">;</span> <span class="p">});</span>
+
+<span class="c1">// Triggering the signal</span>
+<span class="n">sensor</span><span class="o">-&gt;</span><span class="n">setValue</span><span class="p">(</span><span class="mf">23.7</span><span class="n">f</span><span class="p">);</span>  <span class="c1">// emits valueChanged → label updates automatically</span>
+</code></pre></div></div>
+
+<h3 id="connection-types">Connection Types</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>When</th>
+      <th>Use Case</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">AutoConnection</code> (default)</td>
+      <td>Same thread → Direct; different thread → Queued</td>
+      <td>General use</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">DirectConnection</code></td>
+      <td>Slot called immediately in emitter’s thread</td>
+      <td>Same-thread callbacks</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">QueuedConnection</code></td>
+      <td>Slot called in receiver’s event loop</td>
+      <td>Cross-thread safe</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">BlockingQueuedConnection</code></td>
+      <td>Like Queued but emitter blocks</td>
+      <td>Synchronous cross-thread</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-mid" id="qobject-and-object-ownership">QObject and Object Ownership</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<p>Qt uses a <strong>parent-child ownership</strong> system. When a parent QObject is destroyed, it recursively destroys all its children — automatic memory management.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Parent takes ownership of children</span>
+<span class="n">QWidget</span><span class="o">*</span> <span class="n">window</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">QWidget</span><span class="p">();</span>            <span class="c1">// no parent — must delete manually</span>
+<span class="n">QLabel</span><span class="o">*</span> <span class="n">label</span>   <span class="o">=</span> <span class="k">new</span> <span class="nf">QLabel</span><span class="p">(</span><span class="s">"Hello"</span><span class="p">,</span> <span class="n">window</span><span class="p">);</span>  <span class="c1">// window owns label</span>
+<span class="n">QPushButton</span><span class="o">*</span> <span class="n">btn</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">QPushButton</span><span class="p">(</span><span class="s">"OK"</span><span class="p">,</span> <span class="n">window</span><span class="p">);</span>
+
+<span class="c1">// When window is destroyed, label and btn are destroyed too</span>
+<span class="k">delete</span> <span class="n">window</span><span class="p">;</span>  <span class="c1">// label and btn deleted automatically</span>
+
+<span class="c1">// With smart pointers at the top level:</span>
+<span class="k">auto</span> <span class="n">window</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">QWidget</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="c1">// children created with raw new + parent are still safe</span>
+<span class="k">auto</span><span class="o">*</span> <span class="n">label</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">QLabel</span><span class="p">(</span><span class="s">"Hello"</span><span class="p">,</span> <span class="n">window</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+<span class="c1">// window destroyed when it goes out of scope → label destroyed too</span>
+</code></pre></div></div>
+
+<h3 id="qobject-rules">QObject Rules</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// QObjects must NOT be copied — they have identity (connections, parent/child)</span>
+<span class="c1">// Copy constructor and assignment are DELETED in QObject</span>
+<span class="n">Sensor</span> <span class="n">s1</span><span class="p">;</span>
+<span class="c1">// Sensor s2 = s1;  // compile error!</span>
+
+<span class="c1">// Use pointers or references to pass QObjects around</span>
+<span class="kt">void</span> <span class="nf">process</span><span class="p">(</span><span class="n">Sensor</span><span class="o">*</span> <span class="n">s</span><span class="p">)</span> <span class="p">{</span> <span class="n">s</span><span class="o">-&gt;</span><span class="n">setValue</span><span class="p">(</span><span class="mf">5.0</span><span class="n">f</span><span class="p">);</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="the-event-loop">The Event Loop</h2>
+
+<p>Qt is <strong>event-driven</strong>. <code class="language-plaintext highlighter-rouge">QCoreApplication::exec()</code> starts the event loop which processes events: user input, timers, socket notifications, cross-thread signals.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;QCoreApplication&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;QTimer&gt;</span><span class="cp">
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+    <span class="n">QCoreApplication</span> <span class="n">app</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
+
+    <span class="c1">// Single-shot timer</span>
+    <span class="n">QTimer</span><span class="o">::</span><span class="n">singleShot</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">app</span><span class="p">,</span> <span class="p">[](){</span>
+        <span class="n">qDebug</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">"1 second elapsed"</span><span class="p">;</span>
+        <span class="n">QCoreApplication</span><span class="o">::</span><span class="n">quit</span><span class="p">();</span>   <span class="c1">// exit event loop</span>
+    <span class="p">});</span>
+
+    <span class="c1">// Repeating timer</span>
+    <span class="n">QTimer</span><span class="o">*</span> <span class="n">timer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">QTimer</span><span class="p">(</span><span class="o">&amp;</span><span class="n">app</span><span class="p">);</span>
+    <span class="n">QObject</span><span class="o">::</span><span class="n">connect</span><span class="p">(</span><span class="n">timer</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">QTimer</span><span class="o">::</span><span class="n">timeout</span><span class="p">,</span> <span class="p">[](){</span>
+        <span class="n">qDebug</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">"tick"</span><span class="p">;</span>
+    <span class="p">});</span>
+    <span class="n">timer</span><span class="o">-&gt;</span><span class="n">start</span><span class="p">(</span><span class="mi">500</span><span class="p">);</span>   <span class="c1">// every 500ms</span>
+
+    <span class="k">return</span> <span class="n">app</span><span class="p">.</span><span class="n">exec</span><span class="p">();</span>   <span class="c1">// runs until quit()</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="running-work-without-blocking-the-ui">Running Work Without Blocking the UI</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// WRONG — blocking the event loop freezes the GUI</span>
+<span class="kt">void</span> <span class="n">MyWidget</span><span class="o">::</span><span class="n">onButtonClicked</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">1000000</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">doHeavyWork</span><span class="p">();</span>   <span class="c1">// blocks UI for seconds!</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// RIGHT — use QThread or QtConcurrent</span>
+<span class="cp">#include</span> <span class="cpf">&lt;QThread&gt;</span><span class="cp">
+</span>
+<span class="k">class</span> <span class="nc">Worker</span> <span class="o">:</span> <span class="k">public</span> <span class="n">QObject</span> <span class="p">{</span>
+    <span class="n">Q_OBJECT</span>
+<span class="k">public</span> <span class="n">slots</span><span class="o">:</span>
+    <span class="kt">void</span> <span class="n">doWork</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">1000000</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">doHeavyWork</span><span class="p">();</span>
+        <span class="n">emit</span> <span class="n">finished</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="nl">signals:</span>
+    <span class="kt">void</span> <span class="n">finished</span><span class="p">();</span>
+    <span class="kt">void</span> <span class="n">progress</span><span class="p">(</span><span class="kt">int</span> <span class="n">percent</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1">// In the widget:</span>
+<span class="n">QThread</span><span class="o">*</span> <span class="kr">thread</span> <span class="o">=</span> <span class="k">new</span> <span class="n">QThread</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+<span class="n">Worker</span><span class="o">*</span> <span class="n">worker</span>  <span class="o">=</span> <span class="k">new</span> <span class="n">Worker</span><span class="p">;</span>   <span class="c1">// no parent — will move to thread</span>
+<span class="n">worker</span><span class="o">-&gt;</span><span class="n">moveToThread</span><span class="p">(</span><span class="kr">thread</span><span class="p">);</span>
+
+<span class="n">connect</span><span class="p">(</span><span class="kr">thread</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">QThread</span><span class="o">::</span><span class="n">started</span><span class="p">,</span>   <span class="n">worker</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Worker</span><span class="o">::</span><span class="n">doWork</span><span class="p">);</span>
+<span class="n">connect</span><span class="p">(</span><span class="n">worker</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Worker</span><span class="o">::</span><span class="n">finished</span><span class="p">,</span>   <span class="kr">thread</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">QThread</span><span class="o">::</span><span class="n">quit</span><span class="p">);</span>
+<span class="n">connect</span><span class="p">(</span><span class="n">worker</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Worker</span><span class="o">::</span><span class="n">finished</span><span class="p">,</span>   <span class="n">worker</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">QObject</span><span class="o">::</span><span class="n">deleteLater</span><span class="p">);</span>
+<span class="n">connect</span><span class="p">(</span><span class="kr">thread</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">QThread</span><span class="o">::</span><span class="n">finished</span><span class="p">,</span>  <span class="kr">thread</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">QObject</span><span class="o">::</span><span class="n">deleteLater</span><span class="p">);</span>
+
+<span class="kr">thread</span><span class="o">-&gt;</span><span class="n">start</span><span class="p">();</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="serial-port-embedded-linux">Serial Port (Embedded Linux)</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">find_package</span><span class="p">(</span>Qt6 REQUIRED COMPONENTS SerialPort<span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span>myapp PRIVATE Qt6::SerialPort<span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;QSerialPort&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;QSerialPortInfo&gt;</span><span class="cp">
+</span>
+<span class="c1">// List available ports</span>
+<span class="k">const</span> <span class="k">auto</span> <span class="n">ports</span> <span class="o">=</span> <span class="n">QSerialPortInfo</span><span class="o">::</span><span class="n">availablePorts</span><span class="p">();</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">info</span> <span class="o">:</span> <span class="n">ports</span><span class="p">)</span>
+    <span class="n">qDebug</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">info</span><span class="p">.</span><span class="n">portName</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">info</span><span class="p">.</span><span class="n">description</span><span class="p">();</span>
+
+<span class="c1">// Open and configure</span>
+<span class="n">QSerialPort</span> <span class="n">serial</span><span class="p">;</span>
+<span class="n">serial</span><span class="p">.</span><span class="n">setPortName</span><span class="p">(</span><span class="s">"/dev/ttyS0"</span><span class="p">);</span>
+<span class="n">serial</span><span class="p">.</span><span class="n">setBaudRate</span><span class="p">(</span><span class="n">QSerialPort</span><span class="o">::</span><span class="n">Baud115200</span><span class="p">);</span>
+<span class="n">serial</span><span class="p">.</span><span class="n">setDataBits</span><span class="p">(</span><span class="n">QSerialPort</span><span class="o">::</span><span class="n">Data8</span><span class="p">);</span>
+<span class="n">serial</span><span class="p">.</span><span class="n">setParity</span><span class="p">(</span><span class="n">QSerialPort</span><span class="o">::</span><span class="n">NoParity</span><span class="p">);</span>
+<span class="n">serial</span><span class="p">.</span><span class="n">setStopBits</span><span class="p">(</span><span class="n">QSerialPort</span><span class="o">::</span><span class="n">OneStop</span><span class="p">);</span>
+<span class="n">serial</span><span class="p">.</span><span class="n">setFlowControl</span><span class="p">(</span><span class="n">QSerialPort</span><span class="o">::</span><span class="n">NoFlowControl</span><span class="p">);</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">serial</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="n">QIODevice</span><span class="o">::</span><span class="n">ReadWrite</span><span class="p">))</span> <span class="p">{</span>
+    <span class="n">qCritical</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">"Failed to open serial port:"</span> <span class="o">&lt;&lt;</span> <span class="n">serial</span><span class="p">.</span><span class="n">errorString</span><span class="p">();</span>
+    <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Async read (signal-driven — never block!)</span>
+<span class="n">QObject</span><span class="o">::</span><span class="n">connect</span><span class="p">(</span><span class="o">&amp;</span><span class="n">serial</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">QSerialPort</span><span class="o">::</span><span class="n">readyRead</span><span class="p">,</span> <span class="p">[</span><span class="o">&amp;</span><span class="p">](){</span>
+    <span class="n">QByteArray</span> <span class="n">data</span> <span class="o">=</span> <span class="n">serial</span><span class="p">.</span><span class="n">readAll</span><span class="p">();</span>
+    <span class="n">qDebug</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">"Received:"</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">.</span><span class="n">toHex</span><span class="p">();</span>
+<span class="p">});</span>
+
+<span class="c1">// Write</span>
+<span class="n">serial</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="s">"</span><span class="se">\xAA\x55\x01\x00</span><span class="s">"</span><span class="p">,</span> <span class="mi">4</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="qml-for-embedded-hmi">QML for Embedded HMI</h2>
+
+<div class="language-qml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// main.qml — Declarative UI</span>
+<span class="k">import</span> <span class="nx">QtQuick</span> <span class="mf">2.15</span>
+<span class="k">import</span> <span class="nx">QtQuick</span><span class="p">.</span><span class="nx">Controls</span> <span class="mf">2.15</span>
+
+<span class="kt">ApplicationWindow</span> <span class="p">{</span>
+    <span class="nl">visible</span><span class="p">:</span> <span class="kc">true</span>
+    <span class="nl">width</span><span class="p">:</span> <span class="mi">800</span><span class="p">;</span> <span class="nl">height</span><span class="p">:</span> <span class="mi">480</span>
+    <span class="nl">title</span><span class="p">:</span> <span class="dl">"</span><span class="s2">Sensor Dashboard</span><span class="dl">"</span>
+
+    <span class="kt">Column</span> <span class="p">{</span>
+        <span class="nl">anchors.centerIn</span><span class="p">:</span> <span class="nx">parent</span>
+        <span class="nl">spacing</span><span class="p">:</span> <span class="mi">20</span>
+
+        <span class="kt">Text</span> <span class="p">{</span>
+            <span class="nl">id</span><span class="p">:</span> <span class="kd">tempLabel</span>
+            <span class="nl">text</span><span class="p">:</span> <span class="dl">"</span><span class="s2">Temperature: </span><span class="dl">"</span> <span class="o">+</span> <span class="nx">sensorBackend</span><span class="p">.</span><span class="nx">temperature</span><span class="p">.</span><span class="nx">toFixed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="dl">"</span><span class="s2"> °C</span><span class="dl">"</span>
+            <span class="nl">font.pixelSize</span><span class="p">:</span> <span class="mi">32</span>
+            <span class="nl">color</span><span class="p">:</span> <span class="nx">sensorBackend</span><span class="p">.</span><span class="nx">temperature</span> <span class="o">&gt;</span> <span class="mi">80</span> <span class="p">?</span> <span class="dl">"</span><span class="s2">red</span><span class="dl">"</span> <span class="p">:</span> <span class="dl">"</span><span class="s2">white</span><span class="dl">"</span>
+        <span class="p">}</span>
+
+        <span class="kt">Button</span> <span class="p">{</span>
+            <span class="nl">text</span><span class="p">:</span> <span class="dl">"</span><span class="s2">Reset</span><span class="dl">"</span>
+            <span class="nl">onClicked</span><span class="p">:</span> <span class="nx">sensorBackend</span><span class="p">.</span><span class="nx">reset</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Expose C++ object to QML</span>
+<span class="cp">#include</span> <span class="cpf">&lt;QQmlContext&gt;</span><span class="cp">
+</span>
+<span class="n">SensorBackend</span> <span class="n">backend</span><span class="p">;</span>
+<span class="n">QQmlApplicationEngine</span> <span class="n">engine</span><span class="p">;</span>
+<span class="n">engine</span><span class="p">.</span><span class="n">rootContext</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">setContextProperty</span><span class="p">(</span><span class="s">"sensorBackend"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">backend</span><span class="p">);</span>
+<span class="n">engine</span><span class="p">.</span><span class="n">load</span><span class="p">(</span><span class="n">QUrl</span><span class="p">(</span><span class="s">"qrc:/main.qml"</span><span class="p">));</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: Explain how Qt’s signals and slots differ from plain function callbacks.</strong></p>
+
+<blockquote>
+  <p>Signals and slots are type-safe (checked at compile time with the function-pointer syntax), loosely coupled (the emitter doesn’t know about the receiver), and thread-aware (queued connections automatically marshal across threads). Plain callbacks are tightly coupled — the caller must know the callback’s type and manage its lifetime. Signals can be connected to multiple slots and disconnected at runtime without modifying the emitting class. The <code class="language-plaintext highlighter-rouge">Q_OBJECT</code> macro and moc (Meta-Object Compiler) generate the underlying connection infrastructure.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: What is the Qt event loop and why must it not be blocked?</strong></p>
+
+<blockquote>
+  <p>The event loop (<code class="language-plaintext highlighter-rouge">QCoreApplication::exec()</code>) processes all events: user input, timer callbacks, socket notifications, and queued signal-slot connections. It runs in the main thread. If you block the main thread (long computation, <code class="language-plaintext highlighter-rouge">sleep()</code>, blocking I/O), no events are processed — the GUI freezes, timers don’t fire, and the application becomes unresponsive. Move long-running work to a <code class="language-plaintext highlighter-rouge">QThread</code> or use <code class="language-plaintext highlighter-rouge">QtConcurrent</code>, communicating results back to the main thread via queued signals.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: How does Qt’s parent-child memory management work?</strong></p>
+
+<blockquote>
+  <p>Every <code class="language-plaintext highlighter-rouge">QObject</code> can have a parent (set via constructor or <code class="language-plaintext highlighter-rouge">setParent()</code>). When a parent is destroyed, it iterates its children list and destroys them recursively. This means GUI widgets created with a parent are automatically cleaned up when the parent widget is destroyed — you don’t need to delete them manually. The top-level window (no parent) must be managed manually (<code class="language-plaintext highlighter-rouge">delete</code> or <code class="language-plaintext highlighter-rouge">unique_ptr</code>). You cannot use <code class="language-plaintext highlighter-rouge">shared_ptr</code> directly with QObject children managed this way.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: How do you safely communicate between a worker QThread and the main thread?</strong></p>
+
+<blockquote>
+  <p>Use queued signal-slot connections. Move the worker object to the thread with <code class="language-plaintext highlighter-rouge">moveToThread()</code>. Signals emitted from the worker thread are queued in the main thread’s event loop and delivered safely without race conditions. Never access GUI widgets (which live in the main thread) directly from a worker thread — always use queued signals/slots. For sharing data, use <code class="language-plaintext highlighter-rouge">QMutex</code> + condition variables or <code class="language-plaintext highlighter-rouge">QAtomicInt</code>/<code class="language-plaintext highlighter-rouge">QAtomicPointer</code> for lock-free access.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Qt Official Documentation</td>
+      <td><a href="https://doc.qt.io/">doc.qt.io</a></td>
+    </tr>
+    <tr>
+      <td>Qt Signals &amp; Slots</td>
+      <td><a href="https://doc.qt.io/qt-6/signalsandslots.html">doc.qt.io/qt-6/signalsandslots.html</a></td>
+    </tr>
+    <tr>
+      <td>Qt Threads &amp; Concurrency</td>
+      <td><a href="https://doc.qt.io/qt-6/thread-basics.html">doc.qt.io/qt-6/thread-basics.html</a></td>
+    </tr>
+    <tr>
+      <td>Qt for Embedded Linux</td>
+      <td><a href="https://doc.qt.io/qt-6/embedded-linux.html">doc.qt.io/qt-6/embedded-linux.html</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-code"></i>
+        <span>C++ Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/cpp/oop-raii/" class="gtn-link ">
+          <i class="fas fa-object-group"></i> OOP &amp; RAII
+        </a>
+        <a href="/linux-developer/cpp/templates-stl/" class="gtn-link ">
+          <i class="fas fa-shapes"></i> Templates &amp; STL
+        </a>
+        <a href="/linux-developer/cpp/smart-pointers/" class="gtn-link ">
+          <i class="fas fa-wand-magic-sparkles"></i> Smart Pointers
+        </a>
+        <a href="/linux-developer/cpp/move-semantics/" class="gtn-link ">
+          <i class="fas fa-right-left"></i> Move Semantics
+        </a>
+        <a href="/linux-developer/cpp/cmake/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> CMake
+        </a>
+        <a href="/linux-developer/cpp/qt/" class="gtn-link gts-active">
+          <i class="fas fa-window-maximize"></i> Qt Framework
+        </a>
+        <a href="/linux-developer/cpp/cpp17-cpp20/" class="gtn-link ">
+          <i class="fas fa-star"></i> C++17 / C++20
+        </a>
+      </nav>
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/cpp/cmake/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">CMake</span>
+      </a>
+      
+      
+      <a href="/linux-developer/cpp/cpp17-cpp20/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">C++17 & C++20</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

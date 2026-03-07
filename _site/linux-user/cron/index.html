@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cron & Scheduling · Eslam Mohamed</title>
+  <meta name="description" content="Schedule recurring and one-off tasks with cron, at, and systemd timers. Handle environment quirks, prevent job overlap with flock, and monitor scheduled task output." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-user/">Linux User Guide</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Cron & Scheduling</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 01 — Linux User</span>
+        <span class="guide-stage-pill">Stage 07</span>
+      </div>
+      <h1 class="guide-title">Cron & Scheduling</h1>
+      <p class="guide-subtitle">Schedule recurring and one-off tasks with cron, at, and systemd timers. Handle environment quirks, prevent job overlap with flock, and monitor scheduled task output.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="cron-fundamentals">Cron Fundamentals</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p><strong>cron</strong> is the classic Unix daemon that runs scheduled commands at specified times. Each user has their own <strong>crontab</strong> (cron table), and the system also has system-wide crontabs.</p>
+
+<h3 id="crontab-syntax">Crontab Syntax</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>* * * * *  command_to_run
+│ │ │ │ │
+│ │ │ │ └── Day of week  (0–7, Sunday=0 or 7)
+│ │ │ └──── Month        (1–12)
+│ │ └────── Day of month (1–31)
+│ └──────── Hour         (0–23)
+└────────── Minute       (0–59)
+</code></pre></div></div>
+
+<p><strong>Special characters:</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Symbol</th>
+      <th>Meaning</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">*</code></td>
+      <td>Every value</td>
+      <td><code class="language-plaintext highlighter-rouge">* * * * *</code> = every minute</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">,</code></td>
+      <td>List of values</td>
+      <td><code class="language-plaintext highlighter-rouge">0,30 * * * *</code> = at :00 and :30</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-</code></td>
+      <td>Range</td>
+      <td><code class="language-plaintext highlighter-rouge">0 9-17 * * *</code> = every hour 9am–5pm</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">/</code></td>
+      <td>Step</td>
+      <td><code class="language-plaintext highlighter-rouge">*/5 * * * *</code> = every 5 minutes</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">@reboot</code></td>
+      <td>On boot</td>
+      <td><code class="language-plaintext highlighter-rouge">@reboot /usr/bin/myservice</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">@daily</code></td>
+      <td>Once per day</td>
+      <td>same as <code class="language-plaintext highlighter-rouge">0 0 * * *</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">@weekly</code></td>
+      <td>Once per week</td>
+      <td>same as <code class="language-plaintext highlighter-rouge">0 0 * * 0</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">@monthly</code></td>
+      <td>Once per month</td>
+      <td>same as <code class="language-plaintext highlighter-rouge">0 0 1 * *</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="managing-your-crontab">Managing Your Crontab</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>crontab <span class="nt">-e</span>     <span class="c"># edit your crontab (opens in $EDITOR)</span>
+crontab <span class="nt">-l</span>     <span class="c"># list current crontab</span>
+crontab <span class="nt">-r</span>     <span class="c"># REMOVE your entire crontab (careful!)</span>
+crontab <span class="nt">-u</span> eslam <span class="nt">-l</span>   <span class="c"># list another user's crontab (root only)</span>
+</code></pre></div></div>
+
+<h3 id="example-entries">Example Entries</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Run backup every day at 2:30 AM</span>
+30 2 <span class="k">*</span> <span class="k">*</span> <span class="k">*</span> /usr/local/bin/backup.sh <span class="o">&gt;&gt;</span> /var/log/backup.log 2&gt;&amp;1
+
+<span class="c"># Clear temp files every Sunday at midnight</span>
+0 0 <span class="k">*</span> <span class="k">*</span> 0 find /tmp <span class="nt">-type</span> f <span class="nt">-mtime</span> +7 <span class="nt">-delete</span>
+
+<span class="c"># Sync files every 15 minutes</span>
+<span class="k">*</span>/15 <span class="k">*</span> <span class="k">*</span> <span class="k">*</span> <span class="k">*</span> /usr/local/bin/sync_data.sh
+
+<span class="c"># Send weekly report every Monday at 8 AM</span>
+0 8 <span class="k">*</span> <span class="k">*</span> 1 /usr/local/bin/weekly_report.sh | mail <span class="nt">-s</span> <span class="s2">"Weekly Report"</span> boss@company.com
+
+<span class="c"># Run at system reboot</span>
+@reboot /usr/local/bin/start_sensor_daemon.sh
+
+<span class="c"># Run first day of each month at 5 AM</span>
+0 5 1 <span class="k">*</span> <span class="k">*</span> /usr/local/bin/monthly_cleanup.sh
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="system-cron-directories">System Cron Directories</h2>
+
+<p>The system crontab (<code class="language-plaintext highlighter-rouge">/etc/crontab</code>) and special directories run scripts automatically:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/etc/cron.d/         → Drop-in crontab files (include username field)
+/etc/cron.hourly/    → Scripts run every hour
+/etc/cron.daily/     → Scripts run every day (~6:25 AM)
+/etc/cron.weekly/    → Scripts run every week
+/etc/cron.monthly/   → Scripts run every month
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">/etc/cron.d/</code> format</strong> (includes username):</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># /etc/cron.d/myapp</span>
+<span class="nv">SHELL</span><span class="o">=</span>/bin/bash
+<span class="nv">PATH</span><span class="o">=</span>/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+<span class="c"># min hour dom month dow user  command</span>
+30  2   <span class="k">*</span> <span class="k">*</span> <span class="k">*</span>  root  /opt/myapp/bin/backup <span class="o">&gt;&gt;</span> /var/log/myapp-backup.log 2&gt;&amp;1
+</code></pre></div></div>
+
+<p><strong>Placing scripts in directories:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Scripts must be executable and have no dot in the filename!</span>
+<span class="nb">sudo cp </span>backup.sh /etc/cron.daily/mybackup   <span class="c"># no extension!</span>
+<span class="nb">sudo chmod </span>755 /etc/cron.daily/mybackup
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="one-off-scheduling-with-at">One-Off Scheduling with <code class="language-plaintext highlighter-rouge">at</code></h2>
+
+<p><code class="language-plaintext highlighter-rouge">at</code> runs a command once at a specific future time, without needing to edit a crontab.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Schedule a job</span>
+at 14:30                          <span class="c"># at 2:30 PM today</span>
+at 2:30 AM tomorrow
+at 9:00 AM July 4                 <span class="c"># specific date</span>
+at now + 2 hours                  <span class="c"># relative time</span>
+at now + 30 minutes
+
+<span class="c"># at opens a shell prompt; type commands, then Ctrl+D to submit</span>
+at 14:30
+at&gt; /usr/local/bin/deploy.sh <span class="o">&gt;&gt;</span> /var/log/deploy.log 2&gt;&amp;1
+at&gt; &lt;EOT&gt;                        <span class="c"># press Ctrl+D</span>
+
+<span class="c"># List pending at jobs</span>
+atq
+
+<span class="c"># Remove a job</span>
+atrm 5          <span class="c"># remove job number 5</span>
+
+<span class="c"># Alternative one-liner</span>
+<span class="nb">echo</span> <span class="s2">"/usr/local/bin/deploy.sh"</span> | at 14:30
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="intermediate-cron-environment-and-logging">Intermediate: Cron Environment and Logging</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="the-cron-environment-problem">The Cron Environment Problem</h3>
+
+<p>Cron runs with a <strong>minimal environment</strong> — no <code class="language-plaintext highlighter-rouge">.bashrc</code>, no user PATH, no display. This is the #1 cause of “works in terminal, breaks in cron” bugs.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># The default cron PATH is usually just:</span>
+<span class="nv">PATH</span><span class="o">=</span>/usr/bin:/bin
+
+<span class="c"># Your terminal PATH might be:</span>
+<span class="nv">PATH</span><span class="o">=</span>/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/home/eslam/.local/bin
+</code></pre></div></div>
+
+<p><strong>Solutions:</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Option 1: Set PATH at the top of crontab</span>
+<span class="nv">SHELL</span><span class="o">=</span>/bin/bash
+<span class="nv">PATH</span><span class="o">=</span>/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+<span class="c"># Option 2: Use full paths in commands</span>
+0 2 <span class="k">*</span> <span class="k">*</span> <span class="k">*</span> /usr/local/bin/python3 /home/eslam/scripts/backup.py
+
+<span class="c"># Option 3: Source your profile inside the script</span>
+0 2 <span class="k">*</span> <span class="k">*</span> <span class="k">*</span> bash <span class="nt">-l</span> <span class="nt">-c</span> <span class="s1">'/home/eslam/scripts/backup.sh'</span>
+<span class="c"># -l = login shell (sources /etc/profile and ~/.bash_profile)</span>
+</code></pre></div></div>
+
+<p><strong>Other environment pitfalls:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># No HOME by default in some crons — set explicitly</span>
+<span class="nv">HOME</span><span class="o">=</span>/home/eslam
+
+<span class="c"># No DISPLAY for GUI apps</span>
+<span class="nv">DISPLAY</span><span class="o">=</span>:0
+
+<span class="c"># Redirect all output (otherwise cron emails you on every run!)</span>
+<span class="k">*</span>/5 <span class="k">*</span> <span class="k">*</span> <span class="k">*</span> <span class="k">*</span> /usr/local/bin/monitor.sh <span class="o">&gt;&gt;</span> /var/log/monitor.log 2&gt;&amp;1
+
+<span class="c"># Suppress all output</span>
+<span class="k">*</span>/5 <span class="k">*</span> <span class="k">*</span> <span class="k">*</span> <span class="k">*</span> /usr/local/bin/noisy.sh <span class="o">&gt;</span> /dev/null 2&gt;&amp;1
+</code></pre></div></div>
+
+<h3 id="viewing-cron-logs">Viewing Cron Logs</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># On Ubuntu/Debian (syslog backend)</span>
+<span class="nb">grep </span>CRON /var/log/syslog
+<span class="nb">grep </span>CRON /var/log/syslog | <span class="nb">tail</span> <span class="nt">-50</span>
+
+<span class="c"># With journald (systemd systems)</span>
+journalctl <span class="nt">-u</span> cron
+journalctl <span class="nt">-u</span> cron <span class="nt">-f</span>    <span class="c"># live</span>
+
+<span class="c"># View cron daemon status</span>
+<span class="nb">sudo </span>systemctl status cron
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="preventing-overlapping-jobs-with-flock">Preventing Overlapping Jobs with <code class="language-plaintext highlighter-rouge">flock</code></h2>
+
+<p>If a cron job takes longer than its interval, multiple instances can run simultaneously, causing race conditions, data corruption, or resource exhaustion.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># flock acquires a file lock; -n = non-blocking (exit immediately if locked)</span>
+<span class="k">*</span>/5 <span class="k">*</span> <span class="k">*</span> <span class="k">*</span> <span class="k">*</span> flock <span class="nt">-n</span> /tmp/myjob.lock /usr/local/bin/data_sync.sh
+
+<span class="c"># With timeout — wait up to 30 seconds to acquire lock</span>
+<span class="k">*</span>/5 <span class="k">*</span> <span class="k">*</span> <span class="k">*</span> <span class="k">*</span> flock <span class="nt">-w</span> 30 /tmp/myjob.lock /usr/local/bin/data_sync.sh
+</code></pre></div></div>
+
+<p><strong>Inside a script:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+<span class="nv">LOCKFILE</span><span class="o">=</span><span class="s2">"/var/lock/myjob.lock"</span>
+
+<span class="nb">exec </span>200&gt;<span class="s2">"</span><span class="nv">$LOCKFILE</span><span class="s2">"</span>
+flock <span class="nt">-n</span> 200 <span class="o">||</span> <span class="o">{</span> <span class="nb">echo</span> <span class="s2">"Already running, exiting."</span><span class="p">;</span> <span class="nb">exit </span>1<span class="p">;</span> <span class="o">}</span>
+<span class="c"># Lock acquired — do work</span>
+/usr/local/bin/long_running_task.sh
+<span class="c"># Lock released automatically when script exits</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-systemd-timers">Advanced: systemd Timers</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p><strong>systemd timers</strong> are the modern alternative to cron. They offer:</p>
+<ul>
+  <li>Logging via <code class="language-plaintext highlighter-rouge">journald</code> (no output capture headaches)</li>
+  <li>Accurate tracking via <code class="language-plaintext highlighter-rouge">systemctl list-timers</code></li>
+  <li>Dependencies (<code class="language-plaintext highlighter-rouge">After=</code>, <code class="language-plaintext highlighter-rouge">Requires=</code>)</li>
+  <li>Monotonic (elapsed time) or calendar-based triggers</li>
+  <li>Easy enable/disable with <code class="language-plaintext highlighter-rouge">systemctl</code></li>
+</ul>
+
+<h3 id="creating-a-systemd-timer">Creating a systemd Timer</h3>
+
+<p>A timer requires <strong>two unit files</strong>: a <code class="language-plaintext highlighter-rouge">.timer</code> and a matching <code class="language-plaintext highlighter-rouge">.service</code>.</p>
+
+<p><strong><code class="language-plaintext highlighter-rouge">/etc/systemd/system/backup.service</code>:</strong></p>
+<div class="language-ini highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">[Unit]</span>
+<span class="py">Description</span><span class="p">=</span><span class="s">Daily Backup Job</span>
+<span class="py">After</span><span class="p">=</span><span class="s">network.target</span>
+
+<span class="nn">[Service]</span>
+<span class="py">Type</span><span class="p">=</span><span class="s">oneshot</span>
+<span class="py">User</span><span class="p">=</span><span class="s">eslam</span>
+<span class="py">Group</span><span class="p">=</span><span class="s">eslam</span>
+<span class="py">WorkingDirectory</span><span class="p">=</span><span class="s">/home/eslam</span>
+<span class="py">ExecStart</span><span class="p">=</span><span class="s">/usr/local/bin/backup.sh</span>
+<span class="py">StandardOutput</span><span class="p">=</span><span class="s">journal</span>
+<span class="py">StandardError</span><span class="p">=</span><span class="s">journal</span>
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">/etc/systemd/system/backup.timer</code>:</strong></p>
+<div class="language-ini highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">[Unit]</span>
+<span class="py">Description</span><span class="p">=</span><span class="s">Run backup daily at 2:30 AM</span>
+<span class="py">Requires</span><span class="p">=</span><span class="s">backup.service</span>
+
+<span class="nn">[Timer]</span>
+<span class="c"># Calendar-based (like cron)
+</span><span class="py">OnCalendar</span><span class="p">=</span><span class="s">*-*-* 02:30:00</span>
+
+<span class="c"># Or: relative to last run (monotonic)
+# OnBootSec=15min
+# OnUnitActiveSec=1h
+</span>
+<span class="c"># Randomize start within 10 minutes (prevents thundering herd)
+</span><span class="py">RandomizedDelaySec</span><span class="p">=</span><span class="s">600</span>
+
+<span class="c"># Persist: if missed (e.g., machine was off), run ASAP when next available
+</span><span class="py">Persistent</span><span class="p">=</span><span class="s">true</span>
+
+<span class="nn">[Install]</span>
+<span class="py">WantedBy</span><span class="p">=</span><span class="s">timers.target</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Enable and start the timer</span>
+<span class="nb">sudo </span>systemctl daemon-reload
+<span class="nb">sudo </span>systemctl <span class="nb">enable</span> <span class="nt">--now</span> backup.timer
+
+<span class="c"># Check all timers</span>
+systemctl list-timers
+
+<span class="c"># View logs for the service</span>
+journalctl <span class="nt">-u</span> backup.service
+journalctl <span class="nt">-u</span> backup.service <span class="nt">--since</span> <span class="s2">"1 day ago"</span>
+
+<span class="c"># Manually trigger the service (for testing)</span>
+<span class="nb">sudo </span>systemctl start backup.service
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">systemctl list-timers</code> output:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>NEXT                         LEFT          LAST                         PASSED   UNIT           ACTIVATES
+Sat 2026-03-08 02:30:00 EET  12h left      Fri 2026-03-07 02:30:13 EET  11h ago  backup.timer   backup.service
+</code></pre></div></div>
+
+<h3 id="oncalendar-syntax"><code class="language-plaintext highlighter-rouge">OnCalendar</code> Syntax</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>OnCalendar=*-*-* 02:30:00       # daily at 2:30 AM
+OnCalendar=Mon *-*-* 08:00:00   # every Monday at 8 AM
+OnCalendar=*-*-1 00:00:00       # first of each month
+OnCalendar=weekly               # weekly (shorthand)
+OnCalendar=*:0/5                # every 5 minutes
+OnCalendar=hourly               # every hour
+
+# Validate your expression
+systemd-analyze calendar "Mon *-*-* 08:00:00"
+</code></pre></div></div>
+
+<h3 id="anacron--for-non-247-systems"><code class="language-plaintext highlighter-rouge">anacron</code> — For Non-24/7 Systems</h3>
+
+<p>If a cron job is missed (because the machine was off), it is simply skipped. <code class="language-plaintext highlighter-rouge">anacron</code> addresses this for daily/weekly/monthly jobs on laptops and workstations.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> /etc/anacrontab
+<span class="c"># delay  job-id   command</span>
+1        5 cron.daily    run-parts <span class="nt">--report</span> /etc/cron.daily
+7        10 cron.weekly  run-parts <span class="nt">--report</span> /etc/cron.weekly
+30       15 cron.monthly run-parts <span class="nt">--report</span> /etc/cron.monthly
+<span class="c"># Column 1: period in days</span>
+<span class="c"># Column 2: delay in minutes after boot before running</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: Write a cron entry to run a backup script at 3 AM every day.</strong></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>0 3 * * * /usr/local/bin/backup.sh &gt;&gt; /var/log/backup.log 2&gt;&amp;1
+</code></pre></div></div>
+
+<p><strong>Q2 — Basic: Why does a script work when run manually but fail when run by cron?</strong></p>
+
+<blockquote>
+  <p>Almost always an <strong>environment difference</strong>: cron runs with a minimal <code class="language-plaintext highlighter-rouge">PATH</code> that doesn’t include <code class="language-plaintext highlighter-rouge">/usr/local/bin</code>, user-specific directories, or NVM/pyenv shims. The script may also rely on environment variables set in <code class="language-plaintext highlighter-rouge">.bashrc</code> or <code class="language-plaintext highlighter-rouge">.bash_profile</code>. Fix by setting <code class="language-plaintext highlighter-rouge">PATH</code> at the top of the crontab, using full paths to all executables, or sourcing the user’s profile with <code class="language-plaintext highlighter-rouge">bash -l -c</code>.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: How would you make a cron job skip execution if the previous instance is still running?</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">*</span>/5 <span class="k">*</span> <span class="k">*</span> <span class="k">*</span> <span class="k">*</span> flock <span class="nt">-n</span> /tmp/myjob.lock /usr/local/bin/sync.sh
+</code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">flock -n</code> tries to acquire the lock non-blocking. If another instance holds the lock, it exits immediately (exits 1), and cron moves on without starting a new instance.</p>
+
+<p><strong>Q4 — Advanced: What advantages do systemd timers have over cron?</strong></p>
+
+<blockquote>
+  <ol>
+    <li><strong>Logging</strong>: All output goes to <code class="language-plaintext highlighter-rouge">journald</code>; no need to redirect to files or worry about cron emails.</li>
+    <li><strong>Visibility</strong>: <code class="language-plaintext highlighter-rouge">systemctl list-timers</code> shows all timers, their next run, last run, and elapsed time in one place.</li>
+    <li><strong>Persistence</strong>: <code class="language-plaintext highlighter-rouge">Persistent=true</code> in the timer unit means missed jobs are run at next boot.</li>
+    <li><strong>Dependencies</strong>: Timers can declare dependencies on network, filesystem mounts, etc.</li>
+    <li><strong>Resource control</strong>: Services started by timers inherit systemd’s cgroup resource limits (CPUQuota, MemoryMax).</li>
+    <li><strong>Randomization</strong>: <code class="language-plaintext highlighter-rouge">RandomizedDelaySec</code> prevents multiple servers from hammering a shared resource simultaneously.</li>
+  </ol>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 5 crontab</code></td>
+      <td>Crontab file format</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 1 crontab</code></td>
+      <td>Crontab command</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 1 at</code></td>
+      <td>at command manual</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 1 flock</code></td>
+      <td>flock manual</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 5 systemd.timer</code></td>
+      <td>systemd timer unit format</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 systemd.time</code></td>
+      <td>Time and date specification syntax</td>
+    </tr>
+    <tr>
+      <td>systemd timer tutorial</td>
+      <td><a href="https://wiki.archlinux.org/title/Systemd/Timers">wiki.archlinux.org/title/Systemd/Timers</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-terminal"></i>
+        <span>Linux User Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-user/filesystem-navigation/" class="gtn-link ">
+          <i class="fas fa-folder-open"></i> Filesystem Navigation
+        </a>
+        <a href="/linux-user/users-permissions/" class="gtn-link ">
+          <i class="fas fa-user-lock"></i> Users &amp; Permissions
+        </a>
+        <a href="/linux-user/process-management/" class="gtn-link ">
+          <i class="fas fa-microchip"></i> Process Management
+        </a>
+        <a href="/linux-user/package-management/" class="gtn-link ">
+          <i class="fas fa-box"></i> Package Management
+        </a>
+        <a href="/linux-user/networking/" class="gtn-link ">
+          <i class="fas fa-network-wired"></i> Networking Basics
+        </a>
+        <a href="/linux-user/ssh/" class="gtn-link ">
+          <i class="fas fa-lock"></i> SSH &amp; Remote Access
+        </a>
+        <a href="/linux-user/cron/" class="gtn-link gts-active">
+          <i class="fas fa-clock"></i> Cron &amp; Scheduling
+        </a>
+        <a href="/linux-user/bash-scripting/" class="gtn-link ">
+          <i class="fas fa-terminal"></i> Bash Scripting
+        </a>
+        <a href="/linux-user/git/" class="gtn-link ">
+          <i class="fab fa-git-alt"></i> Git Basics
+        </a>
+      </nav>
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-user/ssh/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">SSH & Remote Access</span>
+      </a>
+      
+      
+      <a href="/linux-user/bash-scripting/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Bash Scripting</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

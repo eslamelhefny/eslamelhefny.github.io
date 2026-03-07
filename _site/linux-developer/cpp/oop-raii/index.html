@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OOP & RAII · Eslam Mohamed</title>
+  <meta name="description" content="Master C++ object-oriented programming — classes, inheritance, virtual dispatch, the Rule of Five, RAII resource management, and exception safety guarantees." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/cpp/">C++ Programming</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>OOP & RAII</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 03</span>
+      </div>
+      <h1 class="guide-title">OOP & RAII</h1>
+      <p class="guide-subtitle">Master C++ object-oriented programming — classes, inheritance, virtual dispatch, the Rule of Five, RAII resource management, and exception safety guarantees.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="classes-and-objects">Classes and Objects</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Sensor</span> <span class="p">{</span>
+<span class="nl">private:</span>
+    <span class="kt">int</span>    <span class="n">id_</span><span class="p">;</span>
+    <span class="kt">float</span>  <span class="n">value_</span><span class="p">;</span>
+    <span class="kt">bool</span>   <span class="n">active_</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+    <span class="c1">// Constructor</span>
+    <span class="n">Sensor</span><span class="p">(</span><span class="kt">int</span> <span class="n">id</span><span class="p">,</span> <span class="kt">float</span> <span class="n">initial</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">f</span><span class="p">)</span>
+        <span class="o">:</span> <span class="n">id_</span><span class="p">(</span><span class="n">id</span><span class="p">),</span> <span class="n">value_</span><span class="p">(</span><span class="n">initial</span><span class="p">),</span> <span class="n">active_</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span> <span class="p">{}</span>
+
+    <span class="c1">// Member functions</span>
+    <span class="kt">void</span> <span class="n">activate</span><span class="p">()</span>       <span class="p">{</span> <span class="n">active_</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span> <span class="p">}</span>
+    <span class="kt">float</span> <span class="n">read</span><span class="p">()</span> <span class="k">const</span>    <span class="p">{</span> <span class="k">return</span> <span class="n">value_</span><span class="p">;</span> <span class="p">}</span>   <span class="c1">// const = doesn't modify object</span>
+    <span class="kt">int</span>   <span class="n">id</span><span class="p">()</span>   <span class="k">const</span>    <span class="p">{</span> <span class="k">return</span> <span class="n">id_</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="c1">// Operator overload</span>
+    <span class="kt">bool</span> <span class="k">operator</span><span class="o">&lt;</span><span class="p">(</span><span class="k">const</span> <span class="n">Sensor</span><span class="o">&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">value_</span> <span class="o">&lt;</span> <span class="n">other</span><span class="p">.</span><span class="n">value_</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">Sensor</span> <span class="n">s</span><span class="p">(</span><span class="mi">42</span><span class="p">,</span> <span class="mf">23.5</span><span class="n">f</span><span class="p">);</span>
+<span class="n">s</span><span class="p">.</span><span class="n">activate</span><span class="p">();</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">s</span><span class="p">.</span><span class="n">read</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span>   <span class="c1">// 23.5</span>
+</code></pre></div></div>
+
+<h3 id="access-specifiers">Access Specifiers</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Specifier</th>
+      <th>Who can access</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">private</code></td>
+      <td>Only the class itself</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">protected</code></td>
+      <td>Class and derived classes</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">public</code></td>
+      <td>Anyone</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-mid" id="inheritance-and-virtual-dispatch">Inheritance and Virtual Dispatch</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Abstract base class (interface)</span>
+<span class="k">class</span> <span class="nc">IDevice</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="k">virtual</span> <span class="o">~</span><span class="n">IDevice</span><span class="p">()</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>        <span class="c1">// virtual destructor — ALWAYS!</span>
+    <span class="k">virtual</span> <span class="kt">bool</span>  <span class="n">open</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">path</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>   <span class="c1">// pure virtual</span>
+    <span class="k">virtual</span> <span class="kt">int</span>   <span class="n">read</span><span class="p">(</span><span class="kt">uint8_t</span><span class="o">*</span> <span class="n">buf</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">)</span>  <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">virtual</span> <span class="kt">void</span>  <span class="n">close</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">virtual</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="c1">// Concrete implementation</span>
+<span class="k">class</span> <span class="nc">UartDevice</span> <span class="o">:</span> <span class="k">public</span> <span class="n">IDevice</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">fd_</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+<span class="nl">public:</span>
+    <span class="kt">bool</span>  <span class="n">open</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">path</span><span class="p">)</span> <span class="k">override</span><span class="p">;</span>
+    <span class="kt">int</span>   <span class="n">read</span><span class="p">(</span><span class="kt">uint8_t</span><span class="o">*</span> <span class="n">buf</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">)</span> <span class="k">override</span><span class="p">;</span>
+    <span class="kt">void</span>  <span class="n">close</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span> <span class="k">return</span> <span class="s">"UART"</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">SpiDevice</span> <span class="o">:</span> <span class="k">public</span> <span class="n">IDevice</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">};</span>
+
+<span class="c1">// Polymorphic usage</span>
+<span class="kt">void</span> <span class="n">read_sensor</span><span class="p">(</span><span class="n">IDevice</span><span class="o">&amp;</span> <span class="n">dev</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">uint8_t</span> <span class="n">buf</span><span class="p">[</span><span class="mi">64</span><span class="p">];</span>
+    <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="n">dev</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buf</span><span class="p">));</span>   <span class="c1">// calls the right override at runtime</span>
+<span class="p">}</span>
+
+<span class="n">UartDevice</span> <span class="n">uart</span><span class="p">;</span>
+<span class="n">read_sensor</span><span class="p">(</span><span class="n">uart</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p><strong>Virtual dispatch mechanism (vtable):</strong> Each class with virtual functions has a hidden vtable pointer (<code class="language-plaintext highlighter-rouge">vptr</code>) — a pointer to a table of function pointers. Calling a virtual function looks up the correct override at runtime through the vtable.</p>
+
+<hr />
+
+<h2 class="gc-mid" id="rule-of-five">Rule of Five</h2>
+
+<p>If a class manages a resource (memory, file, socket), you must define (or <code class="language-plaintext highlighter-rouge">=delete</code>) all five special member functions:</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Buffer</span> <span class="p">{</span>
+    <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">data_</span><span class="p">;</span>
+    <span class="kt">size_t</span>   <span class="n">size_</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+    <span class="c1">// 1. Constructor</span>
+    <span class="k">explicit</span> <span class="n">Buffer</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">size</span><span class="p">)</span>
+        <span class="o">:</span> <span class="n">data_</span><span class="p">(</span><span class="k">new</span> <span class="kt">uint8_t</span><span class="p">[</span><span class="n">size</span><span class="p">]),</span> <span class="n">size_</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">memset</span><span class="p">(</span><span class="n">data_</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">size_</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 2. Destructor</span>
+    <span class="o">~</span><span class="n">Buffer</span><span class="p">()</span> <span class="p">{</span> <span class="k">delete</span><span class="p">[]</span> <span class="n">data_</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="c1">// 3. Copy constructor</span>
+    <span class="n">Buffer</span><span class="p">(</span><span class="k">const</span> <span class="n">Buffer</span><span class="o">&amp;</span> <span class="n">other</span><span class="p">)</span>
+        <span class="o">:</span> <span class="n">data_</span><span class="p">(</span><span class="k">new</span> <span class="kt">uint8_t</span><span class="p">[</span><span class="n">other</span><span class="p">.</span><span class="n">size_</span><span class="p">]),</span> <span class="n">size_</span><span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">size_</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">memcpy</span><span class="p">(</span><span class="n">data_</span><span class="p">,</span> <span class="n">other</span><span class="p">.</span><span class="n">data_</span><span class="p">,</span> <span class="n">size_</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 4. Copy assignment operator</span>
+    <span class="n">Buffer</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="k">const</span> <span class="n">Buffer</span><span class="o">&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span> <span class="o">!=</span> <span class="o">&amp;</span><span class="n">other</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">delete</span><span class="p">[]</span> <span class="n">data_</span><span class="p">;</span>
+            <span class="n">data_</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">uint8_t</span><span class="p">[</span><span class="n">other</span><span class="p">.</span><span class="n">size_</span><span class="p">];</span>
+            <span class="n">size_</span> <span class="o">=</span> <span class="n">other</span><span class="p">.</span><span class="n">size_</span><span class="p">;</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">memcpy</span><span class="p">(</span><span class="n">data_</span><span class="p">,</span> <span class="n">other</span><span class="p">.</span><span class="n">data_</span><span class="p">,</span> <span class="n">size_</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="o">*</span><span class="k">this</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 5. Move constructor</span>
+    <span class="n">Buffer</span><span class="p">(</span><span class="n">Buffer</span><span class="o">&amp;&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="k">noexcept</span>
+        <span class="o">:</span> <span class="n">data_</span><span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">data_</span><span class="p">),</span> <span class="n">size_</span><span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">size_</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">other</span><span class="p">.</span><span class="n">data_</span> <span class="o">=</span> <span class="nb">nullptr</span><span class="p">;</span>
+        <span class="n">other</span><span class="p">.</span><span class="n">size_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 5b. Move assignment</span>
+    <span class="n">Buffer</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="n">Buffer</span><span class="o">&amp;&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span> <span class="o">!=</span> <span class="o">&amp;</span><span class="n">other</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">delete</span><span class="p">[]</span> <span class="n">data_</span><span class="p">;</span>
+            <span class="n">data_</span> <span class="o">=</span> <span class="n">other</span><span class="p">.</span><span class="n">data_</span><span class="p">;</span>
+            <span class="n">size_</span> <span class="o">=</span> <span class="n">other</span><span class="p">.</span><span class="n">size_</span><span class="p">;</span>
+            <span class="n">other</span><span class="p">.</span><span class="n">data_</span> <span class="o">=</span> <span class="nb">nullptr</span><span class="p">;</span>
+            <span class="n">other</span><span class="p">.</span><span class="n">size_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="o">*</span><span class="k">this</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="raii--resource-acquisition-is-initialization">RAII — Resource Acquisition Is Initialization</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p><strong>RAII</strong> ties resource lifetime to object lifetime. The constructor acquires the resource; the destructor releases it — even when exceptions are thrown or early returns occur.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FileHandle</span> <span class="p">{</span>
+    <span class="kt">FILE</span><span class="o">*</span> <span class="n">fp_</span><span class="p">;</span>
+<span class="nl">public:</span>
+    <span class="k">explicit</span> <span class="n">FileHandle</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">path</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">mode</span><span class="p">)</span>
+        <span class="o">:</span> <span class="n">fp_</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">fopen</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">mode</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">fp_</span><span class="p">)</span> <span class="k">throw</span> <span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="s">"Cannot open "</span><span class="p">)</span> <span class="o">+</span> <span class="n">path</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="o">~</span><span class="n">FileHandle</span><span class="p">()</span> <span class="p">{</span> <span class="k">if</span> <span class="p">(</span><span class="n">fp_</span><span class="p">)</span> <span class="n">std</span><span class="o">::</span><span class="n">fclose</span><span class="p">(</span><span class="n">fp_</span><span class="p">);</span> <span class="p">}</span>
+
+    <span class="c1">// Delete copy — no two FileHandle objects should own the same FILE*</span>
+    <span class="n">FileHandle</span><span class="p">(</span><span class="k">const</span> <span class="n">FileHandle</span><span class="o">&amp;</span><span class="p">)</span>            <span class="o">=</span> <span class="k">delete</span><span class="p">;</span>
+    <span class="n">FileHandle</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="k">const</span> <span class="n">FileHandle</span><span class="o">&amp;</span><span class="p">)</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span>
+
+    <span class="kt">FILE</span><span class="o">*</span> <span class="n">get</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">fp_</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">operator</span> <span class="kt">FILE</span><span class="o">*</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">fp_</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">void</span> <span class="n">process_config</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">path</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">FileHandle</span> <span class="n">f</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">"r"</span><span class="p">);</span>   <span class="c1">// opens here</span>
+    <span class="c1">// ... read file ...</span>
+    <span class="c1">// f goes out of scope: destructor closes FILE* automatically</span>
+    <span class="c1">// even if an exception is thrown inside the function!</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>Why RAII beats <code class="language-plaintext highlighter-rouge">try/finally</code> (Java/Python):</strong> In C++ there are no garbage-collected objects, so every resource must be explicitly released. RAII makes release automatic and exception-safe — the destructor always runs.</p>
+
+<h3 id="exception-safety-levels">Exception Safety Levels</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Guarantee</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>No-throw</strong></td>
+      <td>Operation never throws (mark with <code class="language-plaintext highlighter-rouge">noexcept</code>)</td>
+    </tr>
+    <tr>
+      <td><strong>Strong</strong></td>
+      <td>Either succeeds completely or rolls back (no side effects)</td>
+    </tr>
+    <tr>
+      <td><strong>Basic</strong></td>
+      <td>No resource leaks, invariants maintained, but state may have changed</td>
+    </tr>
+    <tr>
+      <td><strong>None</strong></td>
+      <td>May leak resources or leave broken state</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">swap_strong</span><span class="p">(</span><span class="n">Buffer</span><span class="o">&amp;</span> <span class="n">a</span><span class="p">,</span> <span class="n">Buffer</span><span class="o">&amp;</span> <span class="n">b</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
+    <span class="c1">// swap pointers — cannot throw, O(1)</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">swap</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">data_</span><span class="p">,</span> <span class="n">b</span><span class="p">.</span><span class="n">data_</span><span class="p">);</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">swap</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">size_</span><span class="p">,</span> <span class="n">b</span><span class="p">.</span><span class="n">size_</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">struct</code> and <code class="language-plaintext highlighter-rouge">class</code> in C++?</strong></p>
+
+<blockquote>
+  <p>The only difference is the default access specifier: <code class="language-plaintext highlighter-rouge">struct</code> members are <code class="language-plaintext highlighter-rouge">public</code> by default, <code class="language-plaintext highlighter-rouge">class</code> members are <code class="language-plaintext highlighter-rouge">private</code> by default. Everything else — inheritance, virtual functions, constructors — is identical. Convention: use <code class="language-plaintext highlighter-rouge">struct</code> for plain data aggregates (POD types), <code class="language-plaintext highlighter-rouge">class</code> for types with invariants and encapsulation.</p>
+</blockquote>
+
+<p><strong>Q2 — Intermediate: Why must the base class destructor be <code class="language-plaintext highlighter-rouge">virtual</code>?</strong></p>
+
+<blockquote>
+  <p>Without a <code class="language-plaintext highlighter-rouge">virtual</code> destructor, deleting a derived object through a base pointer calls only the base destructor — the derived destructor is never called. This leaks resources held by the derived class. With <code class="language-plaintext highlighter-rouge">virtual ~Base()</code>, the correct chain of destructors (derived then base) is called via the vtable. Rule: any class with virtual functions must have a <code class="language-plaintext highlighter-rouge">virtual</code> destructor.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: What is the Rule of Zero and when should you follow it instead of the Rule of Five?</strong></p>
+
+<blockquote>
+  <p>If a class owns no raw resources — it uses standard library containers, smart pointers, or other RAII wrappers — you should define <strong>none</strong> of the five special members and let the compiler generate them. The compiler-generated versions do the right thing (deep copy via smart pointers’ copy constructors, etc.). Only write the Rule of Five when you are implementing a <strong>resource-managing class itself</strong> (like <code class="language-plaintext highlighter-rouge">std::vector</code> or <code class="language-plaintext highlighter-rouge">std::unique_ptr</code>).</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: Explain how RAII handles exception safety in the presence of constructors that can throw.</strong></p>
+
+<blockquote>
+  <p>If a constructor throws, the object is never considered fully constructed, so its destructor is <strong>not</strong> called. However, all <strong>subobjects</strong> (member objects and base classes) that were fully constructed <strong>will</strong> have their destructors called. This means: if you use RAII members (smart pointers, <code class="language-plaintext highlighter-rouge">FileHandle</code>), they are automatically cleaned up even if the constructor throws halfway through. Never use raw <code class="language-plaintext highlighter-rouge">new</code> for multiple resources in a constructor — use a separate RAII wrapper for each resource.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>C++ Core Guidelines</td>
+      <td><a href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines">isocpp.github.io/CppCoreGuidelines</a></td>
+    </tr>
+    <tr>
+      <td>cppreference.com — Classes</td>
+      <td><a href="https://en.cppreference.com/w/cpp/language/classes">en.cppreference.com/w/cpp/language/classes</a></td>
+    </tr>
+    <tr>
+      <td>Herb Sutter — Exception Safety</td>
+      <td><a href="http://www.gotw.ca/gotw/">gotw.ca/gotw/</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-code"></i>
+        <span>C++ Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/cpp/oop-raii/" class="gtn-link gts-active">
+          <i class="fas fa-object-group"></i> OOP &amp; RAII
+        </a>
+        <a href="/linux-developer/cpp/templates-stl/" class="gtn-link ">
+          <i class="fas fa-shapes"></i> Templates &amp; STL
+        </a>
+        <a href="/linux-developer/cpp/smart-pointers/" class="gtn-link ">
+          <i class="fas fa-wand-magic-sparkles"></i> Smart Pointers
+        </a>
+        <a href="/linux-developer/cpp/move-semantics/" class="gtn-link ">
+          <i class="fas fa-right-left"></i> Move Semantics
+        </a>
+        <a href="/linux-developer/cpp/cmake/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> CMake
+        </a>
+        <a href="/linux-developer/cpp/qt/" class="gtn-link ">
+          <i class="fas fa-window-maximize"></i> Qt Framework
+        </a>
+        <a href="/linux-developer/cpp/cpp17-cpp20/" class="gtn-link ">
+          <i class="fas fa-star"></i> C++17 / C++20
+        </a>
+      </nav>
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      <div></div>
+      
+      <a href="/linux-developer/cpp/templates-stl/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Templates & STL</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

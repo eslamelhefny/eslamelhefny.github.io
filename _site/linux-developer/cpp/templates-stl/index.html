@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Templates & STL · Eslam Mohamed</title>
+  <meta name="description" content="Master C++ templates and the Standard Template Library — function and class templates, specialisation, variadic templates, iterators, containers, algorithms, and ranges." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/cpp/">C++ Programming</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Templates & STL</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 03</span>
+      </div>
+      <h1 class="guide-title">Templates & STL</h1>
+      <p class="guide-subtitle">Master C++ templates and the Standard Template Library — function and class templates, specialisation, variadic templates, iterators, containers, algorithms, and ranges.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="function--class-templates">Function &amp; Class Templates</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>Templates let you write <strong>type-independent</strong> code. The compiler generates concrete versions at compile time.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Function template</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="n">T</span> <span class="nf">clamp</span><span class="p">(</span><span class="n">T</span> <span class="n">val</span><span class="p">,</span> <span class="n">T</span> <span class="n">lo</span><span class="p">,</span> <span class="n">T</span> <span class="n">hi</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">val</span> <span class="o">&lt;</span> <span class="n">lo</span><span class="p">)</span> <span class="o">?</span> <span class="n">lo</span> <span class="o">:</span> <span class="p">(</span><span class="n">val</span> <span class="o">&gt;</span> <span class="n">hi</span><span class="p">)</span> <span class="o">?</span> <span class="n">hi</span> <span class="o">:</span> <span class="n">val</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">float</span> <span class="n">f</span> <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="mf">3.5</span><span class="n">f</span><span class="p">,</span> <span class="mf">0.0</span><span class="n">f</span><span class="p">,</span> <span class="mf">1.0</span><span class="n">f</span><span class="p">);</span>  <span class="c1">// T = float</span>
+<span class="kt">int</span>   <span class="n">i</span> <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>   <span class="mi">100</span><span class="p">);</span>    <span class="c1">// T = int</span>
+
+<span class="c1">// Class template</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="kt">size_t</span> <span class="n">N</span><span class="p">&gt;</span>
+<span class="k">class</span> <span class="nc">RingBuffer</span> <span class="p">{</span>
+    <span class="n">T</span>    <span class="n">buf_</span><span class="p">[</span><span class="n">N</span><span class="p">];</span>
+    <span class="kt">int</span>  <span class="n">head_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">tail_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">count_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="nl">public:</span>
+    <span class="kt">bool</span> <span class="n">push</span><span class="p">(</span><span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">count_</span> <span class="o">==</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">N</span><span class="p">))</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="n">buf_</span><span class="p">[</span><span class="n">tail_</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">;</span>
+        <span class="n">tail_</span> <span class="o">=</span> <span class="p">(</span><span class="n">tail_</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">N</span><span class="p">;</span>
+        <span class="o">++</span><span class="n">count_</span><span class="p">;</span>
+        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="kt">bool</span> <span class="n">pop</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;</span> <span class="n">out</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">count_</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">buf_</span><span class="p">[</span><span class="n">head_</span><span class="p">];</span>
+        <span class="n">head_</span> <span class="o">=</span> <span class="p">(</span><span class="n">head_</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">N</span><span class="p">;</span>
+        <span class="o">--</span><span class="n">count_</span><span class="p">;</span>
+        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="kt">int</span> <span class="n">size</span><span class="p">()</span>  <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">count_</span><span class="p">;</span> <span class="p">}</span>
+    <span class="kt">bool</span> <span class="n">empty</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">count_</span> <span class="o">==</span> <span class="mi">0</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">RingBuffer</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span> <span class="mi">32</span><span class="o">&gt;</span> <span class="n">sensor_buf</span><span class="p">;</span>
+<span class="n">sensor_buf</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="mf">23.5</span><span class="n">f</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="template-type-deduction">Template Type Deduction</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">print</span><span class="p">(</span><span class="n">T</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span> <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">val</span> <span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="n">print</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>        <span class="c1">// T = int</span>
+<span class="n">print</span><span class="p">(</span><span class="mf">3.14</span><span class="p">);</span>      <span class="c1">// T = double</span>
+<span class="n">print</span><span class="p">(</span><span class="s">"hello"</span><span class="p">);</span>   <span class="c1">// T = const char*</span>
+
+<span class="c1">// Explicit instantiation</span>
+<span class="n">print</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span> <span class="c1">// T = float</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="stl-containers">STL Containers</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<h3 id="sequence-containers">Sequence Containers</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;deque&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;list&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;array&gt;</span><span class="cp">
+</span>
+<span class="c1">// std::vector — dynamic array, O(1) amortised push_back</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">};</span>
+<span class="n">v</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span>
+<span class="n">v</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>        <span class="c1">// construct in-place</span>
+<span class="n">v</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span>           <span class="c1">// pre-allocate</span>
+<span class="n">v</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>          <span class="c1">// resize with fill value</span>
+<span class="n">v</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">()</span> <span class="o">+</span> <span class="mi">2</span><span class="p">);</span>   <span class="c1">// erase index 2</span>
+
+<span class="c1">// std::array — fixed-size stack array (C++11)</span>
+<span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span> <span class="mi">4</span><span class="o">&gt;</span> <span class="n">arr</span> <span class="o">=</span> <span class="p">{</span><span class="mf">1.0</span><span class="n">f</span><span class="p">,</span> <span class="mf">2.0</span><span class="n">f</span><span class="p">,</span> <span class="mf">3.0</span><span class="n">f</span><span class="p">,</span> <span class="mf">4.0</span><span class="n">f</span><span class="p">};</span>
+<span class="n">arr</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>   <span class="c1">// 4, known at compile time</span>
+
+<span class="c1">// std::deque — double-ended queue, O(1) push front/back</span>
+<span class="n">std</span><span class="o">::</span><span class="n">deque</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">dq</span><span class="p">;</span>
+<span class="n">dq</span><span class="p">.</span><span class="n">push_front</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="n">dq</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="c1">// std::list — doubly-linked list, O(1) insert/erase anywhere</span>
+<span class="n">std</span><span class="o">::</span><span class="n">list</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lst</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">};</span>
+<span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">next</span><span class="p">(</span><span class="n">lst</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="mi">1</span><span class="p">);</span>
+<span class="n">lst</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="mi">42</span><span class="p">);</span>  <span class="c1">// insert before position</span>
+</code></pre></div></div>
+
+<h3 id="associative-containers">Associative Containers</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;map&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;unordered_map&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;set&gt;</span><span class="cp">
+</span>
+<span class="c1">// std::map — sorted key-value, O(log n)</span>
+<span class="n">std</span><span class="o">::</span><span class="n">map</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span> <span class="n">reg_map</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">{</span><span class="s">"CTRL"</span><span class="p">,</span> <span class="mh">0x40</span><span class="p">},</span> <span class="p">{</span><span class="s">"STATUS"</span><span class="p">,</span> <span class="mh">0x41</span><span class="p">}</span>
+<span class="p">};</span>
+<span class="n">reg_map</span><span class="p">[</span><span class="s">"DATA"</span><span class="p">]</span> <span class="o">=</span> <span class="mh">0x42</span><span class="p">;</span>
+<span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">reg_map</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="s">"CTRL"</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">it</span> <span class="o">!=</span> <span class="n">reg_map</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">second</span> <span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span>
+
+<span class="c1">// std::unordered_map — hash map, O(1) average</span>
+<span class="n">std</span><span class="o">::</span><span class="n">unordered_map</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">id_name</span><span class="p">;</span>
+<span class="n">id_name</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s">"sensor_a"</span><span class="p">;</span>
+<span class="n">id_name</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>          <span class="c1">// 1 if present</span>
+
+<span class="c1">// std::set — sorted unique values, O(log n)</span>
+<span class="n">std</span><span class="o">::</span><span class="n">set</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">seen</span><span class="p">;</span>
+<span class="n">seen</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+<span class="kt">bool</span> <span class="n">found</span> <span class="o">=</span> <span class="n">seen</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>  <span class="c1">// true</span>
+</code></pre></div></div>
+
+<h3 id="container-selection-guide">Container Selection Guide</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Need</th>
+      <th>Container</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Fast random access, push_back</td>
+      <td><code class="language-plaintext highlighter-rouge">vector</code></td>
+    </tr>
+    <tr>
+      <td>Fast push_front and push_back</td>
+      <td><code class="language-plaintext highlighter-rouge">deque</code></td>
+    </tr>
+    <tr>
+      <td>Fast insert/erase anywhere</td>
+      <td><code class="language-plaintext highlighter-rouge">list</code></td>
+    </tr>
+    <tr>
+      <td>Sorted key→value</td>
+      <td><code class="language-plaintext highlighter-rouge">map</code></td>
+    </tr>
+    <tr>
+      <td>Fast key→value lookup</td>
+      <td><code class="language-plaintext highlighter-rouge">unordered_map</code></td>
+    </tr>
+    <tr>
+      <td>Unique sorted elements</td>
+      <td><code class="language-plaintext highlighter-rouge">set</code></td>
+    </tr>
+    <tr>
+      <td>Fixed-size stack array</td>
+      <td><code class="language-plaintext highlighter-rouge">array</code></td>
+    </tr>
+    <tr>
+      <td>LIFO stack</td>
+      <td><code class="language-plaintext highlighter-rouge">stack&lt;T&gt;</code> (adapts deque)</td>
+    </tr>
+    <tr>
+      <td>FIFO queue</td>
+      <td><code class="language-plaintext highlighter-rouge">queue&lt;T&gt;</code> (adapts deque)</td>
+    </tr>
+    <tr>
+      <td>Priority queue / heap</td>
+      <td><code class="language-plaintext highlighter-rouge">priority_queue&lt;T&gt;</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-mid" id="iterators--algorithms">Iterators &amp; Algorithms</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="iterator-categories">Iterator Categories</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v</span> <span class="o">=</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">};</span>
+
+<span class="c1">// Range-based for (uses begin()/end())</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">x</span> <span class="o">:</span> <span class="n">v</span><span class="p">)</span> <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">x</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span><span class="p">;</span>
+
+<span class="c1">// Iterator loop</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+    <span class="o">*</span><span class="n">it</span> <span class="o">*=</span> <span class="mi">2</span><span class="p">;</span>
+
+<span class="c1">// Reverse iteration</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">rbegin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">v</span><span class="p">.</span><span class="n">rend</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">it</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span><span class="p">;</span>
+
+<span class="c1">// With index (C++20 enumerate alternative)</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">v</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="s">": "</span> <span class="o">&lt;&lt;</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h3 id="standard-algorithms-algorithm">Standard Algorithms (<code class="language-plaintext highlighter-rouge">&lt;algorithm&gt;</code>)</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;algorithm&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;numeric&gt;</span><span class="cp">
+</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v</span> <span class="o">=</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">};</span>
+
+<span class="c1">// Sorting</span>
+<span class="n">std</span><span class="o">::</span><span class="n">sort</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>                          <span class="c1">// ascending</span>
+<span class="n">std</span><span class="o">::</span><span class="n">sort</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">std</span><span class="o">::</span><span class="n">greater</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">());</span>     <span class="c1">// descending</span>
+<span class="n">std</span><span class="o">::</span><span class="n">sort</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+    <span class="p">[](</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">){</span> <span class="k">return</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">;</span> <span class="p">});</span>                <span class="c1">// lambda</span>
+
+<span class="c1">// Searching</span>
+<span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">find</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="mi">4</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">it</span> <span class="o">!=</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">())</span> <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"found at "</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">distance</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">it</span><span class="p">);</span>
+
+<span class="k">auto</span> <span class="n">it2</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">lower_bound</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="mi">3</span><span class="p">);</span>  <span class="c1">// binary search (sorted!)</span>
+<span class="kt">bool</span> <span class="n">has3</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">binary_search</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="mi">3</span><span class="p">);</span>
+
+<span class="c1">// Transforming</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">out</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+<span class="n">std</span><span class="o">::</span><span class="n">transform</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">out</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span>
+    <span class="p">[](</span><span class="kt">int</span> <span class="n">x</span><span class="p">){</span> <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span><span class="p">;</span> <span class="p">});</span>          <span class="c1">// squares</span>
+
+<span class="c1">// Accumulate / reduce</span>
+<span class="kt">int</span> <span class="n">sum</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">accumulate</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="mi">0</span><span class="p">);</span>   <span class="c1">// sum</span>
+<span class="kt">int</span> <span class="n">product</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">accumulate</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">multiplies</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">());</span>
+
+<span class="c1">// Filtering (copy_if)</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">evens</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">copy_if</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">std</span><span class="o">::</span><span class="n">back_inserter</span><span class="p">(</span><span class="n">evens</span><span class="p">),</span>
+    <span class="p">[](</span><span class="kt">int</span> <span class="n">x</span><span class="p">){</span> <span class="k">return</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">;</span> <span class="p">});</span>
+
+<span class="c1">// Count, min, max</span>
+<span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">count_if</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="p">[](</span><span class="kt">int</span> <span class="n">x</span><span class="p">){</span> <span class="k">return</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">;</span> <span class="p">});</span>
+<span class="k">auto</span> <span class="p">[</span><span class="n">mn</span><span class="p">,</span> <span class="n">mx</span><span class="p">]</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">minmax_element</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+
+<span class="c1">// Remove-erase idiom (the classic C++ pattern)</span>
+<span class="n">v</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">remove_if</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+    <span class="p">[](</span><span class="kt">int</span> <span class="n">x</span><span class="p">){</span> <span class="k">return</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">;</span> <span class="p">}),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="variadic-templates--fold-expressions">Variadic Templates &amp; Fold Expressions</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="variadic-templates-c11">Variadic Templates (C++11)</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Compile-time recursive variadic template</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="n">T</span> <span class="nf">sum</span><span class="p">(</span><span class="n">T</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">val</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">,</span> <span class="k">typename</span><span class="o">...</span> <span class="nc">Args</span><span class="p">&gt;</span>
+<span class="n">T</span> <span class="n">sum</span><span class="p">(</span><span class="n">T</span> <span class="n">first</span><span class="p">,</span> <span class="n">Args</span><span class="p">...</span> <span class="n">rest</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">first</span> <span class="o">+</span> <span class="n">sum</span><span class="p">(</span><span class="n">rest</span><span class="p">...);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span>   <span class="n">s1</span> <span class="o">=</span> <span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">);</span>       <span class="c1">// 10</span>
+<span class="kt">float</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">sum</span><span class="p">(</span><span class="mf">1.0</span><span class="n">f</span><span class="p">,</span> <span class="mf">2.5</span><span class="n">f</span><span class="p">,</span> <span class="mf">0.5</span><span class="n">f</span><span class="p">);</span> <span class="c1">// 4.0f</span>
+</code></pre></div></div>
+
+<h3 id="fold-expressions-c17">Fold Expressions (C++17)</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Much cleaner than recursive templates</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="o">...</span> <span class="nc">Args</span><span class="p">&gt;</span>
+<span class="k">auto</span> <span class="nf">sum</span><span class="p">(</span><span class="n">Args</span><span class="p">...</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">args</span> <span class="o">+</span> <span class="p">...);</span>        <span class="c1">// unary right fold</span>
+<span class="p">}</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="o">...</span> <span class="nc">Args</span><span class="p">&gt;</span>
+<span class="kt">bool</span> <span class="n">all_positive</span><span class="p">(</span><span class="n">Args</span><span class="p">...</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">args</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">...);</span> <span class="c1">// fold over &amp;&amp;</span>
+<span class="p">}</span>
+
+<span class="k">auto</span> <span class="n">s</span> <span class="o">=</span> <span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span>       <span class="c1">// 15</span>
+<span class="kt">bool</span> <span class="n">ok</span> <span class="o">=</span> <span class="n">all_positive</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>   <span class="c1">// true</span>
+</code></pre></div></div>
+
+<h3 id="template-specialisation">Template Specialisation</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Primary template</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="k">struct</span> <span class="nc">Serialise</span> <span class="p">{</span>
+    <span class="k">static</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">to_string</span><span class="p">(</span><span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="c1">// Full specialisation for bool</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="p">&gt;</span>
+<span class="k">struct</span> <span class="nc">Serialise</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">static</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">to_string</span><span class="p">(</span><span class="kt">bool</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">v</span> <span class="o">?</span> <span class="s">"true"</span> <span class="o">:</span> <span class="s">"false"</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="c1">// Partial specialisation for pointer types</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="k">struct</span> <span class="nc">Serialise</span><span class="o">&lt;</span><span class="n">T</span><span class="o">*&gt;</span> <span class="p">{</span>
+    <span class="k">static</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">to_string</span><span class="p">(</span><span class="n">T</span><span class="o">*</span> <span class="n">ptr</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">ostringstream</span> <span class="n">oss</span><span class="p">;</span>
+        <span class="n">oss</span> <span class="o">&lt;&lt;</span> <span class="s">"0x"</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">hex</span> <span class="o">&lt;&lt;</span> <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">uintptr_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">ptr</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">oss</span><span class="p">.</span><span class="n">str</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<h3 id="sfinae-and-if-constexpr-c17">SFINAE and <code class="language-plaintext highlighter-rouge">if constexpr</code> (C++17)</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// if constexpr — compile-time branching</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="nf">to_str</span><span class="p">(</span><span class="n">T</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="k">constexpr</span> <span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_same_v</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="kt">bool</span><span class="o">&gt;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">val</span> <span class="o">?</span> <span class="s">"true"</span> <span class="o">:</span> <span class="s">"false"</span><span class="p">;</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="k">constexpr</span> <span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_integral_v</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">val</span><span class="p">);</span>
+    <span class="k">else</span>
+        <span class="k">return</span> <span class="s">"unsupported"</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Concepts (C++20) — cleaner constraints</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">integral</span> <span class="n">T</span><span class="p">&gt;</span>
+<span class="n">T</span> <span class="n">safe_add</span><span class="p">(</span><span class="n">T</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">;</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="c20-ranges-intro">C++20 Ranges (Intro)</h2>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;ranges&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;algorithm&gt;</span><span class="cp">
+</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">};</span>
+
+<span class="c1">// Pipe-based range adaptors</span>
+<span class="k">auto</span> <span class="n">result</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="o">|</span> <span class="n">std</span><span class="o">::</span><span class="n">views</span><span class="o">::</span><span class="n">filter</span><span class="p">([](</span><span class="kt">int</span> <span class="n">x</span><span class="p">){</span> <span class="k">return</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">;</span> <span class="p">})</span>
+    <span class="o">|</span> <span class="n">std</span><span class="o">::</span><span class="n">views</span><span class="o">::</span><span class="n">transform</span><span class="p">([](</span><span class="kt">int</span> <span class="n">x</span><span class="p">){</span> <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span><span class="p">;</span> <span class="p">})</span>
+    <span class="o">|</span> <span class="n">std</span><span class="o">::</span><span class="n">views</span><span class="o">::</span><span class="n">take</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">x</span> <span class="o">:</span> <span class="n">result</span><span class="p">)</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">x</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span><span class="p">;</span>   <span class="c1">// 4 16 36</span>
+
+<span class="c1">// Range algorithms (no begin/end needed)</span>
+<span class="n">std</span><span class="o">::</span><span class="n">ranges</span><span class="o">::</span><span class="n">sort</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">ranges</span><span class="o">::</span><span class="n">find</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span>
+
+<span class="c1">// Lazy — no copy! The range is evaluated on demand.</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is template type deduction and when does it fail?</strong></p>
+
+<blockquote>
+  <p>The compiler deduces the template parameter <code class="language-plaintext highlighter-rouge">T</code> from the argument types. It fails when: (a) two arguments conflict (e.g. <code class="language-plaintext highlighter-rouge">max(1, 2.0)</code> — <code class="language-plaintext highlighter-rouge">int</code> vs <code class="language-plaintext highlighter-rouge">double</code>), (b) the argument is a braced-init-list <code class="language-plaintext highlighter-rouge">{1,2,3}</code>, or (c) you use a non-deducible context (e.g. <code class="language-plaintext highlighter-rouge">T</code> only appears in the return type). Fix with explicit specialisation: <code class="language-plaintext highlighter-rouge">max&lt;double&gt;(1, 2.0)</code>.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">std::vector</code> and <code class="language-plaintext highlighter-rouge">std::array</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">std::vector</code> is a heap-allocated, dynamically resizable container — its size is set at runtime. <code class="language-plaintext highlighter-rouge">std::array</code> wraps a fixed-size C array on the stack — its size is a compile-time constant (<code class="language-plaintext highlighter-rouge">std::array&lt;T, N&gt;</code>). Prefer <code class="language-plaintext highlighter-rouge">std::array</code> when the size is known at compile time (no heap allocation, no overhead), and <code class="language-plaintext highlighter-rouge">std::vector</code> when the size varies.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: Explain the remove-erase idiom.</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">std::remove_if</code> doesn’t actually erase elements — it moves “kept” elements to the front and returns an iterator to the new end. The original container size is unchanged, with junk values after the new end. <code class="language-plaintext highlighter-rouge">v.erase(remove_if(...), v.end())</code> then actually removes the surplus elements. This two-step pattern is necessary because algorithms operate on iterator ranges and don’t know the container type.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: What are C++20 concepts and how do they improve templates?</strong></p>
+
+<blockquote>
+  <p>Concepts are named compile-time predicates that constrain template parameters. Before concepts, invalid template instantiations produced notoriously unreadable error messages. With concepts (e.g. <code class="language-plaintext highlighter-rouge">template &lt;std::integral T&gt;</code>), the compiler checks the constraint at the call site and emits a clear diagnostic. Concepts also enable overload resolution based on constraints and document requirements directly in the function signature.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>cppreference — Templates</td>
+      <td><a href="https://en.cppreference.com/w/cpp/language/templates">en.cppreference.com/w/cpp/language/templates</a></td>
+    </tr>
+    <tr>
+      <td>cppreference — Algorithms</td>
+      <td><a href="https://en.cppreference.com/w/cpp/algorithm">en.cppreference.com/w/cpp/algorithm</a></td>
+    </tr>
+    <tr>
+      <td>C++ Core Guidelines — Templates</td>
+      <td><a href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-templates">isocpp.github.io/CppCoreGuidelines</a></td>
+    </tr>
+    <tr>
+      <td>Ranges: C++20</td>
+      <td><a href="https://en.cppreference.com/w/cpp/ranges">en.cppreference.com/w/cpp/ranges</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-code"></i>
+        <span>C++ Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/cpp/oop-raii/" class="gtn-link ">
+          <i class="fas fa-object-group"></i> OOP &amp; RAII
+        </a>
+        <a href="/linux-developer/cpp/templates-stl/" class="gtn-link gts-active">
+          <i class="fas fa-shapes"></i> Templates &amp; STL
+        </a>
+        <a href="/linux-developer/cpp/smart-pointers/" class="gtn-link ">
+          <i class="fas fa-wand-magic-sparkles"></i> Smart Pointers
+        </a>
+        <a href="/linux-developer/cpp/move-semantics/" class="gtn-link ">
+          <i class="fas fa-right-left"></i> Move Semantics
+        </a>
+        <a href="/linux-developer/cpp/cmake/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> CMake
+        </a>
+        <a href="/linux-developer/cpp/qt/" class="gtn-link ">
+          <i class="fas fa-window-maximize"></i> Qt Framework
+        </a>
+        <a href="/linux-developer/cpp/cpp17-cpp20/" class="gtn-link ">
+          <i class="fas fa-star"></i> C++17 / C++20
+        </a>
+      </nav>
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/cpp/oop-raii/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">OOP & RAII</span>
+      </a>
+      
+      
+      <a href="/linux-developer/cpp/smart-pointers/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Smart Pointers</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

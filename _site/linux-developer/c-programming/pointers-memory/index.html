@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pointers & Memory · Eslam Mohamed</title>
+  <meta name="description" content="Master C pointer arithmetic, pointer-to-pointer, function pointers, const-correctness, the C memory layout, and common pitfalls that crash production systems." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/c-programming/">C Programming</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Pointers & Memory</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 02</span>
+      </div>
+      <h1 class="guide-title">Pointers & Memory</h1>
+      <p class="guide-subtitle">Master C pointer arithmetic, pointer-to-pointer, function pointers, const-correctness, the C memory layout, and common pitfalls that crash production systems.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="what-is-a-pointer">What is a Pointer?</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>A pointer is a variable that stores a <strong>memory address</strong>. Every piece of data in a running program lives at a specific address in RAM; pointers let you manipulate data through those addresses directly.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">42</span><span class="p">;</span>
+<span class="kt">int</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">x</span><span class="p">;</span>        <span class="c1">// p holds the address of x</span>
+
+<span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">x</span><span class="p">);</span>  <span class="c1">// value:   42</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%p</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>  <span class="c1">// address: 0x7ffd1a2b3c40  (varies)</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="o">*</span><span class="n">p</span><span class="p">);</span> <span class="c1">// dereference: 42</span>
+
+<span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>           <span class="c1">// modify x through the pointer</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">x</span><span class="p">);</span>  <span class="c1">// 100</span>
+</code></pre></div></div>
+
+<h3 id="pointer-declarations">Pointer Declarations</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span>   <span class="o">*</span><span class="n">p</span><span class="p">;</span>       <span class="c1">// pointer to int</span>
+<span class="kt">char</span>  <span class="o">*</span><span class="n">s</span><span class="p">;</span>       <span class="c1">// pointer to char (C string)</span>
+<span class="kt">float</span> <span class="o">*</span><span class="n">f</span><span class="p">;</span>       <span class="c1">// pointer to float</span>
+<span class="kt">void</span>  <span class="o">*</span><span class="n">v</span><span class="p">;</span>       <span class="c1">// generic pointer — can point to any type</span>
+<span class="kt">int</span>  <span class="o">**</span><span class="n">pp</span><span class="p">;</span>      <span class="c1">// pointer to pointer to int</span>
+<span class="kt">int</span>  <span class="p">(</span><span class="o">*</span><span class="n">arr</span><span class="p">)[</span><span class="mi">5</span><span class="p">];</span> <span class="c1">// pointer to array of 5 ints</span>
+</code></pre></div></div>
+
+<h3 id="the--and--operators">The <code class="language-plaintext highlighter-rouge">&amp;</code> and <code class="language-plaintext highlighter-rouge">*</code> Operators</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Operator</th>
+      <th>Name</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">&amp;x</code></td>
+      <td>Address-of</td>
+      <td>Gives the address where <code class="language-plaintext highlighter-rouge">x</code> lives</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">*p</code></td>
+      <td>Dereference</td>
+      <td>Gives the value at the address in <code class="language-plaintext highlighter-rouge">p</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-basic" id="pointer-arithmetic">Pointer Arithmetic</h2>
+
+<p>When you add or subtract an integer from a pointer, the pointer moves by <strong><code class="language-plaintext highlighter-rouge">n × sizeof(type)</code></strong> bytes — not by <code class="language-plaintext highlighter-rouge">n</code> bytes.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">arr</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">};</span>
+<span class="kt">int</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="n">arr</span><span class="p">;</span>          <span class="c1">// p points to arr[0]</span>
+
+<span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="o">*</span><span class="n">p</span><span class="p">);</span>    <span class="c1">// 10</span>
+<span class="n">p</span><span class="o">++</span><span class="p">;</span>                   <span class="c1">// moves 4 bytes forward (sizeof int = 4)</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="o">*</span><span class="n">p</span><span class="p">);</span>    <span class="c1">// 20</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="n">p</span><span class="o">+</span><span class="mi">2</span><span class="p">));</span><span class="c1">// 40</span>
+
+<span class="c1">// Pointer difference (same array only)</span>
+<span class="kt">int</span> <span class="o">*</span><span class="n">a</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">arr</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+<span class="kt">int</span> <span class="o">*</span><span class="n">b</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">arr</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span>
+<span class="kt">ptrdiff_t</span> <span class="n">diff</span> <span class="o">=</span> <span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">;</span>  <span class="c1">// 3  (not 12 bytes)</span>
+</code></pre></div></div>
+
+<h3 id="array-decay">Array Decay</h3>
+
+<p>Arrays automatically “decay” to a pointer to their first element when passed to functions:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">print_array</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">arr</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">len</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"%d "</span><span class="p">,</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>   <span class="c1">// arr[i] == *(arr + i)</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="n">nums</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">};</span>
+<span class="n">print_array</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>   <span class="c1">// 'nums' decays to &amp;nums[0]</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="pointer-to-pointer">Pointer to Pointer</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">x</span>   <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+<span class="kt">int</span> <span class="o">*</span><span class="n">p</span>  <span class="o">=</span> <span class="o">&amp;</span><span class="n">x</span><span class="p">;</span>
+<span class="kt">int</span> <span class="o">**</span><span class="n">pp</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">p</span><span class="p">;</span>
+
+<span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>   <span class="n">x</span><span class="p">);</span>    <span class="c1">// 5  — value</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%p</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>   <span class="n">p</span><span class="p">);</span>    <span class="c1">// address of x</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%p</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>  <span class="n">pp</span><span class="p">);</span>    <span class="c1">// address of p</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="o">**</span><span class="n">pp</span><span class="p">);</span>   <span class="c1">// 5  — double dereference</span>
+
+<span class="o">**</span><span class="n">pp</span> <span class="o">=</span> <span class="mi">99</span><span class="p">;</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">x</span><span class="p">);</span>      <span class="c1">// 99</span>
+</code></pre></div></div>
+
+<p><strong>Real use case — modifying a pointer inside a function:</strong></p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">allocate</span><span class="p">(</span><span class="kt">int</span> <span class="o">**</span><span class="n">out</span><span class="p">,</span> <span class="kt">int</span> <span class="n">size</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">*</span><span class="n">out</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="n">size</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>  <span class="c1">// must use ** to change the caller's pointer</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="o">*</span><span class="n">buf</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="n">allocate</span><span class="p">(</span><span class="o">&amp;</span><span class="n">buf</span><span class="p">,</span> <span class="mi">10</span><span class="p">);</span>
+<span class="n">buf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">42</span><span class="p">;</span>
+<span class="n">free</span><span class="p">(</span><span class="n">buf</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="function-pointers">Function Pointers</h2>
+
+<p>A function pointer stores the address of a function and allows calling it indirectly — the basis for callbacks, dispatch tables, and plugin architectures.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Declaration: pointer to function taking two ints, returning int</span>
+<span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">operation</span><span class="p">)(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="nf">add</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">;</span> <span class="p">}</span>
+<span class="kt">int</span> <span class="nf">mul</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="n">operation</span> <span class="o">=</span> <span class="n">add</span><span class="p">;</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">operation</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">));</span>  <span class="c1">// 7</span>
+
+<span class="n">operation</span> <span class="o">=</span> <span class="n">mul</span><span class="p">;</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">operation</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">));</span>  <span class="c1">// 12</span>
+</code></pre></div></div>
+
+<p><strong>Callback pattern (like qsort):</strong></p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="nf">compare_asc</span><span class="p">(</span><span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="kt">int</span><span class="o">*</span><span class="p">)</span><span class="n">a</span> <span class="o">-</span> <span class="o">*</span><span class="p">(</span><span class="kt">int</span><span class="o">*</span><span class="p">)</span><span class="n">b</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="n">arr</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">};</span>
+<span class="n">qsort</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">),</span> <span class="n">compare_asc</span><span class="p">);</span>
+<span class="c1">// arr is now: 1 2 3 4 5</span>
+</code></pre></div></div>
+
+<p><strong>Dispatch table (used in device drivers):</strong></p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="kt">int</span>  <span class="p">(</span><span class="o">*</span><span class="n">open</span><span class="p">)(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">);</span>
+    <span class="kt">int</span>  <span class="p">(</span><span class="o">*</span><span class="n">read</span><span class="p">)(</span><span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">);</span>
+    <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">close</span><span class="p">)(</span><span class="kt">void</span><span class="p">);</span>
+<span class="p">}</span> <span class="n">FileOps</span><span class="p">;</span>
+
+<span class="n">FileOps</span> <span class="n">uart_ops</span> <span class="o">=</span> <span class="p">{</span> <span class="n">uart_open</span><span class="p">,</span> <span class="n">uart_read</span><span class="p">,</span> <span class="n">uart_close</span> <span class="p">};</span>
+<span class="n">uart_ops</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="s">"/dev/ttyS0"</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="const-with-pointers"><code class="language-plaintext highlighter-rouge">const</code> with Pointers</h2>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+<span class="k">const</span> <span class="kt">int</span> <span class="o">*</span><span class="n">p1</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">x</span><span class="p">;</span>     <span class="c1">// pointer to const int: can't change *p1</span>
+<span class="kt">int</span> <span class="o">*</span><span class="k">const</span> <span class="n">p2</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">x</span><span class="p">;</span>     <span class="c1">// const pointer to int: can't change p2 (address)</span>
+<span class="k">const</span> <span class="kt">int</span> <span class="o">*</span><span class="k">const</span> <span class="n">p3</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">x</span><span class="p">;</span> <span class="c1">// can't change either</span>
+
+<span class="o">*</span><span class="n">p1</span> <span class="o">=</span> <span class="mi">20</span><span class="p">;</span>   <span class="c1">// ERROR: read-only through p1</span>
+<span class="n">p1</span>  <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span> <span class="c1">// OK: changing where p1 points</span>
+<span class="o">*</span><span class="n">p2</span> <span class="o">=</span> <span class="mi">20</span><span class="p">;</span>   <span class="c1">// OK: changing the value</span>
+<span class="n">p2</span>  <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span> <span class="c1">// ERROR: can't change p2 itself</span>
+</code></pre></div></div>
+
+<p><strong>Rule of thumb:</strong> read right-to-left through the <code class="language-plaintext highlighter-rouge">*</code>.</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">const int *p</code> → “p is a pointer to const int”</li>
+  <li><code class="language-plaintext highlighter-rouge">int *const p</code> → “p is a const pointer to int”</li>
+</ul>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-c-memory-layout">Advanced: C Memory Layout</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p>A typical Linux process has these segments:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>High address
+┌─────────────────────┐
+│    Kernel space     │  (inaccessible to user process)
+├─────────────────────┤
+│      Stack          │  grows downward — local variables, return addresses
+│         ↓           │
+│   (unmapped gap)    │
+│         ↑           │
+│       Heap          │  grows upward — malloc/calloc
+├─────────────────────┤
+│  BSS segment        │  uninitialized globals (zeroed by OS)
+├─────────────────────┤
+│  Data segment       │  initialized globals and statics
+├─────────────────────┤
+│  Text segment       │  executable code (read-only)
+└─────────────────────┘
+Low address
+</code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">global_init</span>   <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>    <span class="c1">// Data segment</span>
+<span class="kt">int</span> <span class="n">global_uninit</span><span class="p">;</span>         <span class="c1">// BSS segment (zeroed)</span>
+
+<span class="kt">void</span> <span class="nf">func</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">local</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>         <span class="c1">// Stack</span>
+    <span class="kt">int</span> <span class="o">*</span><span class="n">heap</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span>  <span class="c1">// Heap (pointer on stack, data on heap)</span>
+    <span class="k">static</span> <span class="kt">int</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>       <span class="c1">// Data segment (persists across calls)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="common-pointer-bugs">Common Pointer Bugs</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 1. Use after free</span>
+<span class="kt">int</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span>
+<span class="n">free</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+<span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>            <span class="c1">// undefined behavior — crash or silent corruption</span>
+
+<span class="c1">// 2. Dangling pointer (pointer to local that went out of scope)</span>
+<span class="kt">int</span> <span class="o">*</span><span class="nf">dangling</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">42</span><span class="p">;</span>
+    <span class="k">return</span> <span class="o">&amp;</span><span class="n">x</span><span class="p">;</span>     <span class="c1">// x is destroyed on return — BAD</span>
+<span class="p">}</span>
+
+<span class="c1">// 3. Buffer overflow</span>
+<span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span>
+<span class="n">strcpy</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="s">"This string is too long!"</span><span class="p">);</span>  <span class="c1">// overwrites adjacent memory</span>
+
+<span class="c1">// 4. NULL dereference</span>
+<span class="kt">int</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>            <span class="c1">// SIGSEGV</span>
+
+<span class="c1">// 5. Double free</span>
+<span class="n">free</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+<span class="n">free</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>           <span class="c1">// heap corruption</span>
+</code></pre></div></div>
+
+<h3 id="tools-for-memory-safety">Tools for Memory Safety</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Valgrind — detects leaks, invalid reads/writes</span>
+valgrind <span class="nt">--leak-check</span><span class="o">=</span>full ./program
+
+<span class="c"># AddressSanitizer (ASan) — compile-time instrumentation, fast</span>
+gcc <span class="nt">-fsanitize</span><span class="o">=</span>address <span class="nt">-g</span> ./program.c <span class="nt">-o</span> program <span class="o">&amp;&amp;</span> ./program
+
+<span class="c"># Undefined Behavior Sanitizer</span>
+gcc <span class="nt">-fsanitize</span><span class="o">=</span>undefined <span class="nt">-g</span> ./program.c <span class="nt">-o</span> program
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">*p++</code> and <code class="language-plaintext highlighter-rouge">(*p)++</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">*p++</code> has higher precedence on <code class="language-plaintext highlighter-rouge">++</code> as postfix: it returns <code class="language-plaintext highlighter-rouge">*p</code>, then increments the <strong>pointer</strong> <code class="language-plaintext highlighter-rouge">p</code> (moves to the next element). <code class="language-plaintext highlighter-rouge">(*p)++</code> dereferences <code class="language-plaintext highlighter-rouge">p</code> to get the value, then increments the <strong>value</strong> at that location.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: What does <code class="language-plaintext highlighter-rouge">void *</code> mean and when is it used?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">void *</code> is a generic pointer that can hold the address of any type without casting. It cannot be dereferenced directly — you must cast it to a concrete type first. Used in generic APIs like <code class="language-plaintext highlighter-rouge">malloc()</code> (returns <code class="language-plaintext highlighter-rouge">void *</code>), <code class="language-plaintext highlighter-rouge">qsort()</code>, and <code class="language-plaintext highlighter-rouge">memcpy()</code> that must work with any data type.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: Explain the difference between <code class="language-plaintext highlighter-rouge">char *s = "hello"</code> and <code class="language-plaintext highlighter-rouge">char s[] = "hello"</code>.</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">char *s = "hello"</code> creates a pointer to a <strong>string literal</strong> stored in the read-only <code class="language-plaintext highlighter-rouge">.rodata</code> section. Writing to <code class="language-plaintext highlighter-rouge">s[0]</code> is undefined behaviour (segfault on most systems). <code class="language-plaintext highlighter-rouge">char s[] = "hello"</code> allocates a <strong>writable array</strong> on the stack and copies the string into it. <code class="language-plaintext highlighter-rouge">s[0] = 'H'</code> is perfectly legal.</p>
+</blockquote>
+
+<p><strong>Q4 — Intermediate: What is a memory leak and how do you detect it?</strong></p>
+
+<blockquote>
+  <p>A memory leak occurs when <code class="language-plaintext highlighter-rouge">malloc</code>-allocated memory is never <code class="language-plaintext highlighter-rouge">free</code>d, causing the process’s heap to grow without bound until OOM or program exit. Detect with Valgrind (<code class="language-plaintext highlighter-rouge">--leak-check=full</code>) or compile with <code class="language-plaintext highlighter-rouge">-fsanitize=address</code>. Prevent by following RAII patterns, matching every <code class="language-plaintext highlighter-rouge">malloc</code> with a <code class="language-plaintext highlighter-rouge">free</code>, and using tools like static analysis (<code class="language-plaintext highlighter-rouge">cppcheck</code>, <code class="language-plaintext highlighter-rouge">clang-tidy</code>).</p>
+</blockquote>
+
+<p><strong>Q5 — Advanced: Explain the <code class="language-plaintext highlighter-rouge">restrict</code> keyword in C99.</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">restrict</code> is a hint to the compiler that a pointer is the <strong>only</strong> way to access the memory it points to within a given scope — no other pointer aliases it. This allows the compiler to generate better-optimised code (e.g., avoid re-loading memory from RAM on every iteration). It is the programmer’s responsibility to ensure the guarantee holds; violating it causes undefined behaviour.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>C17 Standard (draft)</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg14/">open-std.org/jtc1/sc22/wg14</a></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 3 malloc</code></td>
+      <td>Heap allocation manual</td>
+    </tr>
+    <tr>
+      <td>Valgrind documentation</td>
+      <td><a href="https://valgrind.org/docs/manual/manual.html">valgrind.org/docs/manual</a></td>
+    </tr>
+    <tr>
+      <td>AddressSanitizer docs</td>
+      <td><a href="https://clang.llvm.org/docs/AddressSanitizer.html">clang.llvm.org/docs/AddressSanitizer.html</a></td>
+    </tr>
+    <tr>
+      <td>C Pointer Tutorial (Binky video)</td>
+      <td>Classic Stanford pointer video</td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-file-code"></i>
+        <span>C Programming Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/c-programming/pointers-memory/" class="gtn-link gts-active">
+          <i class="fas fa-memory"></i> Pointers &amp; Memory
+        </a>
+        <a href="/linux-developer/c-programming/structs-unions/" class="gtn-link ">
+          <i class="fas fa-cube"></i> Structs &amp; Unions
+        </a>
+        <a href="/linux-developer/c-programming/file-io/" class="gtn-link ">
+          <i class="fas fa-file-code"></i> File I/O
+        </a>
+        <a href="/linux-developer/c-programming/dynamic-allocation/" class="gtn-link ">
+          <i class="fas fa-layer-group"></i> Dynamic Allocation
+        </a>
+        <a href="/linux-developer/c-programming/makefiles/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> Makefiles
+        </a>
+        <a href="/linux-developer/c-programming/gcc-optimization/" class="gtn-link ">
+          <i class="fas fa-gears"></i> GCC Flags &amp; Optimization
+        </a>
+        <a href="/linux-developer/c-programming/gdb/" class="gtn-link ">
+          <i class="fas fa-bug"></i> GDB Debugging
+        </a>
+      </nav>
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      <div></div>
+      
+      <a href="/linux-developer/c-programming/structs-unions/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Structs & Unions</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

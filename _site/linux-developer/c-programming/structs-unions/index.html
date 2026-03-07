@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Structs & Unions · Eslam Mohamed</title>
+  <meta name="description" content="Understand struct memory layout, padding and alignment, bit-fields, unions, and the typedef patterns used to model hardware registers and network protocols in C." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/c-programming/">C Programming</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Structs & Unions</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 02</span>
+      </div>
+      <h1 class="guide-title">Structs & Unions</h1>
+      <p class="guide-subtitle">Understand struct memory layout, padding and alignment, bit-fields, unions, and the typedef patterns used to model hardware registers and network protocols in C.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="structs">Structs</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>A <code class="language-plaintext highlighter-rouge">struct</code> groups variables of different types into a single named unit. Members are stored at <strong>consecutive memory addresses</strong> (with possible padding between them).</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">Point</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">x</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">y</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">Point</span> <span class="n">p1</span> <span class="o">=</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">};</span>
+<span class="k">struct</span> <span class="n">Point</span> <span class="n">p2</span> <span class="o">=</span> <span class="p">{.</span><span class="n">x</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="mi">20</span><span class="p">};</span>  <span class="c1">// C99 designated initializer</span>
+
+<span class="n">printf</span><span class="p">(</span><span class="s">"(%d, %d)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">p1</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p1</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>   <span class="c1">// (3, 7)</span>
+
+<span class="c1">// Pointer to struct — use -&gt; operator</span>
+<span class="k">struct</span> <span class="n">Point</span> <span class="o">*</span><span class="n">pp</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">p1</span><span class="p">;</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">pp</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">);</span>   <span class="c1">// equivalent to (*pp).x</span>
+</code></pre></div></div>
+
+<h3 id="typedef-for-cleaner-syntax"><code class="language-plaintext highlighter-rouge">typedef</code> for Cleaner Syntax</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Without typedef</span>
+<span class="k">struct</span> <span class="n">Sensor</span> <span class="p">{</span> <span class="kt">int</span> <span class="n">id</span><span class="p">;</span> <span class="kt">float</span> <span class="n">temp</span><span class="p">;</span> <span class="p">};</span>
+<span class="k">struct</span> <span class="n">Sensor</span> <span class="n">s</span><span class="p">;</span>
+
+<span class="c1">// With typedef</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="kt">int</span>   <span class="n">id</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">temp</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">Sensor</span><span class="p">;</span>
+
+<span class="n">Sensor</span> <span class="n">s</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">23</span><span class="p">.</span><span class="mi">5</span><span class="n">f</span><span class="p">};</span>  <span class="c1">// no 'struct' keyword needed</span>
+</code></pre></div></div>
+
+<h3 id="nested-structs">Nested Structs</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="kt">float</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">Vec2</span><span class="p">;</span>
+
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="n">Vec2</span>  <span class="n">position</span><span class="p">;</span>
+    <span class="n">Vec2</span>  <span class="n">velocity</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">mass</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">Particle</span><span class="p">;</span>
+
+<span class="n">Particle</span> <span class="n">p</span> <span class="o">=</span> <span class="p">{</span> <span class="p">.</span><span class="n">position</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">},</span> <span class="p">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">},</span> <span class="p">.</span><span class="n">mass</span> <span class="o">=</span> <span class="mi">1</span><span class="p">.</span><span class="mi">5</span><span class="n">f</span> <span class="p">};</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"pos: (%.1f, %.1f)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">p</span><span class="p">.</span><span class="n">position</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">.</span><span class="n">position</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="struct-padding-and-alignment">Struct Padding and Alignment</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<p>The compiler inserts <strong>padding bytes</strong> between struct members to satisfy CPU alignment requirements. Each type must be stored at an address that is a multiple of its size.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">Bad</span> <span class="p">{</span>
+    <span class="kt">char</span>  <span class="n">a</span><span class="p">;</span>    <span class="c1">// 1 byte  → 3 bytes padding added</span>
+    <span class="kt">int</span>   <span class="n">b</span><span class="p">;</span>    <span class="c1">// 4 bytes (must be 4-byte aligned)</span>
+    <span class="kt">char</span>  <span class="n">c</span><span class="p">;</span>    <span class="c1">// 1 byte  → 3 bytes padding added</span>
+<span class="p">};</span>              <span class="c1">// total: 12 bytes (not 6!)</span>
+
+<span class="k">struct</span> <span class="n">Good</span> <span class="p">{</span>
+    <span class="kt">int</span>   <span class="n">b</span><span class="p">;</span>    <span class="c1">// 4 bytes</span>
+    <span class="kt">char</span>  <span class="n">a</span><span class="p">;</span>    <span class="c1">// 1 byte</span>
+    <span class="kt">char</span>  <span class="n">c</span><span class="p">;</span>    <span class="c1">// 1 byte  → 2 bytes padding at end</span>
+<span class="p">};</span>              <span class="c1">// total: 8 bytes</span>
+</code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">printf</span><span class="p">(</span><span class="s">"%zu</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">Bad</span><span class="p">));</span>   <span class="c1">// 12</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%zu</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">Good</span><span class="p">));</span>  <span class="c1">// 8</span>
+
+<span class="c1">// Print member offsets with offsetof()</span>
+<span class="cp">#include</span> <span class="cpf">&lt;stddef.h&gt;</span><span class="cp">
+</span><span class="n">printf</span><span class="p">(</span><span class="s">"%zu</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">offsetof</span><span class="p">(</span><span class="k">struct</span> <span class="n">Bad</span><span class="p">,</span> <span class="n">b</span><span class="p">));</span>   <span class="c1">// 4</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%zu</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">offsetof</span><span class="p">(</span><span class="k">struct</span> <span class="n">Good</span><span class="p">,</span> <span class="n">b</span><span class="p">));</span>  <span class="c1">// 0</span>
+</code></pre></div></div>
+
+<h3 id="packed-structs">Packed Structs</h3>
+
+<p>Force zero padding (critical for hardware register maps and network packets):</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// GCC attribute</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nf">__attribute__</span><span class="p">((</span><span class="n">packed</span><span class="p">))</span> <span class="p">{</span>
+    <span class="kt">uint8_t</span>  <span class="n">start_byte</span><span class="p">;</span>   <span class="c1">// offset 0</span>
+    <span class="kt">uint16_t</span> <span class="n">length</span><span class="p">;</span>       <span class="c1">// offset 1  (unaligned — may be slow on some CPUs)</span>
+    <span class="kt">uint32_t</span> <span class="n">checksum</span><span class="p">;</span>     <span class="c1">// offset 3</span>
+<span class="p">}</span> <span class="n">__attribute__</span><span class="p">((</span><span class="n">packed</span><span class="p">))</span> <span class="n">PacketHeader</span><span class="p">;</span>
+
+<span class="n">printf</span><span class="p">(</span><span class="s">"%zu</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">PacketHeader</span><span class="p">));</span>  <span class="c1">// 7 (not 8)</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p><strong>Warning:</strong> Packed structs may generate slower code or bus errors on architectures that require alignment (ARM Cortex-M, MIPS). Use only when talking to hardware or fixed binary protocols.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-mid" id="bit-fields">Bit-Fields</h2>
+
+<p>Bit-fields let you pack multiple flags or small values into a single word — used extensively for hardware register modeling.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="kt">uint8_t</span> <span class="n">ready</span>   <span class="o">:</span> <span class="mi">1</span><span class="p">;</span>   <span class="c1">// 1 bit</span>
+    <span class="kt">uint8_t</span> <span class="n">error</span>   <span class="o">:</span> <span class="mi">1</span><span class="p">;</span>   <span class="c1">// 1 bit</span>
+    <span class="kt">uint8_t</span> <span class="n">mode</span>    <span class="o">:</span> <span class="mi">2</span><span class="p">;</span>   <span class="c1">// 2 bits (values 0–3)</span>
+    <span class="kt">uint8_t</span> <span class="n">channel</span> <span class="o">:</span> <span class="mi">4</span><span class="p">;</span>   <span class="c1">// 4 bits (values 0–15)</span>
+<span class="p">}</span> <span class="n">StatusReg</span><span class="p">;</span>               <span class="c1">// total: 8 bits = 1 byte</span>
+
+<span class="n">StatusReg</span> <span class="n">reg</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+<span class="n">reg</span><span class="p">.</span><span class="n">ready</span>   <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="n">reg</span><span class="p">.</span><span class="n">mode</span>    <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+<span class="n">reg</span><span class="p">.</span><span class="n">channel</span> <span class="o">=</span> <span class="mi">7</span><span class="p">;</span>
+
+<span class="n">printf</span><span class="p">(</span><span class="s">"ready=%d mode=%d channel=%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">reg</span><span class="p">.</span><span class="n">ready</span><span class="p">,</span> <span class="n">reg</span><span class="p">.</span><span class="n">mode</span><span class="p">,</span> <span class="n">reg</span><span class="p">.</span><span class="n">channel</span><span class="p">);</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>Bit ordering within a byte is implementation-defined. For strict hardware compatibility, use bitmasks and shifts instead.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-mid" id="unions">Unions</h2>
+
+<p>A <code class="language-plaintext highlighter-rouge">union</code> stores all its members <strong>at the same memory address</strong>. Only one member holds a valid value at any time. The size equals the largest member.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">union</span> <span class="n">Data</span> <span class="p">{</span>
+    <span class="kt">int</span>   <span class="n">i</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">f</span><span class="p">;</span>
+    <span class="kt">char</span>  <span class="n">bytes</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span>
+<span class="p">};</span>
+
+<span class="k">union</span> <span class="n">Data</span> <span class="n">d</span><span class="p">;</span>
+<span class="n">d</span><span class="p">.</span><span class="n">f</span> <span class="o">=</span> <span class="mi">3</span><span class="p">.</span><span class="mi">14</span><span class="n">f</span><span class="p">;</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"float: %f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">d</span><span class="p">.</span><span class="n">f</span><span class="p">);</span>
+
+<span class="c1">// Inspecting raw bytes of a float</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"byte[%d] = 0x%02X</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">char</span><span class="p">)</span><span class="n">d</span><span class="p">.</span><span class="n">bytes</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+</code></pre></div></div>
+
+<p><strong>Type punning (reading a value as a different type):</strong></p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">union</span> <span class="n">FloatBits</span> <span class="p">{</span>
+    <span class="kt">float</span>    <span class="n">f</span><span class="p">;</span>
+    <span class="kt">uint32_t</span> <span class="n">bits</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">union</span> <span class="n">FloatBits</span> <span class="n">fb</span><span class="p">;</span>
+<span class="n">fb</span><span class="p">.</span><span class="n">f</span> <span class="o">=</span> <span class="o">-</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">;</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"IEEE 754 bits of -0.0: 0x%08X</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">fb</span><span class="p">.</span><span class="n">bits</span><span class="p">);</span>  <span class="c1">// 0x80000000</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-struct-patterns-in-embedded-c">Advanced: Struct Patterns in Embedded C</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="hardware-register-modeling">Hardware Register Modeling</h3>
+
+<p>Map a peripheral’s control register block directly onto a struct:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// STM32-style UART register map</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="k">volatile</span> <span class="kt">uint32_t</span> <span class="n">SR</span><span class="p">;</span>    <span class="c1">// Status register</span>
+    <span class="k">volatile</span> <span class="kt">uint32_t</span> <span class="n">DR</span><span class="p">;</span>    <span class="c1">// Data register</span>
+    <span class="k">volatile</span> <span class="kt">uint32_t</span> <span class="n">BRR</span><span class="p">;</span>   <span class="c1">// Baud rate register</span>
+    <span class="k">volatile</span> <span class="kt">uint32_t</span> <span class="n">CR1</span><span class="p">;</span>   <span class="c1">// Control register 1</span>
+    <span class="k">volatile</span> <span class="kt">uint32_t</span> <span class="n">CR2</span><span class="p">;</span>   <span class="c1">// Control register 2</span>
+<span class="p">}</span> <span class="n">UART_TypeDef</span><span class="p">;</span>
+
+<span class="c1">// Map to actual hardware address</span>
+<span class="cp">#define USART1  ((UART_TypeDef *) 0x40013800U)
+</span>
+<span class="c1">// Send a byte</span>
+<span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">USART1</span><span class="o">-&gt;</span><span class="n">SR</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">7</span><span class="p">)));</span>  <span class="c1">// wait for TXE</span>
+<span class="n">USART1</span><span class="o">-&gt;</span><span class="n">DR</span> <span class="o">=</span> <span class="sc">'A'</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h3 id="intrusive-linked-list-linux-kernel-style">Intrusive Linked List (Linux Kernel Style)</h3>
+
+<p>The kernel embeds <code class="language-plaintext highlighter-rouge">list_head</code> structs inside data structures and uses <code class="language-plaintext highlighter-rouge">container_of</code> to recover the containing object:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">list_head</span> <span class="p">{</span>
+    <span class="k">struct</span> <span class="n">list_head</span> <span class="o">*</span><span class="n">next</span><span class="p">,</span> <span class="o">*</span><span class="n">prev</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">Task</span> <span class="p">{</span>
+    <span class="kt">int</span>              <span class="n">pid</span><span class="p">;</span>
+    <span class="kt">char</span>             <span class="n">name</span><span class="p">[</span><span class="mi">16</span><span class="p">];</span>
+    <span class="k">struct</span> <span class="n">list_head</span> <span class="n">list</span><span class="p">;</span>   <span class="c1">// embedded — not a pointer!</span>
+<span class="p">};</span>
+
+<span class="c1">// container_of: given a pointer to the 'list' member, get the Task</span>
+<span class="cp">#define container_of(ptr, type, member) \
+    ((type *)((char *)(ptr) - offsetof(type, member)))
+</span>
+<span class="k">struct</span> <span class="n">list_head</span> <span class="o">*</span><span class="n">node</span> <span class="o">=</span> <span class="n">get_next_node</span><span class="p">();</span>
+<span class="k">struct</span> <span class="n">Task</span> <span class="o">*</span><span class="n">task</span> <span class="o">=</span> <span class="n">container_of</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="k">struct</span> <span class="n">Task</span><span class="p">,</span> <span class="n">list</span><span class="p">);</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"Task: %s (PID %d)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">task</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span> <span class="n">task</span><span class="o">-&gt;</span><span class="n">pid</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="flexible-array-member-c99">Flexible Array Member (C99)</h3>
+
+<p>A struct with a zero-length array at the end for variable-size data:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="kt">uint32_t</span> <span class="n">length</span><span class="p">;</span>
+    <span class="kt">uint8_t</span>  <span class="n">data</span><span class="p">[];</span>    <span class="c1">// flexible array member — must be last</span>
+<span class="p">}</span> <span class="n">Packet</span><span class="p">;</span>
+
+<span class="c1">// Allocate packet with 64 bytes of data</span>
+<span class="n">Packet</span> <span class="o">*</span><span class="n">pkt</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">Packet</span><span class="p">)</span> <span class="o">+</span> <span class="mi">64</span><span class="p">);</span>
+<span class="n">pkt</span><span class="o">-&gt;</span><span class="n">length</span> <span class="o">=</span> <span class="mi">64</span><span class="p">;</span>
+<span class="n">memset</span><span class="p">(</span><span class="n">pkt</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">);</span>
+<span class="n">free</span><span class="p">(</span><span class="n">pkt</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between a struct and a union?</strong></p>
+
+<blockquote>
+  <p>In a <code class="language-plaintext highlighter-rouge">struct</code>, every member has its own memory location — they all exist simultaneously. Total size = sum of member sizes + padding. In a <code class="language-plaintext highlighter-rouge">union</code>, all members share the same memory location — only one is valid at a time. Total size = size of the largest member. Structs hold multiple values; unions hold one value interpreted in multiple ways.</p>
+</blockquote>
+
+<p><strong>Q2 — Intermediate: Why might <code class="language-plaintext highlighter-rouge">sizeof(struct)</code> be larger than the sum of its member sizes?</strong></p>
+
+<blockquote>
+  <p>Because the compiler inserts <strong>padding bytes</strong> between members to align them on their natural alignment boundaries. For example, a 4-byte <code class="language-plaintext highlighter-rouge">int</code> must start at an address divisible by 4. After a 1-byte <code class="language-plaintext highlighter-rouge">char</code>, the compiler adds 3 bytes of padding before the <code class="language-plaintext highlighter-rouge">int</code>. The struct itself is also padded at the end to ensure arrays of the struct are correctly aligned. Use <code class="language-plaintext highlighter-rouge">__attribute__((packed))</code> to suppress padding (with potential performance cost), or reorder members from largest to smallest to minimise it.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: What is the <code class="language-plaintext highlighter-rouge">volatile</code> keyword and when must you use it with embedded structs?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">volatile</code> tells the compiler that the value may change outside the program’s control (e.g., by hardware, an ISR, or another thread). Without it, the compiler may cache the value in a register and never re-read from memory. Hardware register structs <strong>must</strong> use <code class="language-plaintext highlighter-rouge">volatile</code> — otherwise the compiler may optimise away polling loops like <code class="language-plaintext highlighter-rouge">while (!(REG-&gt;SR &amp; FLAG))</code>.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: Explain <code class="language-plaintext highlighter-rouge">container_of</code> and why the Linux kernel uses it.</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">container_of(ptr, type, member)</code> recovers a pointer to the enclosing <code class="language-plaintext highlighter-rouge">type</code> struct given a pointer to one of its <code class="language-plaintext highlighter-rouge">member</code> fields. It works by subtracting the compile-time <code class="language-plaintext highlighter-rouge">offsetof(type, member)</code> from <code class="language-plaintext highlighter-rouge">ptr</code>. The kernel uses intrusive data structures (embedding <code class="language-plaintext highlighter-rouge">list_head</code> inside objects) instead of allocating separate list-node objects, saving memory and improving cache locality. <code class="language-plaintext highlighter-rouge">container_of</code> is the mechanism for navigating back to the real object from a generic list node.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 3 offsetof</code></td>
+      <td>offsetof macro</td>
+    </tr>
+    <tr>
+      <td>C17 §6.7.2.1</td>
+      <td>Structure and union specifiers</td>
+    </tr>
+    <tr>
+      <td>Linux Kernel — list.h</td>
+      <td><code class="language-plaintext highlighter-rouge">include/linux/list.h</code> in kernel source</td>
+    </tr>
+    <tr>
+      <td>GCC <strong>attribute</strong> docs</td>
+      <td><a href="https://gcc.gnu.org/onlinedocs/gcc/Type-Attributes.html">gcc.gnu.org/onlinedocs/gcc/Type-Attributes.html</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-file-code"></i>
+        <span>C Programming Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/c-programming/pointers-memory/" class="gtn-link ">
+          <i class="fas fa-memory"></i> Pointers &amp; Memory
+        </a>
+        <a href="/linux-developer/c-programming/structs-unions/" class="gtn-link gts-active">
+          <i class="fas fa-cube"></i> Structs &amp; Unions
+        </a>
+        <a href="/linux-developer/c-programming/file-io/" class="gtn-link ">
+          <i class="fas fa-file-code"></i> File I/O
+        </a>
+        <a href="/linux-developer/c-programming/dynamic-allocation/" class="gtn-link ">
+          <i class="fas fa-layer-group"></i> Dynamic Allocation
+        </a>
+        <a href="/linux-developer/c-programming/makefiles/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> Makefiles
+        </a>
+        <a href="/linux-developer/c-programming/gcc-optimization/" class="gtn-link ">
+          <i class="fas fa-gears"></i> GCC Flags &amp; Optimization
+        </a>
+        <a href="/linux-developer/c-programming/gdb/" class="gtn-link ">
+          <i class="fas fa-bug"></i> GDB Debugging
+        </a>
+      </nav>
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/c-programming/pointers-memory/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Pointers & Memory</span>
+      </a>
+      
+      
+      <a href="/linux-developer/c-programming/file-io/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">File I/O</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

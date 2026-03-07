@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Networking Basics · Eslam Mohamed</title>
+  <meta name="description" content="Configure Linux network interfaces with the ip command, diagnose connectivity, master DNS resolution, capture packets with tcpdump, and write iptables firewall rules." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-user/">Linux User Guide</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Networking Basics</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 01 — Linux User</span>
+        <span class="guide-stage-pill">Stage 05</span>
+      </div>
+      <h1 class="guide-title">Networking Basics</h1>
+      <p class="guide-subtitle">Configure Linux network interfaces with the ip command, diagnose connectivity, master DNS resolution, capture packets with tcpdump, and write iptables firewall rules.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="network-fundamentals">Network Fundamentals</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>Every networked Linux host needs:</p>
+<ul>
+  <li>A <strong>network interface</strong> (physical NIC or virtual <code class="language-plaintext highlighter-rouge">lo</code>, <code class="language-plaintext highlighter-rouge">veth</code>, etc.)</li>
+  <li>An <strong>IP address</strong> and <strong>subnet mask</strong></li>
+  <li>A <strong>default gateway</strong> (router) for traffic that isn’t local</li>
+  <li>A <strong>DNS resolver</strong> to translate names to IP addresses</li>
+</ul>
+
+<hr />
+
+<h2 id="the-ip-command-iproute2">The <code class="language-plaintext highlighter-rouge">ip</code> Command (iproute2)</h2>
+
+<p><code class="language-plaintext highlighter-rouge">ip</code> is the modern replacement for the deprecated <code class="language-plaintext highlighter-rouge">ifconfig</code>, <code class="language-plaintext highlighter-rouge">route</code>, and <code class="language-plaintext highlighter-rouge">arp</code> commands.</p>
+
+<h3 id="viewing-network-configuration">Viewing Network Configuration</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Show all interfaces with addresses</span>
+ip addr show
+ip a               <span class="c"># shorthand</span>
+
+<span class="c"># Show a specific interface</span>
+ip addr show eth0
+
+<span class="c"># Show link-layer (MAC address, MTU, state)</span>
+ip <span class="nb">link </span>show
+ip <span class="nb">link </span>show eth0
+
+<span class="c"># Show routing table</span>
+ip route show
+ip r               <span class="c"># shorthand</span>
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">ip addr show</code> output:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc mq state UP
+    link/ether 00:1a:2b:3c:4d:5e brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.100/24 brd 192.168.1.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::21a:2bff:fe3c:4d5e/64 scope link
+</code></pre></div></div>
+
+<h3 id="configuring-interfaces">Configuring Interfaces</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Assign a static IP address</span>
+<span class="nb">sudo </span>ip addr add 192.168.1.200/24 dev eth0
+
+<span class="c"># Bring an interface up / down</span>
+<span class="nb">sudo </span>ip <span class="nb">link set </span>eth0 up
+<span class="nb">sudo </span>ip <span class="nb">link set </span>eth0 down
+
+<span class="c"># Add a default gateway</span>
+<span class="nb">sudo </span>ip route add default via 192.168.1.1
+
+<span class="c"># Add a specific route</span>
+<span class="nb">sudo </span>ip route add 10.0.0.0/8 via 192.168.1.1 dev eth0
+
+<span class="c"># Delete a route</span>
+<span class="nb">sudo </span>ip route del default via 192.168.1.1
+
+<span class="c"># Flush all addresses on an interface</span>
+<span class="nb">sudo </span>ip addr flush dev eth0
+</code></pre></div></div>
+
+<blockquote>
+  <p><strong>Note:</strong> <code class="language-plaintext highlighter-rouge">ip</code> changes are temporary and lost after reboot. For persistence, use <code class="language-plaintext highlighter-rouge">netplan</code> (Ubuntu 18+), <code class="language-plaintext highlighter-rouge">/etc/network/interfaces</code> (Debian), or <code class="language-plaintext highlighter-rouge">NetworkManager</code>.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-basic" id="connectivity-diagnostics">Connectivity Diagnostics</h2>
+
+<h3 id="ping"><code class="language-plaintext highlighter-rouge">ping</code></h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ping 8.8.8.8               <span class="c"># ping Google DNS</span>
+ping <span class="nt">-c</span> 4 google.com       <span class="c"># send exactly 4 packets</span>
+ping <span class="nt">-i</span> 0.2 192.168.1.1    <span class="c"># send every 200 ms</span>
+ping <span class="nt">-s</span> 1472 192.168.1.1   <span class="c"># test MTU (1472 bytes payload + 28 header = 1500)</span>
+</code></pre></div></div>
+
+<p><strong>Output:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=14.2 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=117 time=13.9 ms
+--- 8.8.8.8 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss
+rtt min/avg/max/mdev = 13.9/14.0/14.2/0.1 ms
+</code></pre></div></div>
+
+<h3 id="traceroute--tracepath"><code class="language-plaintext highlighter-rouge">traceroute</code> / <code class="language-plaintext highlighter-rouge">tracepath</code></h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>traceroute 8.8.8.8       <span class="c"># trace packet path (uses UDP by default)</span>
+traceroute <span class="nt">-T</span> 8.8.8.8   <span class="c"># use TCP SYN (bypasses some firewalls)</span>
+tracepath 8.8.8.8        <span class="c"># similar, no root required, detects MTU</span>
+</code></pre></div></div>
+
+<h3 id="key-config-files">Key Config Files</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Static hostname → IP mappings (checked before DNS)</span>
+<span class="nb">cat</span> /etc/hosts
+<span class="c"># 127.0.0.1   localhost</span>
+<span class="c"># 192.168.1.10  db-server</span>
+
+<span class="c"># DNS resolver configuration</span>
+<span class="nb">cat</span> /etc/resolv.conf
+<span class="c"># nameserver 8.8.8.8</span>
+<span class="c"># nameserver 1.1.1.1</span>
+<span class="c"># search home.local</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="socket-and-port-analysis">Socket and Port Analysis</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="ss-socket-statistics"><code class="language-plaintext highlighter-rouge">ss</code> (Socket Statistics)</h3>
+
+<p><code class="language-plaintext highlighter-rouge">ss</code> replaces <code class="language-plaintext highlighter-rouge">netstat</code> and is much faster.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ss <span class="nt">-tlnp</span>         <span class="c"># TCP, listening, numeric, with process</span>
+ss <span class="nt">-tlnp</span> | <span class="nb">grep</span> :80
+ss <span class="nt">-ulnp</span>         <span class="c"># UDP listening</span>
+ss <span class="nt">-s</span>            <span class="c"># summary statistics</span>
+ss <span class="nt">-tnp</span>          <span class="c"># all established TCP connections with process</span>
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">ss -tlnp</code> output:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>State   Recv-Q Send-Q Local Address:Port Peer Address:Port Process
+LISTEN  0      128    0.0.0.0:22        0.0.0.0:*         users:(("sshd",pid=854,fd=3))
+LISTEN  0      511    0.0.0.0:80        0.0.0.0:*         users:(("nginx",pid=1023,fd=6))
+</code></pre></div></div>
+
+<h3 id="dns-diagnostics">DNS Diagnostics</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Query DNS (detailed output)</span>
+dig google.com
+dig google.com A        <span class="c"># A record only</span>
+dig google.com MX       <span class="c"># mail exchange records</span>
+dig @8.8.8.8 google.com <span class="c"># use specific nameserver</span>
+dig <span class="nt">-x</span> 8.8.8.8          <span class="c"># reverse lookup (PTR record)</span>
+
+<span class="c"># Quick lookup</span>
+nslookup google.com
+host google.com
+
+<span class="c"># Full DNS resolution path</span>
+dig +trace google.com
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">dig</code> output excerpt:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>;; ANSWER SECTION:
+google.com.   109 IN  A  142.250.80.46
+
+;; Query time: 12 msec
+;; SERVER: 8.8.8.8#53(8.8.8.8)
+</code></pre></div></div>
+
+<h3 id="curl-and-wget"><code class="language-plaintext highlighter-rouge">curl</code> and <code class="language-plaintext highlighter-rouge">wget</code></h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># HTTP request (shows response body)</span>
+curl https://api.ipify.org
+
+<span class="c"># With headers</span>
+curl <span class="nt">-I</span> https://example.com          <span class="c"># HEAD request only</span>
+curl <span class="nt">-v</span> https://example.com          <span class="c"># verbose (headers + body)</span>
+curl <span class="nt">-o</span> output.html https://example.com  <span class="c"># save to file</span>
+curl <span class="nt">-L</span> https://short.url/abc        <span class="c"># follow redirects</span>
+curl <span class="nt">-u</span> user:pass https://api.example.com  <span class="c"># basic auth</span>
+curl <span class="nt">-X</span> POST <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+     <span class="nt">-d</span> <span class="s1">'{"key":"value"}'</span> https://api.example.com/endpoint
+
+<span class="c"># Download file</span>
+wget https://example.com/file.tar.gz
+wget <span class="nt">-c</span> https://example.com/big.iso  <span class="c"># resume interrupted download</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="packet-capture-with-tcpdump">Packet Capture with tcpdump</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p><code class="language-plaintext highlighter-rouge">tcpdump</code> captures packets on an interface for real-time analysis or saving to <code class="language-plaintext highlighter-rouge">.pcap</code> for Wireshark.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Capture on default interface</span>
+<span class="nb">sudo </span>tcpdump
+
+<span class="c"># Capture on specific interface</span>
+<span class="nb">sudo </span>tcpdump <span class="nt">-i</span> eth0
+
+<span class="c"># Show numeric (don't resolve hostnames/ports)</span>
+<span class="nb">sudo </span>tcpdump <span class="nt">-n</span> <span class="nt">-i</span> eth0
+
+<span class="c"># Capture to file (for Wireshark)</span>
+<span class="nb">sudo </span>tcpdump <span class="nt">-i</span> eth0 <span class="nt">-w</span> capture.pcap
+
+<span class="c"># Read a capture file</span>
+tcpdump <span class="nt">-r</span> capture.pcap
+
+<span class="c"># Capture only 100 packets</span>
+<span class="nb">sudo </span>tcpdump <span class="nt">-c</span> 100 <span class="nt">-i</span> eth0
+</code></pre></div></div>
+
+<h3 id="bpf-filters">BPF Filters</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Capture only HTTP traffic (port 80)</span>
+<span class="nb">sudo </span>tcpdump <span class="nt">-i</span> eth0 <span class="nt">-n</span> port 80
+
+<span class="c"># Capture traffic to/from a host</span>
+<span class="nb">sudo </span>tcpdump <span class="nt">-i</span> eth0 host 192.168.1.50
+
+<span class="c"># Capture ICMP only</span>
+<span class="nb">sudo </span>tcpdump <span class="nt">-i</span> eth0 icmp
+
+<span class="c"># TCP SYN packets (connection attempts)</span>
+<span class="nb">sudo </span>tcpdump <span class="nt">-i</span> eth0 <span class="s1">'tcp[tcpflags] &amp; tcp-syn != 0'</span>
+
+<span class="c"># Capture traffic between two hosts on port 443</span>
+<span class="nb">sudo </span>tcpdump <span class="nt">-i</span> eth0 host 192.168.1.50 and port 443
+
+<span class="c"># Verbose + ASCII payload dump</span>
+<span class="nb">sudo </span>tcpdump <span class="nt">-i</span> eth0 <span class="nt">-A</span> <span class="nt">-v</span> port 80
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="iptables--firewall-rules">iptables — Firewall Rules</h2>
+
+<p><code class="language-plaintext highlighter-rouge">iptables</code> filters packets using rules in chains (<code class="language-plaintext highlighter-rouge">INPUT</code>, <code class="language-plaintext highlighter-rouge">OUTPUT</code>, <code class="language-plaintext highlighter-rouge">FORWARD</code>) within tables (<code class="language-plaintext highlighter-rouge">filter</code>, <code class="language-plaintext highlighter-rouge">nat</code>, <code class="language-plaintext highlighter-rouge">mangle</code>).</p>
+
+<h3 id="viewing-rules">Viewing Rules</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>iptables <span class="nt">-L</span> <span class="nt">-n</span> <span class="nt">-v</span> <span class="nt">--line-numbers</span>    <span class="c"># list filter table</span>
+<span class="nb">sudo </span>iptables <span class="nt">-t</span> nat <span class="nt">-L</span> <span class="nt">-n</span> <span class="nt">-v</span>            <span class="c"># list NAT table</span>
+<span class="nb">sudo </span>iptables-save                       <span class="c"># dump all rules</span>
+</code></pre></div></div>
+
+<h3 id="essential-commands">Essential Commands</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Allow established connections (always add this first!)</span>
+<span class="nb">sudo </span>iptables <span class="nt">-A</span> INPUT <span class="nt">-m</span> conntrack <span class="nt">--ctstate</span> ESTABLISHED,RELATED <span class="nt">-j</span> ACCEPT
+
+<span class="c"># Allow SSH from anywhere</span>
+<span class="nb">sudo </span>iptables <span class="nt">-A</span> INPUT <span class="nt">-p</span> tcp <span class="nt">--dport</span> 22 <span class="nt">-j</span> ACCEPT
+
+<span class="c"># Allow HTTP and HTTPS</span>
+<span class="nb">sudo </span>iptables <span class="nt">-A</span> INPUT <span class="nt">-p</span> tcp <span class="nt">--dport</span> 80 <span class="nt">-j</span> ACCEPT
+<span class="nb">sudo </span>iptables <span class="nt">-A</span> INPUT <span class="nt">-p</span> tcp <span class="nt">--dport</span> 443 <span class="nt">-j</span> ACCEPT
+
+<span class="c"># Allow loopback interface</span>
+<span class="nb">sudo </span>iptables <span class="nt">-A</span> INPUT <span class="nt">-i</span> lo <span class="nt">-j</span> ACCEPT
+
+<span class="c"># Drop everything else (default deny)</span>
+<span class="nb">sudo </span>iptables <span class="nt">-P</span> INPUT DROP
+<span class="nb">sudo </span>iptables <span class="nt">-P</span> FORWARD DROP
+
+<span class="c"># Allow outgoing traffic</span>
+<span class="nb">sudo </span>iptables <span class="nt">-P</span> OUTPUT ACCEPT
+</code></pre></div></div>
+
+<h3 id="nat--network-address-translation">NAT — Network Address Translation</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Enable IP forwarding</span>
+<span class="nb">echo </span>1 | <span class="nb">sudo tee</span> /proc/sys/net/ipv4/ip_forward
+<span class="c"># Make permanent: add net.ipv4.ip_forward = 1 to /etc/sysctl.conf</span>
+
+<span class="c"># Masquerade (for NAT router / sharing internet)</span>
+<span class="nb">sudo </span>iptables <span class="nt">-t</span> nat <span class="nt">-A</span> POSTROUTING <span class="nt">-o</span> eth0 <span class="nt">-j</span> MASQUERADE
+
+<span class="c"># Port forwarding (forward external port 8080 to internal 80)</span>
+<span class="nb">sudo </span>iptables <span class="nt">-t</span> nat <span class="nt">-A</span> PREROUTING <span class="nt">-p</span> tcp <span class="nt">--dport</span> 8080 <span class="nt">-j</span> REDIRECT <span class="nt">--to-port</span> 80
+</code></pre></div></div>
+
+<h3 id="persisting-iptables-rules">Persisting iptables Rules</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt <span class="nb">install </span>iptables-persistent
+<span class="nb">sudo </span>netfilter-persistent save
+<span class="nb">sudo </span>netfilter-persistent reload
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="network-namespaces">Network Namespaces</h2>
+
+<p>Network namespaces are the kernel feature behind Docker networking and virtual network topologies.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Create a namespace</span>
+<span class="nb">sudo </span>ip netns add myns
+
+<span class="c"># List namespaces</span>
+ip netns list
+
+<span class="c"># Run a command inside the namespace</span>
+<span class="nb">sudo </span>ip netns <span class="nb">exec </span>myns bash
+
+<span class="c"># Inside: check interfaces (only lo exists)</span>
+ip addr show
+
+<span class="c"># Create a veth pair (virtual Ethernet cable)</span>
+<span class="nb">sudo </span>ip <span class="nb">link </span>add veth0 <span class="nb">type </span>veth peer name veth1
+
+<span class="c"># Move one end into the namespace</span>
+<span class="nb">sudo </span>ip <span class="nb">link set </span>veth1 netns myns
+
+<span class="c"># Configure both ends</span>
+<span class="nb">sudo </span>ip addr add 10.0.0.1/24 dev veth0
+<span class="nb">sudo </span>ip <span class="nb">link set </span>veth0 up
+<span class="nb">sudo </span>ip netns <span class="nb">exec </span>myns ip addr add 10.0.0.2/24 dev veth1
+<span class="nb">sudo </span>ip netns <span class="nb">exec </span>myns ip <span class="nb">link set </span>veth1 up
+<span class="nb">sudo </span>ip netns <span class="nb">exec </span>myns ip <span class="nb">link set </span>lo up
+
+<span class="c"># Test connectivity</span>
+ping <span class="nt">-c</span> 3 10.0.0.2
+<span class="nb">sudo </span>ip netns <span class="nb">exec </span>myns ping <span class="nt">-c</span> 3 10.0.0.1
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">ip addr</code> and <code class="language-plaintext highlighter-rouge">ip link</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">ip link</code> shows Layer 2 (data-link) information: interface name, MAC address, MTU, operational state (UP/DOWN). <code class="language-plaintext highlighter-rouge">ip addr</code> shows Layer 3 (network) information: IP addresses assigned to interfaces, plus all the Layer 2 information. For IP configuration, use <code class="language-plaintext highlighter-rouge">ip addr</code>; to just bring an interface up/down, use <code class="language-plaintext highlighter-rouge">ip link set</code>.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: What happens when you ping a hostname? Walk through the resolution steps.</strong></p>
+
+<blockquote>
+  <ol>
+    <li>The shell calls <code class="language-plaintext highlighter-rouge">getaddrinfo()</code> to resolve the hostname.</li>
+    <li>NSS (Name Service Switch, <code class="language-plaintext highlighter-rouge">/etc/nsswitch.conf</code>) determines lookup order — typically <code class="language-plaintext highlighter-rouge">files dns</code>.</li>
+    <li><code class="language-plaintext highlighter-rouge">/etc/hosts</code> is checked first. If found, the IP is returned.</li>
+    <li>If not in <code class="language-plaintext highlighter-rouge">/etc/hosts</code>, a DNS query is sent to the nameserver in <code class="language-plaintext highlighter-rouge">/etc/resolv.conf</code>.</li>
+    <li>The DNS server returns an A record (IPv4) or AAAA record (IPv6).</li>
+    <li><code class="language-plaintext highlighter-rouge">ping</code> sends ICMP Echo Request packets to that IP address.</li>
+  </ol>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: What does <code class="language-plaintext highlighter-rouge">ss -tlnp</code> show and what do the flags mean?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">-t</code> = TCP sockets only; <code class="language-plaintext highlighter-rouge">-l</code> = listening sockets only; <code class="language-plaintext highlighter-rouge">-n</code> = numeric output (don’t resolve port names or hostnames); <code class="language-plaintext highlighter-rouge">-p</code> = show the process (PID + name) that owns the socket. Combined, it quickly answers “what is listening on which port?”</p>
+</blockquote>
+
+<p><strong>Q4 — Intermediate: How would you diagnose why a service cannot be reached from outside the host?</strong></p>
+
+<blockquote>
+  <p>Systematically eliminate layers:</p>
+  <ol>
+    <li>Is the service actually running and listening? (<code class="language-plaintext highlighter-rouge">ss -tlnp | grep :PORT</code>)</li>
+    <li>Is it listening on <code class="language-plaintext highlighter-rouge">0.0.0.0</code> (all interfaces) or only <code class="language-plaintext highlighter-rouge">127.0.0.1</code> (loopback)?</li>
+    <li>Does a local <code class="language-plaintext highlighter-rouge">curl localhost:PORT</code> work?</li>
+    <li>Is a firewall blocking the port? (<code class="language-plaintext highlighter-rouge">sudo iptables -L -n -v</code>, <code class="language-plaintext highlighter-rouge">sudo ufw status</code>)</li>
+    <li>Is the port reachable from another host? (<code class="language-plaintext highlighter-rouge">telnet &lt;IP&gt; PORT</code> or <code class="language-plaintext highlighter-rouge">nc -zv &lt;IP&gt; PORT</code>)</li>
+    <li>Is routing correct on the network path? (<code class="language-plaintext highlighter-rouge">traceroute &lt;IP&gt;</code>)</li>
+  </ol>
+</blockquote>
+
+<p><strong>Q5 — Advanced: Explain the difference between PREROUTING, POSTROUTING, INPUT, OUTPUT, and FORWARD chains in iptables.</strong></p>
+
+<blockquote>
+  <p>These are the five built-in chains in netfilter, traversed in a specific order:</p>
+  <ul>
+    <li><strong>PREROUTING</strong>: Hit first for all incoming packets, before routing decisions. Used for DNAT (port forwarding).</li>
+    <li><strong>INPUT</strong>: For packets destined for the local machine after routing.</li>
+    <li><strong>FORWARD</strong>: For packets being routed through the machine to another host (requires <code class="language-plaintext highlighter-rouge">ip_forward=1</code>).</li>
+    <li><strong>OUTPUT</strong>: For packets generated locally before they leave.</li>
+    <li><strong>POSTROUTING</strong>: Hit last for all outgoing packets after routing. Used for MASQUERADE/SNAT (NAT for routers).</li>
+  </ul>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 8 ip</code></td>
+      <td>iproute2 documentation</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 8 iptables</code></td>
+      <td>iptables manual</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 8 tcpdump</code></td>
+      <td>tcpdump + BPF filter syntax</td>
+    </tr>
+    <tr>
+      <td>Linux Networking Documentation</td>
+      <td><a href="https://www.kernel.org/doc/html/latest/networking/">kernel.org/doc/html/latest/networking</a></td>
+    </tr>
+    <tr>
+      <td>Julia Evans — Networking Zines</td>
+      <td><a href="https://jvns.ca/networking-zine.pdf">jvns.ca</a></td>
+    </tr>
+    <tr>
+      <td>Netfilter / iptables tutorial</td>
+      <td><a href="https://www.netfilter.org/documentation/">netfilter.org/documentation</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-terminal"></i>
+        <span>Linux User Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-user/filesystem-navigation/" class="gtn-link ">
+          <i class="fas fa-folder-open"></i> Filesystem Navigation
+        </a>
+        <a href="/linux-user/users-permissions/" class="gtn-link ">
+          <i class="fas fa-user-lock"></i> Users &amp; Permissions
+        </a>
+        <a href="/linux-user/process-management/" class="gtn-link ">
+          <i class="fas fa-microchip"></i> Process Management
+        </a>
+        <a href="/linux-user/package-management/" class="gtn-link ">
+          <i class="fas fa-box"></i> Package Management
+        </a>
+        <a href="/linux-user/networking/" class="gtn-link gts-active">
+          <i class="fas fa-network-wired"></i> Networking Basics
+        </a>
+        <a href="/linux-user/ssh/" class="gtn-link ">
+          <i class="fas fa-lock"></i> SSH &amp; Remote Access
+        </a>
+        <a href="/linux-user/cron/" class="gtn-link ">
+          <i class="fas fa-clock"></i> Cron &amp; Scheduling
+        </a>
+        <a href="/linux-user/bash-scripting/" class="gtn-link ">
+          <i class="fas fa-terminal"></i> Bash Scripting
+        </a>
+        <a href="/linux-user/git/" class="gtn-link ">
+          <i class="fab fa-git-alt"></i> Git Basics
+        </a>
+      </nav>
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-user/package-management/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Package Management</span>
+      </a>
+      
+      
+      <a href="/linux-user/ssh/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">SSH & Remote Access</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

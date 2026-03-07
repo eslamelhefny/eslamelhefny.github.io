@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ftrace & kprobes · Eslam Mohamed</title>
+  <meta name="description" content="Use ftrace function tracing, event tracing, and kprobes to dynamically instrument the Linux kernel without recompiling." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/embedded-linux/">Embedded Linux Developer</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>ftrace & kprobes</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 03 — Embedded Linux</span>
+        <span class="guide-stage-pill">Stage 07</span>
+      </div>
+      <h1 class="guide-title">ftrace & kprobes</h1>
+      <p class="guide-subtitle">Use ftrace function tracing, event tracing, and kprobes to dynamically instrument the Linux kernel without recompiling.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="what-is-ftrace">What Is ftrace?</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p><strong>ftrace</strong> is the Linux kernel’s built-in tracing framework. It lives in the kernel and writes to an in-kernel ring buffer — no external tools needed. It is accessed through a virtual filesystem called <strong>tracefs</strong>, mounted at <code class="language-plaintext highlighter-rouge">/sys/kernel/debug/tracing/</code>.</p>
+
+<p>Unlike <code class="language-plaintext highlighter-rouge">printk</code>, ftrace is designed to be <strong>low-overhead</strong> and can trace thousands of functions per second without halting the system.</p>
+
+<h3 id="mounting-tracefs">Mounting tracefs</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Most distros mount it automatically; if not:</span>
+<span class="nv">$ </span>mount <span class="nt">-t</span> tracefs none /sys/kernel/debug/tracing
+
+<span class="c"># Verify it's mounted</span>
+<span class="nv">$ </span><span class="nb">ls</span> /sys/kernel/debug/tracing/
+available_events       per_cpu/          tracing_on
+available_filter_functions  set_event        trace
+available_tracers      set_ftrace_filter  trace_clock
+current_tracer         set_ftrace_pid     trace_marker
+events/                snapshot           trace_options
+</code></pre></div></div>
+
+<h3 id="key-files-explained">Key files explained</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">tracing_on</code></td>
+      <td>1 = tracing enabled, 0 = disabled</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">current_tracer</code></td>
+      <td>Which tracer is active</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">available_tracers</code></td>
+      <td>Tracers compiled into the kernel</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">trace</code></td>
+      <td>The ring buffer — read to get trace output</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">set_ftrace_filter</code></td>
+      <td>Limit function tracing to specific functions</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">available_events</code></td>
+      <td>All traceable events</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">trace_marker</code></td>
+      <td>Write timestamps/markers from user space</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="basic-onoff-tracing">Basic on/off tracing</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># See available tracers</span>
+<span class="nv">$ </span><span class="nb">cat</span> /sys/kernel/debug/tracing/available_tracers
+hwlat blk mmiotrace function_graph wakeup_dl wakeup_rt wakeup <span class="k">function </span>nop
+
+<span class="c"># Enable function tracer</span>
+<span class="nv">$ </span><span class="nb">echo </span><span class="k">function</span> <span class="o">&gt;</span> /sys/kernel/debug/tracing/current_tracer
+
+<span class="c"># Start tracing</span>
+<span class="nv">$ </span><span class="nb">echo </span>1 <span class="o">&gt;</span> /sys/kernel/debug/tracing/tracing_on
+
+<span class="c"># Do something... then stop</span>
+<span class="nv">$ </span><span class="nb">echo </span>0 <span class="o">&gt;</span> /sys/kernel/debug/tracing/tracing_on
+
+<span class="c"># Read the trace</span>
+<span class="nv">$ </span><span class="nb">cat</span> /sys/kernel/debug/tracing/trace
+<span class="c"># tracer: function</span>
+<span class="c">#</span>
+<span class="c">#                    _-----=&gt; irqs-off</span>
+<span class="c">#                   / _----=&gt; need-resched</span>
+<span class="c">#                  | / _---=&gt; hardirq/softirq</span>
+<span class="c">#                  || / _--=&gt; preempt-depth</span>
+<span class="c">#                  ||| /     delay</span>
+<span class="c">#           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION</span>
+<span class="c">#              | |       |   ||||       |         |</span>
+           &lt;idle&gt;-0     <span class="o">[</span>000] d... 12345.678901: do_IRQ &lt;<span class="nt">-ret_from_intr</span>
+           &lt;idle&gt;-0     <span class="o">[</span>000] d... 12345.678910: handle_irq &lt;<span class="nt">-do_IRQ</span>
+             bash-1234  <span class="o">[</span>001] .... 12345.679001: sys_read &lt;<span class="nt">-do_syscall_64</span>
+             bash-1234  <span class="o">[</span>001] .... 12345.679010: vfs_read &lt;<span class="nt">-sys_read</span>
+</code></pre></div></div>
+
+<h3 id="filtering-by-function">Filtering by function</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Trace only do_sys_open</span>
+<span class="nv">$ </span><span class="nb">echo </span>do_sys_open <span class="o">&gt;</span> /sys/kernel/debug/tracing/set_ftrace_filter
+
+<span class="c"># Trace all functions in a module</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s1">':mod:mydriver'</span> <span class="o">&gt;</span> /sys/kernel/debug/tracing/set_ftrace_filter
+
+<span class="c"># Trace all functions starting with "gpio_"</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s1">'gpio_*'</span> <span class="o">&gt;</span> /sys/kernel/debug/tracing/set_ftrace_filter
+
+<span class="c"># Clear the filter (trace all)</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="o">&gt;</span> /sys/kernel/debug/tracing/set_ftrace_filter
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="function_graph-tracer--event-tracing">function_graph Tracer &amp; Event Tracing</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="function_graph--see-call-depth-and-duration">function_graph — See Call Depth and Duration</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">function_graph</code> tracer shows the full call tree with indentation and <strong>execution time</strong> for each function.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">echo </span>function_graph <span class="o">&gt;</span> /sys/kernel/debug/tracing/current_tracer
+<span class="nv">$ </span><span class="nb">echo </span>do_sys_open <span class="o">&gt;</span> /sys/kernel/debug/tracing/set_graph_function
+<span class="nv">$ </span><span class="nb">echo </span>1 <span class="o">&gt;</span> /sys/kernel/debug/tracing/tracing_on
+<span class="nv">$ </span><span class="nb">cat</span> /tmp/test.txt   <span class="c"># trigger the file open</span>
+<span class="nv">$ </span><span class="nb">echo </span>0 <span class="o">&gt;</span> /sys/kernel/debug/tracing/tracing_on
+<span class="nv">$ </span><span class="nb">cat</span> /sys/kernel/debug/tracing/trace
+</code></pre></div></div>
+
+<p>Output example:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># tracer: function_graph
+#
+# CPU  DURATION                  FUNCTION CALLS
+# |     |   |                     |   |   |   |
+ 1)               |  do_sys_open() {
+ 1)               |    getname() {
+ 1)   0.512 us    |      getname_flags();
+ 1)   1.234 us    |    }
+ 1)               |    do_filp_open() {
+ 1)               |      path_openat() {
+ 1)   0.321 us    |        path_init();
+ 1)  28.456 us    |        link_path_walk();
+ 1) + 35.123 us   |      }
+ 1) + 38.000 us   |    }
+ 1) + 42.100 us   |  }
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">+</code> sign means &gt; 10µs, <code class="language-plaintext highlighter-rouge">!</code> means &gt; 100µs, <code class="language-plaintext highlighter-rouge">#</code> means &gt; 1ms.</p>
+
+<h3 id="event-tracing">Event Tracing</h3>
+
+<p>Events are static tracepoints embedded in the kernel at compile time. They are much lighter than function tracing.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># List all subsystem events</span>
+<span class="nv">$ </span><span class="nb">ls</span> /sys/kernel/debug/tracing/events/
+block  ext4  irq  kmem  napi  net  oom  power  sched  signal  skb  sock  ...
+
+<span class="c"># List events in the sched subsystem</span>
+<span class="nv">$ </span><span class="nb">ls</span> /sys/kernel/debug/tracing/events/sched/
+sched_kthread_stop  sched_migrate_task  sched_process_exec
+sched_process_exit  sched_process_fork  sched_switch  sched_wakeup
+
+<span class="c"># Enable sched_switch event</span>
+<span class="nv">$ </span><span class="nb">echo </span>1 <span class="o">&gt;</span> /sys/kernel/debug/tracing/events/sched/sched_switch/enable
+
+<span class="c"># Enable ALL events in a subsystem</span>
+<span class="nv">$ </span><span class="nb">echo </span>1 <span class="o">&gt;</span> /sys/kernel/debug/tracing/events/irq/enable
+
+<span class="c"># Enable all events</span>
+<span class="nv">$ </span><span class="nb">echo </span>1 <span class="o">&gt;</span> /sys/kernel/debug/tracing/events/enable
+</code></pre></div></div>
+
+<p>Example <code class="language-plaintext highlighter-rouge">sched_switch</code> output:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> bash-1234  [001]  ....  1234.567: sched_switch: prev_comm=bash prev_pid=1234
+             prev_prio=120 prev_state=S ==&gt; next_comm=kworker/1:1
+             next_pid=47 next_prio=120
+</code></pre></div></div>
+
+<h3 id="trace-markers-from-user-space">Trace markers from user space</h3>
+
+<p>Write timestamps into the trace from your own application — useful to correlate userspace events with kernel events:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">echo </span>1 <span class="o">&gt;</span> /sys/kernel/debug/tracing/tracing_on
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"my_app: starting critical section"</span> <span class="o">&gt;</span> /sys/kernel/debug/tracing/trace_marker
+<span class="c"># ... do work ...</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"my_app: end critical section"</span> <span class="o">&gt;</span> /sys/kernel/debug/tracing/trace_marker
+<span class="nv">$ </span><span class="nb">echo </span>0 <span class="o">&gt;</span> /sys/kernel/debug/tracing/tracing_on
+</code></pre></div></div>
+
+<p>From C code:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">"/sys/kernel/debug/tracing/trace_marker"</span><span class="p">,</span> <span class="n">O_WRONLY</span><span class="p">);</span>
+<span class="n">write</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="s">"start critical section"</span><span class="p">,</span> <span class="mi">22</span><span class="p">);</span>
+<span class="c1">// ... critical work ...</span>
+<span class="n">write</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="s">"end critical section"</span><span class="p">,</span> <span class="mi">20</span><span class="p">);</span>
+<span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="trace-cmd--easier-ftrace-frontend">trace-cmd — Easier ftrace frontend</h3>
+
+<p><code class="language-plaintext highlighter-rouge">trace-cmd</code> wraps the raw tracefs interface into a convenient CLI:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install</span>
+<span class="nv">$ </span><span class="nb">sudo </span>apt <span class="nb">install </span>trace-cmd
+
+<span class="c"># Record sched events for 5 seconds</span>
+<span class="nv">$ </span><span class="nb">sudo </span>trace-cmd record <span class="nt">-e</span> sched_switch <span class="nt">-e</span> sched_wakeup <span class="nb">sleep </span>5
+
+<span class="c"># Display the report</span>
+<span class="nv">$ </span>trace-cmd report trace.dat
+...
+     bash-1234 <span class="o">[</span>001]  1234.567820: sched_switch: bash:1234 <span class="o">[</span>120] S <span class="o">==&gt;</span> kworker:47 <span class="o">[</span>120]
+
+<span class="c"># Record function calls in a specific module</span>
+<span class="nv">$ </span><span class="nb">sudo </span>trace-cmd record <span class="nt">-p</span> <span class="k">function</span> <span class="nt">-l</span> <span class="s1">':mod:mydriver'</span> <span class="nb">sleep </span>2
+<span class="nv">$ </span>trace-cmd report
+
+<span class="c"># Live stream</span>
+<span class="nv">$ </span><span class="nb">sudo </span>trace-cmd stream <span class="nt">-e</span> sched_switch
+</code></pre></div></div>
+
+<h3 id="latency-tracers">Latency tracers</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># irqsoff: measures longest period with IRQs disabled</span>
+<span class="nv">$ </span><span class="nb">echo </span>irqsoff <span class="o">&gt;</span> /sys/kernel/debug/tracing/current_tracer
+<span class="nv">$ </span><span class="nb">echo </span>1 <span class="o">&gt;</span> /sys/kernel/debug/tracing/tracing_on
+<span class="c"># ... run your workload ...</span>
+<span class="nv">$ </span><span class="nb">echo </span>0 <span class="o">&gt;</span> /sys/kernel/debug/tracing/tracing_on
+<span class="nv">$ </span><span class="nb">cat</span> /sys/kernel/debug/tracing/trace
+<span class="c"># Shows the worst-case IRQ-off latency and the callchain that caused it</span>
+
+<span class="c"># wakeup: measures latency from wakeup to execution</span>
+<span class="nv">$ </span><span class="nb">echo </span>wakeup <span class="o">&gt;</span> /sys/kernel/debug/tracing/current_tracer
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="kprobes--ebpfbpftrace">kprobes &amp; eBPF/bpftrace</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="kprobes--dynamic-instrumentation">kprobes — Dynamic Instrumentation</h3>
+
+<p>A <strong>kprobe</strong> lets you insert a probe at any kernel address (including the start of any function) <strong>without recompiling the kernel</strong>. When the CPU hits that address, your probe handler runs.</p>
+
+<p><strong>Three types:</strong></p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">kprobe</code> — fires at function entry (or any instruction)</li>
+  <li><code class="language-plaintext highlighter-rouge">kretprobe</code> — fires at function return, captures return value</li>
+  <li><code class="language-plaintext highlighter-rouge">uprobe</code> — fires at user-space function entry/return</li>
+</ul>
+
+<h3 id="writing-a-kprobe-kernel-module">Writing a kprobe kernel module</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// kprobe_example.c</span>
+<span class="cp">#include</span> <span class="cpf">&lt;linux/kernel.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/module.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/kprobes.h&gt;</span><span class="cp">
+</span>
+<span class="k">static</span> <span class="k">struct</span> <span class="n">kprobe</span> <span class="n">kp</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">symbol_name</span> <span class="o">=</span> <span class="s">"do_sys_open"</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">handler_pre</span><span class="p">(</span><span class="k">struct</span> <span class="n">kprobe</span> <span class="o">*</span><span class="n">p</span><span class="p">,</span> <span class="k">struct</span> <span class="n">pt_regs</span> <span class="o">*</span><span class="n">regs</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="cm">/* regs-&gt;si holds the filename argument on x86-64 */</span>
+    <span class="n">pr_info</span><span class="p">(</span><span class="s">"kprobe: do_sys_open called, filename ptr = 0x%lx</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+            <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">regs</span><span class="o">-&gt;</span><span class="n">si</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="nf">handler_post</span><span class="p">(</span><span class="k">struct</span> <span class="n">kprobe</span> <span class="o">*</span><span class="n">p</span><span class="p">,</span> <span class="k">struct</span> <span class="n">pt_regs</span> <span class="o">*</span><span class="n">regs</span><span class="p">,</span>
+                         <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">flags</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">pr_info</span><span class="p">(</span><span class="s">"kprobe: do_sys_open returned</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="n">__init</span> <span class="nf">kprobe_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">kp</span><span class="p">.</span><span class="n">pre_handler</span>  <span class="o">=</span> <span class="n">handler_pre</span><span class="p">;</span>
+    <span class="n">kp</span><span class="p">.</span><span class="n">post_handler</span> <span class="o">=</span> <span class="n">handler_post</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">register_kprobe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">kp</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="n">__exit</span> <span class="nf">kprobe_exit</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">unregister_kprobe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">kp</span><span class="p">);</span>
+    <span class="n">pr_info</span><span class="p">(</span><span class="s">"kprobe removed</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">module_init</span><span class="p">(</span><span class="n">kprobe_init</span><span class="p">);</span>
+<span class="n">module_exit</span><span class="p">(</span><span class="n">kprobe_exit</span><span class="p">);</span>
+<span class="n">MODULE_LICENSE</span><span class="p">(</span><span class="s">"GPL"</span><span class="p">);</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>make
+<span class="nv">$ </span><span class="nb">sudo </span>insmod kprobe_example.ko
+<span class="nv">$ </span><span class="nb">cat</span> /tmp/test.txt   <span class="c"># trigger do_sys_open</span>
+<span class="nv">$ </span>dmesg | <span class="nb">tail</span> <span class="nt">-5</span>
+<span class="o">[</span>12345.678] kprobe: do_sys_open called, filename ptr <span class="o">=</span> 0xffff9a3c00001234
+<span class="o">[</span>12345.679] kprobe: do_sys_open returned
+<span class="nv">$ </span><span class="nb">sudo </span>rmmod kprobe_example
+</code></pre></div></div>
+
+<h3 id="kretprobe--capturing-return-values">kretprobe — Capturing return values</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="k">struct</span> <span class="n">kretprobe</span> <span class="n">rp</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">handler</span>     <span class="o">=</span> <span class="n">ret_handler</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">entry_handler</span> <span class="o">=</span> <span class="n">entry_handler</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">maxactive</span>   <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">kp</span><span class="p">.</span><span class="n">symbol_name</span> <span class="o">=</span> <span class="s">"do_sys_open"</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">ret_handler</span><span class="p">(</span><span class="k">struct</span> <span class="n">kretprobe_instance</span> <span class="o">*</span><span class="n">ri</span><span class="p">,</span> <span class="k">struct</span> <span class="n">pt_regs</span> <span class="o">*</span><span class="n">regs</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">long</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">regs_return_value</span><span class="p">(</span><span class="n">regs</span><span class="p">);</span>
+    <span class="n">pr_info</span><span class="p">(</span><span class="s">"do_sys_open returned fd = %ld</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">fd</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="kprobes-via-tracefs-no-module-needed">kprobes via tracefs (no module needed)</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Add a kprobe event via tracefs</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s1">'p:myprobe do_sys_open filename=+0(%si):string'</span> <span class="se">\</span>
+    <span class="o">&gt;</span> /sys/kernel/debug/tracing/kprobe_events
+
+<span class="c"># Enable it</span>
+<span class="nv">$ </span><span class="nb">echo </span>1 <span class="o">&gt;</span> /sys/kernel/debug/tracing/events/kprobes/myprobe/enable
+<span class="nv">$ </span><span class="nb">echo </span>1 <span class="o">&gt;</span> /sys/kernel/debug/tracing/tracing_on
+
+<span class="c"># Trigger some file opens, then read trace</span>
+<span class="nv">$ </span><span class="nb">cat</span> /sys/kernel/debug/tracing/trace
+            bash-1234 <span class="o">[</span>001] .... 1234.567: myprobe: <span class="o">(</span>do_sys_open+0x0/0x250<span class="o">)</span>
+                             <span class="nv">filename</span><span class="o">=</span><span class="s2">"/etc/passwd"</span>
+
+<span class="c"># Kretprobe via tracefs</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s1">'r:myretprobe do_sys_open fd=$retval'</span> <span class="se">\</span>
+    <span class="o">&gt;</span> /sys/kernel/debug/tracing/kprobe_events
+</code></pre></div></div>
+
+<h3 id="perf-probe--same-thing-via-perf">perf probe — same thing via perf</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Add a probe at do_sys_open, capture the filename</span>
+<span class="nv">$ </span><span class="nb">sudo </span>perf probe <span class="nt">--add</span> <span class="s1">'do_sys_open filename:string'</span>
+
+<span class="c"># Record</span>
+<span class="nv">$ </span><span class="nb">sudo </span>perf record <span class="nt">-e</span> probe:do_sys_open <span class="nt">-aR</span> <span class="nb">sleep </span>5
+
+<span class="c"># Report</span>
+<span class="nv">$ </span><span class="nb">sudo </span>perf script
+bash  1234 <span class="o">[</span>001] 1234.567: probe:do_sys_open: <span class="o">(</span>ffffffff81234560<span class="o">)</span> <span class="nv">filename</span><span class="o">=</span><span class="s2">"/etc/passwd"</span>
+
+<span class="c"># List active probes</span>
+<span class="nv">$ </span><span class="nb">sudo </span>perf probe <span class="nt">--list</span>
+
+<span class="c"># Remove</span>
+<span class="nv">$ </span><span class="nb">sudo </span>perf probe <span class="nt">--del</span> probe:do_sys_open
+</code></pre></div></div>
+
+<h3 id="bpftrace--production-grade-kernel-tracing">bpftrace — Production-Grade Kernel Tracing</h3>
+
+<p><code class="language-plaintext highlighter-rouge">bpftrace</code> uses eBPF (Extended Berkeley Packet Filter) under the hood. It provides a high-level language for one-liner and scripted kernel/user tracing.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sudo </span>apt <span class="nb">install </span>bpftrace
+
+<span class="c"># Trace every file opened</span>
+<span class="nv">$ </span><span class="nb">sudo </span>bpftrace <span class="nt">-e</span> <span class="s1">'kprobe:do_sys_open { printf("open: %s\n", str(arg1)); }'</span>
+open: /etc/passwd
+open: /proc/version
+open: /dev/null
+
+<span class="c"># Count syscalls by process name</span>
+<span class="nv">$ </span><span class="nb">sudo </span>bpftrace <span class="nt">-e</span> <span class="s1">'tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }'</span>
+
+<span class="c"># Histogram of read() sizes</span>
+<span class="nv">$ </span><span class="nb">sudo </span>bpftrace <span class="nt">-e</span> <span class="s1">'tracepoint:syscalls:sys_enter_read { @bytes = hist(args-&gt;count); }'</span>
+
+<span class="c"># Trace kernel function latency</span>
+<span class="nv">$ </span><span class="nb">sudo </span>bpftrace <span class="nt">-e</span> <span class="s1">'
+kprobe:vfs_read  { @start[tid] = nsecs; }
+kretprobe:vfs_read /@start[tid]/ {
+  @usecs = hist((nsecs - @start[tid]) / 1000);
+  delete(@start[tid]);
+}'</span>
+
+<span class="c"># Show top 10 functions by call count over 10s</span>
+<span class="nv">$ </span><span class="nb">sudo </span>trace-cmd record <span class="nt">-p</span> <span class="k">function</span> <span class="nt">-l</span> <span class="s1">'vfs_*'</span> <span class="nb">sleep </span>10
+<span class="nv">$ </span>trace-cmd report | <span class="nb">awk</span> <span class="s1">'{print $NF}'</span> | <span class="nb">sort</span> | <span class="nb">uniq</span> <span class="nt">-c</span> | <span class="nb">sort</span> <span class="nt">-rn</span> | <span class="nb">head</span> <span class="nt">-10</span>
+</code></pre></div></div>
+
+<h3 id="tracepoints-vs-kprobes--when-to-use-each">Tracepoints vs kprobes — when to use each</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th>Tracepoints</th>
+      <th>kprobes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Defined in source</td>
+      <td>Yes (TRACE_EVENT macro)</td>
+      <td>No — dynamic</td>
+    </tr>
+    <tr>
+      <td>Stable ABI</td>
+      <td>Yes</td>
+      <td>No — breaks with kernel changes</td>
+    </tr>
+    <tr>
+      <td>Overhead</td>
+      <td>Lower (static)</td>
+      <td>Slightly higher</td>
+    </tr>
+    <tr>
+      <td>Can probe any address</td>
+      <td>No</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>Best for</td>
+      <td>Performance monitoring</td>
+      <td>Deep debugging</td>
+    </tr>
+    <tr>
+      <td>Available without debug info</td>
+      <td>Yes</td>
+      <td>Needs kallsyms</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="uprobes--probing-user-space-functions-from-kernel">Uprobes — probing user-space functions from kernel</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Probe the malloc() function in libc</span>
+<span class="nv">$ </span><span class="nb">sudo </span>bpftrace <span class="nt">-e</span> <span class="s1">'
+uprobe:/lib/x86_64-linux-gnu/libc.so.6:malloc { printf("malloc(%d)\n", arg0); }
+'</span>
+
+<span class="c"># Trace a specific user binary</span>
+<span class="nv">$ </span><span class="nb">sudo </span>bpftrace <span class="nt">-e</span> <span class="s1">'
+uprobe:/usr/bin/myapp:process_data { printf("process_data called\n"); }
+'</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-questions">Interview Questions</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q: What is ftrace and how is it different from printk debugging?</strong></p>
+
+<p>ftrace is a kernel tracing framework that instruments function calls and kernel events with very low overhead, writing to an in-kernel ring buffer. Unlike <code class="language-plaintext highlighter-rouge">printk</code>, which requires recompiling and adds significant latency on the serial console, ftrace can trace thousands of events per second and be enabled/disabled at runtime via the tracefs filesystem. ftrace gives you a timeline of what the kernel was actually doing, while printk gives you only what you explicitly told it to print.</p>
+
+<p><strong>Q: How do you trace only specific kernel functions with ftrace?</strong></p>
+
+<p>Write the function name (or a glob pattern) into <code class="language-plaintext highlighter-rouge">/sys/kernel/debug/tracing/set_ftrace_filter</code>. For example: <code class="language-plaintext highlighter-rouge">echo 'gpio_*' &gt; set_ftrace_filter</code> traces all GPIO functions. For tracing functions in a specific module: <code class="language-plaintext highlighter-rouge">echo ':mod:mydriver' &gt; set_ftrace_filter</code>. You can also use <code class="language-plaintext highlighter-rouge">set_graph_function</code> with the <code class="language-plaintext highlighter-rouge">function_graph</code> tracer to trace a function and everything it calls.</p>
+
+<p><strong>Q: What is the function_graph tracer and what does it show?</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">function_graph</code> shows the full call graph with function entry and exit, indentation representing call depth, and execution time for each function. The <code class="language-plaintext highlighter-rouge">+</code> suffix means &gt;10µs, <code class="language-plaintext highlighter-rouge">!</code> means &gt;100µs, and <code class="language-plaintext highlighter-rouge">#</code> means &gt;1ms. This is extremely useful for understanding what a function actually does under the hood and where the time is being spent.</p>
+
+<p><strong>Q: What is a kprobe and how is it implemented?</strong></p>
+
+<p>A kprobe dynamically inserts a breakpoint (INT3 on x86, BRK on ARM64) at any kernel address at runtime, without recompiling the kernel. When the CPU hits the breakpoint, it calls your registered <code class="language-plaintext highlighter-rouge">pre_handler</code>. After your handler returns, the original instruction executes. <code class="language-plaintext highlighter-rouge">kretprobes</code> work by replacing the return address on the stack so your <code class="language-plaintext highlighter-rouge">ret_handler</code> is called when the function returns. The mechanism requires <code class="language-plaintext highlighter-rouge">CONFIG_KPROBES=y</code> in the kernel config.</p>
+
+<p><strong>Q: What is the difference between a kprobe and a tracepoint?</strong></p>
+
+<p>A tracepoint is a static hook placed by the kernel developer at compile time using the <code class="language-plaintext highlighter-rouge">TRACE_EVENT</code> macro. It has a stable, documented interface and very low overhead (a single <code class="language-plaintext highlighter-rouge">nop</code> instruction when disabled). A kprobe is dynamic — you can attach it to any kernel address at runtime, even in functions that have no tracepoints. Tracepoints are better for production monitoring (stable API, lower overhead); kprobes are better for deep one-off debugging.</p>
+
+<p><strong>Q: What is bpftrace and what advantages does it have over ftrace?</strong></p>
+
+<p>bpftrace is a high-level tracing language that compiles to eBPF programs loaded into the kernel. Compared to raw ftrace, it provides: a C-like scripting language with variables, maps, histograms; the ability to combine kprobes, tracepoints, and uprobes in one script; aggregation and filtering in-kernel (reducing data sent to user space); and no need to write kernel modules. It is safe (eBPF verifier prevents crashes) and production-ready.</p>
+
+<p><strong>Q: How would you use tracing to debug a latency problem in a real-time system?</strong></p>
+
+<p>First, use the <code class="language-plaintext highlighter-rouge">irqsoff</code> tracer to measure the longest period with interrupts disabled — this is often the main cause of RT latency. Then use <code class="language-plaintext highlighter-rouge">preemptoff</code> to find preemption-disabled sections. Use <code class="language-plaintext highlighter-rouge">wakeup_rt</code> to measure the time from when an RT task is woken to when it actually runs. <code class="language-plaintext highlighter-rouge">trace-cmd record -e irq:* -e sched:*</code> captures a timeline of interrupts and context switches. For user-space latency, combine <code class="language-plaintext highlighter-rouge">trace_marker</code> with application timestamps to see kernel activity during your critical section.</p>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<ul>
+  <li><strong>Linux kernel — ftrace documentation</strong> — Documentation/trace/ftrace.rst — comprehensive guide to all ftrace features</li>
+  <li><strong>Linux kernel — kprobes documentation</strong> — Documentation/trace/kprobes.rst — kprobe/kretprobe/uprobe API reference</li>
+  <li><strong>trace-cmd</strong> — https://trace-cmd.org/ — user-space frontend for ftrace</li>
+  <li><strong>bpftrace Reference Guide</strong> — https://github.com/bpftrace/bpftrace/blob/master/docs/reference_guide.md — full bpftrace language reference</li>
+  <li><strong>“Systems Performance” by Brendan Gregg</strong> (2nd edition) — the definitive book on Linux performance and tracing tools including ftrace, perf, and eBPF</li>
+  <li><strong>LWN.net: “Debugging the kernel using ftrace”</strong> — Steven Rostedt’s series on ftrace internals</li>
+  <li><strong>“Linux Observability with BPF” by David Calavera &amp; Lorenzo Fontana</strong> — practical eBPF/bpftrace guide</li>
+  <li><strong>perf-probe man page</strong> — man perf-probe — probing arbitrary kernel/user functions via perf</li>
+</ul>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fab fa-linux"></i>
+        <span>Linux Kernel Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/embedded-linux/kernel/kconfig-menuconfig/" class="gtn-link ">
+          <i class="fas fa-sliders"></i> Kconfig &amp; menuconfig
+        </a>
+        <a href="/embedded-linux/kernel/kernel-compilation/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> Kernel Compilation
+        </a>
+        <a href="/embedded-linux/kernel/boot-parameters/" class="gtn-link ">
+          <i class="fas fa-list-check"></i> Boot Parameters
+        </a>
+        <a href="/embedded-linux/kernel/kernel-subsystems/" class="gtn-link ">
+          <i class="fab fa-linux"></i> Kernel Subsystems
+        </a>
+        <a href="/embedded-linux/kernel/printk-debug/" class="gtn-link ">
+          <i class="fas fa-bug"></i> printk &amp; Dynamic Debug
+        </a>
+        <a href="/embedded-linux/kernel/ftrace-kprobes/" class="gtn-link gts-active">
+          <i class="fas fa-chart-line"></i> ftrace &amp; kprobes
+        </a>
+      </nav>
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/embedded-linux/kernel/printk-debug/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">printk & Dynamic Debug</span>
+      </a>
+      
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

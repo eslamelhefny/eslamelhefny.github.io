@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linux User Guide — Phase 01 · Eslam Mohamed</title>
+  <meta name="description" content="A complete guide to Linux administration fundamentals — from filesystem navigation to bash scripting." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <style>
+.lu-hero {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(99,102,241,0.08) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 4rem 2rem 3rem;
+  text-align: center;
+}
+.lu-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .75rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent);
+  background: rgba(99,102,241,.1); border: 1px solid rgba(99,102,241,.25);
+  border-radius: 2rem; padding: .3rem 1rem; margin-bottom: 1.2rem;
+}
+.lu-hero h1 { font-size: clamp(1.8rem,4vw,2.8rem); font-weight: 800; margin: 0 0 1rem; }
+.lu-hero p  { font-size: 1.05rem; color: var(--text-muted); max-width: 680px; margin: 0 auto 2rem; }
+.lu-hero-meta {
+  display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;
+  font-size: .85rem; color: var(--text-muted);
+}
+.lu-hero-meta span { display: flex; align-items: center; gap: .4rem; }
+.lu-hero-meta i { color: var(--accent); }
+
+/* Topic Grid */
+.lu-grid-wrap { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+.lu-section-label {
+  font-size: .75rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem;
+}
+.lu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
+  gap: 1.25rem;
+}
+.lu-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.6rem;
+  text-decoration: none;
+  color: inherit;
+  display: flex; flex-direction: column; gap: .75rem;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.lu-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--lu-color, var(--accent));
+  border-radius: 14px 14px 0 0;
+}
+.lu-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--lu-color, var(--accent));
+  box-shadow: 0 8px 32px rgba(0,0,0,.25);
+  text-decoration: none;
+}
+.lu-card-top { display: flex; align-items: flex-start; gap: 1rem; }
+.lu-card-icon {
+  width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+  background: color-mix(in srgb, var(--lu-color, var(--accent)) 15%, transparent);
+  color: var(--lu-color, var(--accent));
+}
+.lu-card-num {
+  font-size: .72rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: .2rem;
+}
+.lu-card h3 { font-size: 1rem; font-weight: 700; margin: 0; }
+.lu-card p  { font-size: .875rem; color: var(--text-muted); margin: 0; line-height: 1.6; }
+.lu-card-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: auto; padding-top: .5rem; }
+.lu-card-tag {
+  font-size: .7rem; font-weight: 600; letter-spacing: .04em;
+  background: rgba(255,255,255,.05); border: 1px solid var(--border);
+  border-radius: 4px; padding: .15rem .5rem; color: var(--text-muted);
+}
+.lu-card-arrow {
+  margin-top: .5rem; font-size: .82rem; font-weight: 600;
+  color: var(--lu-color, var(--accent)); display: flex; align-items: center; gap: .35rem;
+}
+
+/* Color variants */
+.lu-c1 { --lu-color: #6366f1; }
+.lu-c2 { --lu-color: #22c55e; }
+.lu-c3 { --lu-color: #f59e0b; }
+.lu-c4 { --lu-color: #ec4899; }
+.lu-c5 { --lu-color: #14b8a6; }
+.lu-c6 { --lu-color: #f97316; }
+.lu-c7 { --lu-color: #8b5cf6; }
+.lu-c8 { --lu-color: #06b6d4; }
+.lu-c9 { --lu-color: #84cc16; }
+
+@media (max-width: 600px) {
+  .lu-grid { grid-template-columns: 1fr; }
+  .lu-hero-meta { gap: 1rem; }
+}
+</style>
+
+<!-- Hero -->
+<div class="lu-hero">
+  <div class="lu-hero-eyebrow"><i class="fas fa-terminal"></i> Phase 01</div>
+  <h1>Linux User Guide</h1>
+  <p>Master Linux system administration from the ground up — filesystem navigation, user management, process control, networking, and scripting.</p>
+  <div class="lu-hero-meta">
+    <span><i class="fas fa-layer-group"></i> 9 Topics</span>
+    <span><i class="fas fa-seedling"></i> Basic → Advanced</span>
+    <span><i class="fas fa-circle-question"></i> Interview Q&amp;A Included</span>
+    <span><i class="fas fa-book-open"></i> References per Topic</span>
+  </div>
+</div>
+
+<!-- Grid -->
+<div class="lu-grid-wrap">
+  <div class="lu-section-label"><i class="fas fa-map"></i> All Topics</div>
+  <div class="lu-grid">
+
+    <!-- 01 -->
+    <a href="/linux-user/filesystem-navigation/" class="lu-card lu-c1">
+      <div class="lu-card-top">
+        <div class="lu-card-icon"><i class="fas fa-folder-open"></i></div>
+        <div>
+          <div class="lu-card-num">Topic 01</div>
+          <h3>Filesystem Navigation</h3>
+        </div>
+      </div>
+      <p>Understand the Linux Filesystem Hierarchy Standard, navigate directories confidently, and manage files with core commands.</p>
+      <div class="lu-card-tags">
+        <span class="lu-card-tag">FHS</span>
+        <span class="lu-card-tag">ls / cd / find</span>
+        <span class="lu-card-tag">inodes</span>
+        <span class="lu-card-tag">mount</span>
+      </div>
+      <div class="lu-card-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <!-- 02 -->
+    <a href="/linux-user/users-permissions/" class="lu-card lu-c2">
+      <div class="lu-card-top">
+        <div class="lu-card-icon"><i class="fas fa-user-lock"></i></div>
+        <div>
+          <div class="lu-card-num">Topic 02</div>
+          <h3>Users &amp; Permissions</h3>
+        </div>
+      </div>
+      <p>Manage users and groups, master file permission bits, SUID/SGID/sticky bit, ACLs, and Linux capabilities.</p>
+      <div class="lu-card-tags">
+        <span class="lu-card-tag">chmod / chown</span>
+        <span class="lu-card-tag">sudo</span>
+        <span class="lu-card-tag">ACLs</span>
+        <span class="lu-card-tag">capabilities</span>
+      </div>
+      <div class="lu-card-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <!-- 03 -->
+    <a href="/linux-user/process-management/" class="lu-card lu-c3">
+      <div class="lu-card-top">
+        <div class="lu-card-icon"><i class="fas fa-microchip"></i></div>
+        <div>
+          <div class="lu-card-num">Topic 03</div>
+          <h3>Process Management</h3>
+        </div>
+      </div>
+      <p>Monitor, control, and analyze running processes. Understand signals, scheduling priorities, cgroups, and systemd units.</p>
+      <div class="lu-card-tags">
+        <span class="lu-card-tag">ps / top</span>
+        <span class="lu-card-tag">signals</span>
+        <span class="lu-card-tag">nice / renice</span>
+        <span class="lu-card-tag">cgroups</span>
+      </div>
+      <div class="lu-card-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <!-- 04 -->
+    <a href="/linux-user/package-management/" class="lu-card lu-c4">
+      <div class="lu-card-top">
+        <div class="lu-card-icon"><i class="fas fa-box"></i></div>
+        <div>
+          <div class="lu-card-num">Topic 04</div>
+          <h3>Package Management</h3>
+        </div>
+      </div>
+      <p>Use APT and dpkg to install, update, and remove packages. Configure repositories, PPAs, and build software from source.</p>
+      <div class="lu-card-tags">
+        <span class="lu-card-tag">apt</span>
+        <span class="lu-card-tag">dpkg</span>
+        <span class="lu-card-tag">build from source</span>
+        <span class="lu-card-tag">.deb packaging</span>
+      </div>
+      <div class="lu-card-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <!-- 05 -->
+    <a href="/linux-user/networking/" class="lu-card lu-c5">
+      <div class="lu-card-top">
+        <div class="lu-card-icon"><i class="fas fa-network-wired"></i></div>
+        <div>
+          <div class="lu-card-num">Topic 05</div>
+          <h3>Networking Basics</h3>
+        </div>
+      </div>
+      <p>Configure network interfaces, diagnose connectivity, use DNS tools, capture packets, and write iptables firewall rules.</p>
+      <div class="lu-card-tags">
+        <span class="lu-card-tag">ip / ss</span>
+        <span class="lu-card-tag">DNS</span>
+        <span class="lu-card-tag">tcpdump</span>
+        <span class="lu-card-tag">iptables</span>
+      </div>
+      <div class="lu-card-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <!-- 06 -->
+    <a href="/linux-user/ssh/" class="lu-card lu-c6">
+      <div class="lu-card-top">
+        <div class="lu-card-icon"><i class="fas fa-lock"></i></div>
+        <div>
+          <div class="lu-card-num">Topic 06</div>
+          <h3>SSH &amp; Remote Access</h3>
+        </div>
+      </div>
+      <p>Set up key-based authentication, transfer files, create SSH tunnels, harden sshd, and use ProxyJump chains for embedded boards.</p>
+      <div class="lu-card-tags">
+        <span class="lu-card-tag">ssh-keygen</span>
+        <span class="lu-card-tag">SCP / rsync</span>
+        <span class="lu-card-tag">tunneling</span>
+        <span class="lu-card-tag">sshd_config</span>
+      </div>
+      <div class="lu-card-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <!-- 07 -->
+    <a href="/linux-user/cron/" class="lu-card lu-c7">
+      <div class="lu-card-top">
+        <div class="lu-card-icon"><i class="fas fa-clock"></i></div>
+        <div>
+          <div class="lu-card-num">Topic 07</div>
+          <h3>Cron &amp; Scheduling</h3>
+        </div>
+      </div>
+      <p>Schedule recurring and one-off tasks with cron, at, and systemd timers. Handle environment issues and prevent overlapping jobs.</p>
+      <div class="lu-card-tags">
+        <span class="lu-card-tag">crontab</span>
+        <span class="lu-card-tag">at</span>
+        <span class="lu-card-tag">systemd timers</span>
+        <span class="lu-card-tag">flock</span>
+      </div>
+      <div class="lu-card-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <!-- 08 -->
+    <a href="/linux-user/bash-scripting/" class="lu-card lu-c8">
+      <div class="lu-card-top">
+        <div class="lu-card-icon"><i class="fas fa-terminal"></i></div>
+        <div>
+          <div class="lu-card-num">Topic 08</div>
+          <h3>Bash Scripting</h3>
+        </div>
+      </div>
+      <p>Write robust shell scripts with variables, arrays, conditionals, loops, functions, error handling, and text processing pipelines.</p>
+      <div class="lu-card-tags">
+        <span class="lu-card-tag">variables</span>
+        <span class="lu-card-tag">functions</span>
+        <span class="lu-card-tag">sed / awk</span>
+        <span class="lu-card-tag">pipelines</span>
+      </div>
+      <div class="lu-card-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+    <!-- 09 -->
+    <a href="/linux-user/git/" class="lu-card lu-c9">
+      <div class="lu-card-top">
+        <div class="lu-card-icon"><i class="fab fa-git-alt"></i></div>
+        <div>
+          <div class="lu-card-num">Topic 09</div>
+          <h3>Git Basics</h3>
+        </div>
+      </div>
+      <p>Track code changes with Git — commits, branching, merging, rebasing, remotes, and best practices for embedded/kernel development.</p>
+      <div class="lu-card-tags">
+        <span class="lu-card-tag">commit / branch</span>
+        <span class="lu-card-tag">merge / rebase</span>
+        <span class="lu-card-tag">remotes</span>
+        <span class="lu-card-tag">git bisect</span>
+      </div>
+      <div class="lu-card-arrow">Start Learning <i class="fas fa-arrow-right"></i></div>
+    </a>
+
+  </div>
+</div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,631 @@
+---
+layout: default
+title: "Embedded Linux Roadmap"
+description: "A structured path from Linux basics to production-grade embedded systems."
+---
+
+<div class="roadmap-page">
+
+  <div class="roadmap-page-header">
+    <div class="section-eyebrow">learn</div>
+    <h1 class="section-title">Embedded Linux Roadmap</h1>
+    <p class="section-sub">A structured, phase-by-phase path from Linux basics to production-grade embedded systems — distilled from 8+ years of engineering and teaching 500+ students.</p>
+
+    <div class="rm-legend">
+      <span class="rm-legend-item rm-c1"><span class="rm-legend-dot"></span>Linux User</span>
+      <span class="rm-legend-item rm-c2"><span class="rm-legend-dot"></span>Linux Developer</span>
+      <span class="rm-legend-item rm-c3"><span class="rm-legend-dot"></span>Embedded Linux</span>
+      <span class="rm-legend-item rm-c4"><span class="rm-legend-dot"></span>Kernel Developer</span>
+      <span class="rm-legend-item rm-c5"><span class="rm-legend-dot"></span>Production Engineer</span>
+    </div>
+  </div>
+
+  <!-- ── 3-COLUMN LAYOUT ── -->
+  <div class="roadmap-3col">
+
+    <!-- ══════════════════════════════════
+         LEFT: Guide Navigation Sidebar
+    ══════════════════════════════════ -->
+    <aside class="rm-guide-sidebar">
+      <div class="rm-guide-header">
+        <i class="fas fa-compass"></i>
+        <span>Learning Path</span>
+      </div>
+
+      <nav class="rm-guide-nav">
+
+        <div class="rm-guide-section rm-c1">
+          <a href="#phase-01" class="rm-guide-phase-link">
+            <span class="rm-guide-phase-dot"></span>
+            <span>Phase 01 · Linux User</span>
+          </a>
+          <div class="rm-guide-stages">
+            <a href="#stage-01" class="rm-guide-stage-link">
+              <i class="fas fa-terminal"></i> Linux CLI &amp; Admin
+            </a>
+          </div>
+        </div>
+
+        <div class="rm-guide-connector"></div>
+
+        <div class="rm-guide-section rm-c2">
+          <a href="#phase-02" class="rm-guide-phase-link">
+            <span class="rm-guide-phase-dot"></span>
+            <span>Phase 02 · Linux Developer</span>
+          </a>
+          <div class="rm-guide-stages">
+            <a href="#stage-02" class="rm-guide-stage-link">
+              <i class="fas fa-file-code"></i> C Programming
+            </a>
+            <a href="#stage-03" class="rm-guide-stage-link">
+              <i class="fas fa-code"></i> C++ &amp; Systems
+            </a>
+            <a href="#stage-04" class="rm-guide-stage-link">
+              <i class="fas fa-network-wired"></i> POSIX &amp; Concurrency
+            </a>
+          </div>
+        </div>
+
+        <div class="rm-guide-connector"></div>
+
+        <div class="rm-guide-section rm-c3">
+          <a href="#phase-03" class="rm-guide-phase-link">
+            <span class="rm-guide-phase-dot"></span>
+            <span>Phase 03 · Embedded Linux</span>
+          </a>
+          <div class="rm-guide-stages">
+            <a href="#stage-05" class="rm-guide-stage-link">
+              <i class="fas fa-gears"></i> Cross-Compilation
+            </a>
+            <a href="#stage-06" class="rm-guide-stage-link">
+              <i class="fas fa-wrench"></i> U-Boot
+            </a>
+            <a href="#stage-07" class="rm-guide-stage-link">
+              <i class="fab fa-linux"></i> Linux Kernel
+            </a>
+          </div>
+        </div>
+
+        <div class="rm-guide-connector"></div>
+
+        <div class="rm-guide-section rm-c4">
+          <a href="#phase-04" class="rm-guide-phase-link">
+            <span class="rm-guide-phase-dot"></span>
+            <span>Phase 04 · Kernel Developer</span>
+          </a>
+          <div class="rm-guide-stages">
+            <a href="#stage-08" class="rm-guide-stage-link">
+              <i class="fas fa-puzzle-piece"></i> Device Drivers
+            </a>
+            <a href="#stage-09" class="rm-guide-stage-link">
+              <i class="fas fa-folder-open"></i> Root Filesystem
+            </a>
+            <a href="#stage-10" class="rm-guide-stage-link">
+              <i class="fas fa-layer-group"></i> Build Systems
+            </a>
+          </div>
+        </div>
+
+        <div class="rm-guide-connector"></div>
+
+        <div class="rm-guide-section rm-c5">
+          <a href="#phase-05" class="rm-guide-phase-link">
+            <span class="rm-guide-phase-dot"></span>
+            <span>Phase 05 · Production Eng.</span>
+          </a>
+          <div class="rm-guide-stages">
+            <a href="#stage-11" class="rm-guide-stage-link">
+              <i class="fas fa-bug"></i> Debugging &amp; Profiling
+            </a>
+            <a href="#stage-12" class="rm-guide-stage-link">
+              <i class="fas fa-rocket"></i> Advanced Topics
+            </a>
+          </div>
+        </div>
+
+      </nav>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Roadmap Content
+    ══════════════════════════════════ -->
+    <main class="rm-main">
+      <div class="roadmap-v2">
+
+        <!-- Phase 01 -->
+        <div id="phase-01" class="rm-phase rm-c1 fade-up">
+          <div class="rm-phase-banner">
+            <span class="rm-phase-badge">Phase 01</span>
+            <div class="rm-phase-text">
+              <div class="rm-phase-name">Linux User</div>
+              <div class="rm-phase-sub">Basic Administration &amp; System Fundamentals</div>
+            </div>
+            <i class="fas fa-terminal rm-phase-icon-lg"></i>
+          </div>
+
+          <div class="rm-stages">
+            <div id="stage-01" class="rm-stage fade-up">
+              <a href="{{ '/linux-user/' | relative_url }}" class="rm-stage-card rm-stage-card-link">
+                <div class="rm-stage-head">
+                  <div class="rm-stage-icon"><i class="fas fa-terminal"></i></div>
+                  <div class="rm-stage-title-group">
+                    <div class="rm-stage-num-label">Stage 01</div>
+                    <h3>Linux CLI &amp; System Administration</h3>
+                  </div>
+                  <span class="rm-stage-goto"><i class="fas fa-arrow-right"></i> View Guide</span>
+                </div>
+                <p>Learn to navigate and administer a Linux system — the foundation every embedded engineer must master before touching real hardware.</p>
+                <div class="rm-topics">
+                  <a href="{{ '/linux-user/filesystem-navigation/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Filesystem Navigation</a>
+                  <a href="{{ '/linux-user/users-permissions/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Users &amp; Permissions</a>
+                  <a href="{{ '/linux-user/process-management/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Process Management</a>
+                  <a href="{{ '/linux-user/package-management/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Package Management</a>
+                  <a href="{{ '/linux-user/networking/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Networking Basics</a>
+                  <a href="{{ '/linux-user/ssh/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">SSH &amp; Remote Access</a>
+                  <a href="{{ '/linux-user/cron/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Cron &amp; Scheduling</a>
+                  <a href="{{ '/linux-user/bash-scripting/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Bash Scripting</a>
+                  <a href="{{ '/linux-user/git/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Git Basics</a>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="rm-phase-gap fade-up">
+          <div class="rm-gap-line"></div>
+          <div class="rm-gap-arrow"><i class="fas fa-chevron-down"></i></div>
+          <div class="rm-gap-line"></div>
+        </div>
+
+        <!-- Phase 02 -->
+        <div id="phase-02" class="rm-phase rm-c2 fade-up">
+          <div class="rm-phase-banner">
+            <span class="rm-phase-badge">Phase 02</span>
+            <div class="rm-phase-text">
+              <div class="rm-phase-name">Linux Developer</div>
+              <div class="rm-phase-sub">C, C++ &amp; System Programming</div>
+            </div>
+            <i class="fas fa-code rm-phase-icon-lg"></i>
+          </div>
+
+          <div class="rm-stages">
+
+            <div id="stage-02" class="rm-stage fade-up">
+              <a href="{{ '/linux-developer/c-programming/' | relative_url }}" class="rm-stage-card rm-stage-card-link">
+                <div class="rm-stage-head">
+                  <div class="rm-stage-icon"><i class="fas fa-file-code"></i></div>
+                  <div class="rm-stage-title-group">
+                    <div class="rm-stage-num-label">Stage 02</div>
+                    <h3>C Programming Fundamentals</h3>
+                  </div>
+                  <span class="rm-stage-goto"><i class="fas fa-arrow-right"></i> View Guide</span>
+                </div>
+                <p>Master C — the language of Linux and embedded systems. Understand memory management, pointers, and build tooling from first principles.</p>
+                <div class="rm-topics">
+                  <a href="{{ '/linux-developer/c-programming/pointers-memory/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Pointers &amp; Memory</a>
+                  <a href="{{ '/linux-developer/c-programming/structs-unions/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Structs &amp; Unions</a>
+                  <a href="{{ '/linux-developer/c-programming/file-io/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">File I/O</a>
+                  <a href="{{ '/linux-developer/c-programming/dynamic-allocation/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Dynamic Allocation</a>
+                  <a href="{{ '/linux-developer/c-programming/makefiles/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Makefiles</a>
+                  <a href="{{ '/linux-developer/c-programming/gcc-optimization/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">GCC Flags &amp; Optimization</a>
+                  <a href="{{ '/linux-developer/c-programming/gdb/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">GDB Basics</a>
+                </div>
+              </a>
+            </div>
+
+            <div id="stage-03" class="rm-stage fade-up">
+              <a href="{{ '/linux-developer/cpp/' | relative_url }}" class="rm-stage-card rm-stage-card-link">
+                <div class="rm-stage-head">
+                  <div class="rm-stage-icon"><i class="fas fa-code"></i></div>
+                  <div class="rm-stage-title-group">
+                    <div class="rm-stage-num-label">Stage 03</div>
+                    <h3>C++ &amp; Modern Systems Programming</h3>
+                  </div>
+                  <span class="rm-stage-goto"><i class="fas fa-arrow-right"></i> View Guide</span>
+                </div>
+                <p>Level up to modern C++ for embedded UIs, complex system software, and clean object-oriented design using C++17/20 standards.</p>
+                <div class="rm-topics">
+                  <a href="{{ '/linux-developer/cpp/oop-raii/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">OOP &amp; RAII</a>
+                  <a href="{{ '/linux-developer/cpp/templates-stl/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Templates &amp; STL</a>
+                  <a href="{{ '/linux-developer/cpp/smart-pointers/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Smart Pointers</a>
+                  <a href="{{ '/linux-developer/cpp/move-semantics/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Move Semantics</a>
+                  <a href="{{ '/linux-developer/cpp/cmake/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">CMake</a>
+                  <a href="{{ '/linux-developer/cpp/qt/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Qt Framework</a>
+                  <a href="{{ '/linux-developer/cpp/cpp17-cpp20/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">C++17 / C++20</a>
+                </div>
+              </a>
+            </div>
+
+            <div id="stage-04" class="rm-stage fade-up">
+              <a href="{{ '/linux-developer/posix/' | relative_url }}" class="rm-stage-card rm-stage-card-link">
+                <div class="rm-stage-head">
+                  <div class="rm-stage-icon"><i class="fas fa-network-wired"></i></div>
+                  <div class="rm-stage-title-group">
+                    <div class="rm-stage-num-label">Stage 04</div>
+                    <h3>POSIX APIs &amp; Concurrency</h3>
+                  </div>
+                  <span class="rm-stage-goto"><i class="fas fa-arrow-right"></i> View Guide</span>
+                </div>
+                <p>Write Linux system software using the POSIX standard — processes, inter-process communication, UNIX sockets, and multithreading.</p>
+                <div class="rm-topics">
+                  <a href="{{ '/linux-developer/posix/file-io/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">POSIX File I/O</a>
+                  <a href="{{ '/linux-developer/posix/processes-fork/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Processes &amp; fork()</a>
+                  <a href="{{ '/linux-developer/posix/signals/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Signals</a>
+                  <a href="{{ '/linux-developer/posix/unix-sockets/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">UNIX Sockets</a>
+                  <a href="{{ '/linux-developer/posix/pthreads/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Pthreads</a>
+                  <a href="{{ '/linux-developer/posix/mutexes-semaphores/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Mutexes &amp; Semaphores</a>
+                  <a href="{{ '/linux-developer/posix/pipes-ipc/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Pipes &amp; Shared Memory</a>
+                </div>
+              </a>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="rm-phase-gap fade-up">
+          <div class="rm-gap-line"></div>
+          <div class="rm-gap-arrow"><i class="fas fa-chevron-down"></i></div>
+          <div class="rm-gap-line"></div>
+        </div>
+
+        <!-- Phase 03 -->
+        <div id="phase-03" class="rm-phase rm-c3 fade-up">
+          <div class="rm-phase-banner">
+            <span class="rm-phase-badge">Phase 03</span>
+            <div class="rm-phase-text">
+              <div class="rm-phase-name">Embedded Linux Developer</div>
+              <div class="rm-phase-sub">Cross-Compilation, Bootloaders &amp; the Kernel</div>
+            </div>
+            <i class="fas fa-microchip rm-phase-icon-lg"></i>
+          </div>
+
+          <div class="rm-stages">
+
+            <div id="stage-05" class="rm-stage fade-up">
+              <a href="{{ '/embedded-linux/cross-compilation/' | relative_url }}" class="rm-stage-card rm-stage-card-link">
+                <div class="rm-stage-head">
+                  <div class="rm-stage-icon"><i class="fas fa-gears"></i></div>
+                  <div class="rm-stage-title-group">
+                    <div class="rm-stage-num-label">Stage 05</div>
+                    <h3>Cross-Compilation &amp; Toolchains</h3>
+                  </div>
+                  <span class="rm-stage-goto"><i class="fas fa-arrow-right"></i> View Guide</span>
+                </div>
+                <p>Build code for a target architecture from your host machine. Master the GNU toolchain, understand sysroots, and emulate hardware with QEMU before touching real boards.</p>
+                <div class="rm-topics">
+                  <a href="{{ '/embedded-linux/cross-compilation/gnu-toolchain/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">GNU Toolchain</a>
+                  <a href="{{ '/embedded-linux/cross-compilation/sysroot-libraries/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Sysroot &amp; Libraries</a>
+                  <a href="{{ '/embedded-linux/cross-compilation/static-dynamic-linking/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Static vs Dynamic Linking</a>
+                  <a href="{{ '/embedded-linux/cross-compilation/qemu-emulation/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">QEMU Emulation</a>
+                  <a href="{{ '/embedded-linux/cross-compilation/binary-analysis/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">readelf / objdump / nm</a>
+                  <a href="{{ '/embedded-linux/cross-compilation/cross-compile-cmake/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Cross-Compile with CMake</a>
+                </div>
+              </a>
+            </div>
+
+            <div id="stage-06" class="rm-stage fade-up">
+              <a href="{{ '/embedded-linux/uboot/' | relative_url }}" class="rm-stage-card rm-stage-card-link">
+                <div class="rm-stage-head">
+                  <div class="rm-stage-icon"><i class="fas fa-wrench"></i></div>
+                  <div class="rm-stage-title-group">
+                    <div class="rm-stage-num-label">Stage 06</div>
+                    <h3>Bootloaders (U-Boot)</h3>
+                  </div>
+                  <span class="rm-stage-goto"><i class="fas fa-arrow-right"></i> View Guide</span>
+                </div>
+                <p>Understand how a system comes alive from power-on. Master U-Boot configuration, board porting, and Device Tree — the glue between hardware and the kernel.</p>
+                <div class="rm-topics">
+                  <a href="{{ '/embedded-linux/uboot/boot-sequence/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Boot Sequence</a>
+                  <a href="{{ '/embedded-linux/uboot/uboot-config-build/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">U-Boot Config &amp; Build</a>
+                  <a href="{{ '/embedded-linux/uboot/uboot-commands/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">U-Boot Commands &amp; Scripting</a>
+                  <a href="{{ '/embedded-linux/uboot/device-tree/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Device Tree (DTS)</a>
+                  <a href="{{ '/embedded-linux/uboot/board-porting/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Board Porting</a>
+                  <a href="{{ '/embedded-linux/uboot/tftp-boot/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">TFTP &amp; Network Boot</a>
+                </div>
+              </a>
+            </div>
+
+            <div id="stage-07" class="rm-stage fade-up">
+              <a href="{{ '/embedded-linux/kernel/' | relative_url }}" class="rm-stage-card rm-stage-card-link">
+                <div class="rm-stage-head">
+                  <div class="rm-stage-icon"><i class="fab fa-linux"></i></div>
+                  <div class="rm-stage-title-group">
+                    <div class="rm-stage-num-label">Stage 07</div>
+                    <h3>Linux Kernel</h3>
+                  </div>
+                  <span class="rm-stage-goto"><i class="fas fa-arrow-right"></i> View Guide</span>
+                </div>
+                <p>Dive into the kernel — configure it for your hardware, build it, understand its subsystems, and learn to debug it in the field.</p>
+                <div class="rm-topics">
+                  <a href="{{ '/embedded-linux/kernel/kconfig-menuconfig/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Kconfig &amp; menuconfig</a>
+                  <a href="{{ '/embedded-linux/kernel/kernel-compilation/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Kernel Compilation</a>
+                  <a href="{{ '/embedded-linux/kernel/boot-parameters/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Boot Parameters</a>
+                  <a href="{{ '/embedded-linux/kernel/kernel-subsystems/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">Kernel Subsystems</a>
+                  <a href="{{ '/embedded-linux/kernel/printk-debug/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">printk &amp; Dynamic Debug</a>
+                  <a href="{{ '/embedded-linux/kernel/ftrace-kprobes/' | relative_url }}" class="rm-topic rm-topic-link" onclick="event.stopPropagation()">ftrace &amp; kprobes</a>
+                </div>
+              </a>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="rm-phase-gap fade-up">
+          <div class="rm-gap-line"></div>
+          <div class="rm-gap-arrow"><i class="fas fa-chevron-down"></i></div>
+          <div class="rm-gap-line"></div>
+        </div>
+
+        <!-- Phase 04 -->
+        <div id="phase-04" class="rm-phase rm-c4 fade-up">
+          <div class="rm-phase-banner">
+            <span class="rm-phase-badge">Phase 04</span>
+            <div class="rm-phase-text">
+              <div class="rm-phase-name">Kernel Developer</div>
+              <div class="rm-phase-sub">Device Drivers, Root Filesystem &amp; Build Systems</div>
+            </div>
+            <i class="fas fa-puzzle-piece rm-phase-icon-lg"></i>
+          </div>
+
+          <div class="rm-stages">
+
+            <div id="stage-08" class="rm-stage fade-up">
+              <div class="rm-stage-card">
+                <div class="rm-stage-head">
+                  <div class="rm-stage-icon"><i class="fas fa-puzzle-piece"></i></div>
+                  <div class="rm-stage-title-group">
+                    <div class="rm-stage-num-label">Stage 08</div>
+                    <h3>Device Drivers &amp; Kernel Modules</h3>
+                  </div>
+                </div>
+                <p>Write code that runs inside the kernel. Build character drivers, platform drivers, and interface with real hardware peripherals over I2C, SPI, and UART.</p>
+                <div class="rm-topics">
+                  <span class="rm-topic">Module Lifecycle (init/exit)</span>
+                  <span class="rm-topic">Character Devices</span>
+                  <span class="rm-topic">Platform Drivers</span>
+                  <span class="rm-topic">Interrupts &amp; Timers</span>
+                  <span class="rm-topic">I2C / SPI / UART</span>
+                  <span class="rm-topic">sysfs &amp; procfs</span>
+                  <span class="rm-topic">DMA</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="stage-09" class="rm-stage fade-up">
+              <div class="rm-stage-card">
+                <div class="rm-stage-head">
+                  <div class="rm-stage-icon"><i class="fas fa-folder-open"></i></div>
+                  <div class="rm-stage-title-group">
+                    <div class="rm-stage-num-label">Stage 09</div>
+                    <h3>Root Filesystem &amp; Init Systems</h3>
+                  </div>
+                </div>
+                <p>Build the environment your applications will run in. Understand file system types, init systems, and how to create minimal rootfs images for production.</p>
+                <div class="rm-topics">
+                  <span class="rm-topic">BusyBox</span>
+                  <span class="rm-topic">systemd</span>
+                  <span class="rm-topic">SysVinit</span>
+                  <span class="rm-topic">ext4 / squashfs / tmpfs / overlayfs</span>
+                  <span class="rm-topic">NFS for Development</span>
+                  <span class="rm-topic">initramfs</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="stage-10" class="rm-stage fade-up">
+              <div class="rm-stage-card">
+                <div class="rm-stage-head">
+                  <div class="rm-stage-icon"><i class="fas fa-layer-group"></i></div>
+                  <div class="rm-stage-title-group">
+                    <div class="rm-stage-num-label">Stage 10</div>
+                    <h3>Build Systems — Yocto &amp; Buildroot</h3>
+                  </div>
+                </div>
+                <p>Automate the entire toolchain, kernel, rootfs, and package build. Learn Buildroot for simplicity and Yocto/OpenEmbedded for production-grade flexibility.</p>
+                <div class="rm-topics">
+                  <span class="rm-topic">Buildroot Basics</span>
+                  <span class="rm-topic">Buildroot Packages &amp; Board Config</span>
+                  <span class="rm-topic">BitBake &amp; Recipes</span>
+                  <span class="rm-topic">Yocto Layers</span>
+                  <span class="rm-topic">Custom Distro</span>
+                  <span class="rm-topic">SDK Generation</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="rm-phase-gap fade-up">
+          <div class="rm-gap-line"></div>
+          <div class="rm-gap-arrow"><i class="fas fa-chevron-down"></i></div>
+          <div class="rm-gap-line"></div>
+        </div>
+
+        <!-- Phase 05 -->
+        <div id="phase-05" class="rm-phase rm-c5 fade-up">
+          <div class="rm-phase-banner">
+            <span class="rm-phase-badge">Phase 05</span>
+            <div class="rm-phase-text">
+              <div class="rm-phase-name">Production Engineer</div>
+              <div class="rm-phase-sub">Debugging, Profiling &amp; Advanced Topics</div>
+            </div>
+            <i class="fas fa-rocket rm-phase-icon-lg"></i>
+          </div>
+
+          <div class="rm-stages">
+
+            <div id="stage-11" class="rm-stage fade-up">
+              <div class="rm-stage-card">
+                <div class="rm-stage-head">
+                  <div class="rm-stage-icon"><i class="fas fa-bug"></i></div>
+                  <div class="rm-stage-title-group">
+                    <div class="rm-stage-num-label">Stage 11</div>
+                    <h3>Debugging &amp; Profiling</h3>
+                  </div>
+                </div>
+                <p>Find and fix problems in kernel space and user space. Use GDB cross-debugging, trace system calls, profile CPU and memory, and debug with JTAG on real hardware.</p>
+                <div class="rm-topics">
+                  <span class="rm-topic">GDB + gdbserver</span>
+                  <span class="rm-topic">strace / ltrace</span>
+                  <span class="rm-topic">perf</span>
+                  <span class="rm-topic">Valgrind / ASan</span>
+                  <span class="rm-topic">JTAG / OpenOCD</span>
+                  <span class="rm-topic">crash &amp; kdump</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="stage-12" class="rm-stage fade-up">
+              <div class="rm-stage-card">
+                <div class="rm-stage-head">
+                  <div class="rm-stage-icon"><i class="fas fa-rocket"></i></div>
+                  <div class="rm-stage-title-group">
+                    <div class="rm-stage-num-label">Stage 12</div>
+                    <h3>Advanced System Topics</h3>
+                  </div>
+                </div>
+                <p>Production-ready systems require real-time guarantees, security hardening, and robust update mechanisms. These topics separate engineers from experts.</p>
+                <div class="rm-topics">
+                  <span class="rm-topic">PREEMPT_RT</span>
+                  <span class="rm-topic">Latency Analysis</span>
+                  <span class="rm-topic">SELinux / AppArmor</span>
+                  <span class="rm-topic">Secure Boot</span>
+                  <span class="rm-topic">OTA Updates (SWUpdate / RAUC)</span>
+                  <span class="rm-topic">Power Management</span>
+                  <span class="rm-topic">Containers on Embedded</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /roadmap-v2 -->
+    </main>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Guide Sidebar
+    ══════════════════════════════════ -->
+    <aside class="rm-topics-sidebar">
+      <div class="rm-topics-header">
+        <i class="fas fa-list-check"></i>
+        <span>All Topics</span>
+      </div>
+
+      <!-- Phase 01 · Linux User -->
+      <div class="rm-topics-group rm-c1">
+        <div class="rm-topics-phase-label">Phase 01 · Linux User</div>
+        <div class="rm-topics-chips">
+          <a href="{{ '/linux-user/filesystem-navigation/' | relative_url }}" class="rm-topic-chip">Filesystem Navigation</a>
+          <a href="{{ '/linux-user/users-permissions/' | relative_url }}" class="rm-topic-chip">Users &amp; Permissions</a>
+          <a href="{{ '/linux-user/process-management/' | relative_url }}" class="rm-topic-chip">Process Management</a>
+          <a href="{{ '/linux-user/package-management/' | relative_url }}" class="rm-topic-chip">Package Management</a>
+          <a href="{{ '/linux-user/networking/' | relative_url }}" class="rm-topic-chip">Networking Basics</a>
+          <a href="{{ '/linux-user/ssh/' | relative_url }}" class="rm-topic-chip">SSH &amp; Remote Access</a>
+          <a href="{{ '/linux-user/cron/' | relative_url }}" class="rm-topic-chip">Cron &amp; Scheduling</a>
+          <a href="{{ '/linux-user/bash-scripting/' | relative_url }}" class="rm-topic-chip">Bash Scripting</a>
+          <a href="{{ '/linux-user/git/' | relative_url }}" class="rm-topic-chip">Git Basics</a>
+        </div>
+      </div>
+
+      <!-- Phase 02 · Linux Developer -->
+      <div class="rm-topics-group rm-c2">
+        <div class="rm-topics-phase-label">Phase 02 · Linux Developer</div>
+        <div class="rm-topics-chips">
+          <a href="{{ '/linux-developer/c-programming/pointers-memory/' | relative_url }}" class="rm-topic-chip">Pointers &amp; Memory</a>
+          <a href="{{ '/linux-developer/c-programming/structs-unions/' | relative_url }}" class="rm-topic-chip">Structs &amp; Unions</a>
+          <a href="{{ '/linux-developer/c-programming/file-io/' | relative_url }}" class="rm-topic-chip">File I/O</a>
+          <a href="{{ '/linux-developer/c-programming/dynamic-allocation/' | relative_url }}" class="rm-topic-chip">Dynamic Allocation</a>
+          <a href="{{ '/linux-developer/c-programming/makefiles/' | relative_url }}" class="rm-topic-chip">Makefiles</a>
+          <a href="{{ '/linux-developer/c-programming/gcc-optimization/' | relative_url }}" class="rm-topic-chip">GCC Optimization</a>
+          <a href="{{ '/linux-developer/c-programming/gdb/' | relative_url }}" class="rm-topic-chip">GDB Basics</a>
+          <a href="{{ '/linux-developer/cpp/oop-raii/' | relative_url }}" class="rm-topic-chip">OOP &amp; RAII</a>
+          <a href="{{ '/linux-developer/cpp/templates-stl/' | relative_url }}" class="rm-topic-chip">Templates &amp; STL</a>
+          <a href="{{ '/linux-developer/cpp/smart-pointers/' | relative_url }}" class="rm-topic-chip">Smart Pointers</a>
+          <a href="{{ '/linux-developer/cpp/move-semantics/' | relative_url }}" class="rm-topic-chip">Move Semantics</a>
+          <a href="{{ '/linux-developer/cpp/cmake/' | relative_url }}" class="rm-topic-chip">CMake</a>
+          <a href="{{ '/linux-developer/cpp/qt/' | relative_url }}" class="rm-topic-chip">Qt Framework</a>
+          <a href="{{ '/linux-developer/cpp/cpp17-cpp20/' | relative_url }}" class="rm-topic-chip">C++17 / C++20</a>
+          <a href="{{ '/linux-developer/posix/processes-fork/' | relative_url }}" class="rm-topic-chip">Processes &amp; fork()</a>
+          <a href="{{ '/linux-developer/posix/signals/' | relative_url }}" class="rm-topic-chip">Signals</a>
+          <a href="{{ '/linux-developer/posix/pthreads/' | relative_url }}" class="rm-topic-chip">Pthreads</a>
+          <a href="{{ '/linux-developer/posix/unix-sockets/' | relative_url }}" class="rm-topic-chip">UNIX Sockets</a>
+          <a href="{{ '/linux-developer/posix/mutexes-semaphores/' | relative_url }}" class="rm-topic-chip">Mutexes &amp; Semaphores</a>
+          <a href="{{ '/linux-developer/posix/pipes-ipc/' | relative_url }}" class="rm-topic-chip">Pipes &amp; Shared Memory</a>
+          <a href="{{ '/linux-developer/posix/file-io/' | relative_url }}" class="rm-topic-chip">POSIX File I/O</a>
+        </div>
+      </div>
+
+      <!-- Phase 03 · Embedded Linux -->
+      <div class="rm-topics-group rm-c3">
+        <div class="rm-topics-phase-label">Phase 03 · Embedded Linux</div>
+        <div class="rm-topics-chips">
+          <a href="{{ '/embedded-linux/cross-compilation/gnu-toolchain/' | relative_url }}" class="rm-topic-chip">GNU Toolchain</a>
+          <a href="{{ '/embedded-linux/cross-compilation/sysroot-libraries/' | relative_url }}" class="rm-topic-chip">Sysroot &amp; Libraries</a>
+          <a href="{{ '/embedded-linux/cross-compilation/static-dynamic-linking/' | relative_url }}" class="rm-topic-chip">Static vs Dynamic Linking</a>
+          <a href="{{ '/embedded-linux/cross-compilation/qemu-emulation/' | relative_url }}" class="rm-topic-chip">QEMU Emulation</a>
+          <a href="{{ '/embedded-linux/cross-compilation/binary-analysis/' | relative_url }}" class="rm-topic-chip">readelf / objdump / nm</a>
+          <a href="{{ '/embedded-linux/cross-compilation/cross-compile-cmake/' | relative_url }}" class="rm-topic-chip">Cross-Compile with CMake</a>
+          <a href="{{ '/embedded-linux/uboot/boot-sequence/' | relative_url }}" class="rm-topic-chip">Boot Sequence</a>
+          <a href="{{ '/embedded-linux/uboot/uboot-config-build/' | relative_url }}" class="rm-topic-chip">U-Boot Config &amp; Build</a>
+          <a href="{{ '/embedded-linux/uboot/uboot-commands/' | relative_url }}" class="rm-topic-chip">U-Boot Commands</a>
+          <a href="{{ '/embedded-linux/uboot/device-tree/' | relative_url }}" class="rm-topic-chip">Device Tree (DTS)</a>
+          <a href="{{ '/embedded-linux/uboot/board-porting/' | relative_url }}" class="rm-topic-chip">Board Porting</a>
+          <a href="{{ '/embedded-linux/uboot/tftp-boot/' | relative_url }}" class="rm-topic-chip">TFTP &amp; Network Boot</a>
+          <a href="{{ '/embedded-linux/kernel/kconfig-menuconfig/' | relative_url }}" class="rm-topic-chip">Kconfig &amp; menuconfig</a>
+          <a href="{{ '/embedded-linux/kernel/kernel-compilation/' | relative_url }}" class="rm-topic-chip">Kernel Compilation</a>
+          <a href="{{ '/embedded-linux/kernel/boot-parameters/' | relative_url }}" class="rm-topic-chip">Boot Parameters</a>
+          <a href="{{ '/embedded-linux/kernel/kernel-subsystems/' | relative_url }}" class="rm-topic-chip">Kernel Subsystems</a>
+          <a href="{{ '/embedded-linux/kernel/printk-debug/' | relative_url }}" class="rm-topic-chip">printk &amp; Dynamic Debug</a>
+          <a href="{{ '/embedded-linux/kernel/ftrace-kprobes/' | relative_url }}" class="rm-topic-chip">ftrace &amp; kprobes</a>
+        </div>
+      </div>
+
+      <!-- Phase 04 · Kernel Developer -->
+      <div class="rm-topics-group rm-c4">
+        <div class="rm-topics-phase-label">Phase 04 · Kernel Developer</div>
+        <div class="rm-topics-chips">
+          <a href="{{ '/kernel-developer/device-drivers/kernel-modules/' | relative_url }}" class="rm-topic-chip">Kernel Modules</a>
+          <a href="{{ '/kernel-developer/device-drivers/character-devices/' | relative_url }}" class="rm-topic-chip">Character Devices</a>
+          <a href="{{ '/kernel-developer/device-drivers/platform-drivers/' | relative_url }}" class="rm-topic-chip">Platform Drivers</a>
+          <a href="{{ '/kernel-developer/device-drivers/interrupts-timers/' | relative_url }}" class="rm-topic-chip">Interrupts &amp; Timers</a>
+          <a href="{{ '/kernel-developer/device-drivers/i2c-spi-uart/' | relative_url }}" class="rm-topic-chip">I2C / SPI / UART</a>
+          <a href="{{ '/kernel-developer/device-drivers/sysfs-procfs/' | relative_url }}" class="rm-topic-chip">sysfs &amp; procfs</a>
+          <a href="{{ '/kernel-developer/device-drivers/dma/' | relative_url }}" class="rm-topic-chip">DMA</a>
+          <a href="{{ '/kernel-developer/rootfs/busybox/' | relative_url }}" class="rm-topic-chip">BusyBox</a>
+          <a href="{{ '/kernel-developer/rootfs/systemd/' | relative_url }}" class="rm-topic-chip">systemd</a>
+          <a href="{{ '/kernel-developer/rootfs/sysvinit/' | relative_url }}" class="rm-topic-chip">SysVinit</a>
+          <a href="{{ '/kernel-developer/rootfs/filesystems/' | relative_url }}" class="rm-topic-chip">Filesystem Types</a>
+          <a href="{{ '/kernel-developer/rootfs/nfs-initramfs/' | relative_url }}" class="rm-topic-chip">NFS &amp; initramfs</a>
+          <a href="{{ '/kernel-developer/build-systems/buildroot-basics/' | relative_url }}" class="rm-topic-chip">Buildroot Basics</a>
+          <a href="{{ '/kernel-developer/build-systems/bitbake-recipes/' | relative_url }}" class="rm-topic-chip">BitBake &amp; Recipes</a>
+          <a href="{{ '/kernel-developer/build-systems/yocto-layers/' | relative_url }}" class="rm-topic-chip">Yocto Layers</a>
+          <a href="{{ '/kernel-developer/build-systems/sdk-generation/' | relative_url }}" class="rm-topic-chip">SDK Generation</a>
+        </div>
+      </div>
+
+      <!-- Phase 05 · Production -->
+      <div class="rm-topics-group rm-c5">
+        <div class="rm-topics-phase-label">Phase 05 · Production Engineer</div>
+        <div class="rm-topics-chips">
+          <a href="#stage-11" class="rm-topic-chip">GDB + gdbserver</a>
+          <a href="#stage-11" class="rm-topic-chip">strace / ltrace</a>
+          <a href="#stage-11" class="rm-topic-chip">perf</a>
+          <a href="#stage-11" class="rm-topic-chip">Valgrind / ASan</a>
+          <a href="#stage-11" class="rm-topic-chip">JTAG / OpenOCD</a>
+          <a href="#stage-11" class="rm-topic-chip">crash &amp; kdump</a>
+          <a href="#stage-12" class="rm-topic-chip">PREEMPT_RT</a>
+          <a href="#stage-12" class="rm-topic-chip">Latency Analysis</a>
+          <a href="#stage-12" class="rm-topic-chip">SELinux / AppArmor</a>
+          <a href="#stage-12" class="rm-topic-chip">Secure Boot</a>
+          <a href="#stage-12" class="rm-topic-chip">OTA Updates</a>
+          <a href="#stage-12" class="rm-topic-chip">Power Management</a>
+          <a href="#stage-12" class="rm-topic-chip">Containers on Embedded</a>
+        </div>
+      </div>
+
+    </aside>
+
+  </div><!-- /roadmap-3col -->
+</div>

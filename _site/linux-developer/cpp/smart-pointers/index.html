@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Pointers · Eslam Mohamed</title>
+  <meta name="description" content="Replace raw pointers with C++ smart pointers — unique_ptr for exclusive ownership, shared_ptr with reference counting, weak_ptr to break cycles, and custom deleters." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/cpp/">C++ Programming</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Smart Pointers</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 03</span>
+      </div>
+      <h1 class="guide-title">Smart Pointers</h1>
+      <p class="guide-subtitle">Replace raw pointers with C++ smart pointers — unique_ptr for exclusive ownership, shared_ptr with reference counting, weak_ptr to break cycles, and custom deleters.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="why-smart-pointers">Why Smart Pointers?</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>Raw pointers require manual <code class="language-plaintext highlighter-rouge">delete</code> — easy to forget on early returns, exceptions, or complex control flow. Smart pointers are RAII wrappers that <strong>automatically delete</strong> the managed object when it goes out of scope.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Raw pointer — who deletes it? When?</span>
+<span class="kt">void</span> <span class="nf">bad</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">int</span><span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">some_condition</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>   <span class="c1">// LEAK — delete never called</span>
+    <span class="k">delete</span> <span class="n">p</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Smart pointer — always cleaned up</span>
+<span class="kt">void</span> <span class="n">good</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">auto</span> <span class="n">p</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">some_condition</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>   <span class="c1">// OK — destructor runs, no leak</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Smart Pointer</th>
+      <th>Ownership</th>
+      <th>When to Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">unique_ptr&lt;T&gt;</code></td>
+      <td>Exclusive (one owner)</td>
+      <td>Default choice for heap objects</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">shared_ptr&lt;T&gt;</code></td>
+      <td>Shared (ref-counted)</td>
+      <td>Multiple owners needed</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">weak_ptr&lt;T&gt;</code></td>
+      <td>Non-owning observer</td>
+      <td>Break <code class="language-plaintext highlighter-rouge">shared_ptr</code> cycles</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 class="gc-basic" id="stdunique_ptr"><code class="language-plaintext highlighter-rouge">std::unique_ptr</code></h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p><code class="language-plaintext highlighter-rouge">unique_ptr</code> models <strong>exclusive ownership</strong>. It cannot be copied — only moved. Zero overhead over a raw pointer.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;memory&gt;</span><span class="cp">
+</span>
+<span class="c1">// Preferred: make_unique (C++14)</span>
+<span class="k">auto</span> <span class="n">sensor</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Sensor</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">42</span><span class="p">,</span> <span class="mf">23.5</span><span class="n">f</span><span class="p">);</span>
+
+<span class="c1">// Access like a raw pointer</span>
+<span class="n">sensor</span><span class="o">-&gt;</span><span class="n">activate</span><span class="p">();</span>
+<span class="kt">float</span> <span class="n">v</span> <span class="o">=</span> <span class="n">sensor</span><span class="o">-&gt;</span><span class="n">read</span><span class="p">();</span>
+
+<span class="c1">// unique_ptr is non-copyable, movable</span>
+<span class="k">auto</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">sensor</span><span class="p">);</span>  <span class="c1">// sensor is now null; s2 owns it</span>
+<span class="c1">// sensor.get() == nullptr</span>
+
+<span class="c1">// Release ownership (raw pointer — you own it now)</span>
+<span class="n">Sensor</span><span class="o">*</span> <span class="n">raw</span> <span class="o">=</span> <span class="n">s2</span><span class="p">.</span><span class="n">release</span><span class="p">();</span>
+<span class="k">delete</span> <span class="n">raw</span><span class="p">;</span>  <span class="c1">// now you must delete it</span>
+
+<span class="c1">// Reset to a new object (old object destroyed)</span>
+<span class="n">s2</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="k">new</span> <span class="nf">Sensor</span><span class="p">(</span><span class="mi">99</span><span class="p">,</span> <span class="mf">0.0</span><span class="n">f</span><span class="p">));</span>
+<span class="n">s2</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>  <span class="c1">// destroys and sets to null</span>
+</code></pre></div></div>
+
+<h3 id="factory-functions-with-unique_ptr">Factory Functions with <code class="language-plaintext highlighter-rouge">unique_ptr</code></h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Return unique_ptr from factory functions</span>
+<span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">IDevice</span><span class="o">&gt;</span> <span class="n">create_device</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">type</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">type</span> <span class="o">==</span> <span class="s">"uart"</span><span class="p">)</span>  <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">UartDevice</span><span class="o">&gt;</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">type</span> <span class="o">==</span> <span class="s">"spi"</span><span class="p">)</span>   <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">SpiDevice</span><span class="o">&gt;</span><span class="p">();</span>
+    <span class="k">return</span> <span class="nb">nullptr</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Caller takes ownership</span>
+<span class="k">auto</span> <span class="n">dev</span> <span class="o">=</span> <span class="n">create_device</span><span class="p">(</span><span class="s">"uart"</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">dev</span><span class="p">)</span> <span class="n">dev</span><span class="o">-&gt;</span><span class="n">open</span><span class="p">(</span><span class="s">"/dev/ttyS0"</span><span class="p">);</span>
+<span class="c1">// dev destroyed when it goes out of scope</span>
+</code></pre></div></div>
+
+<h3 id="unique_ptr-for-arrays"><code class="language-plaintext highlighter-rouge">unique_ptr</code> for Arrays</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// unique_ptr manages array correctly (calls delete[])</span>
+<span class="k">auto</span> <span class="n">buf</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="p">[]</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1024</span><span class="p">);</span>
+<span class="n">buf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mh">0xFF</span><span class="p">;</span>
+<span class="c1">// But prefer std::vector&lt;uint8_t&gt; for dynamic arrays!</span>
+</code></pre></div></div>
+
+<h3 id="custom-deleter">Custom Deleter</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Custom deleter for C file handles</span>
+<span class="k">auto</span> <span class="n">fp</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="kt">FILE</span><span class="p">,</span> <span class="k">decltype</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fclose</span><span class="p">)</span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="n">fopen</span><span class="p">(</span><span class="s">"/etc/hostname"</span><span class="p">,</span> <span class="s">"r"</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">fclose</span><span class="p">);</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">fp</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="n">line</span><span class="p">[</span><span class="mi">128</span><span class="p">];</span>
+    <span class="n">fgets</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">line</span><span class="p">),</span> <span class="n">fp</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">puts</span><span class="p">(</span><span class="n">line</span><span class="p">);</span>
+<span class="p">}</span>  <span class="c1">// fclose called automatically</span>
+
+<span class="c1">// Useful for OS resources (file descriptors, sockets)</span>
+<span class="k">struct</span> <span class="nc">FdDeleter</span> <span class="p">{</span>
+    <span class="kt">void</span> <span class="k">operator</span><span class="p">()(</span><span class="kt">int</span><span class="o">*</span> <span class="n">fd</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">fd</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="n">close</span><span class="p">(</span><span class="o">*</span><span class="n">fd</span><span class="p">);</span>
+        <span class="k">delete</span> <span class="n">fd</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="stdshared_ptr"><code class="language-plaintext highlighter-rouge">std::shared_ptr</code></h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<p><code class="language-plaintext highlighter-rouge">shared_ptr</code> uses <strong>reference counting</strong>. The managed object is destroyed when the last <code class="language-plaintext highlighter-rouge">shared_ptr</code> to it is destroyed.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// make_shared allocates object + control block in one allocation (efficient)</span>
+<span class="k">auto</span> <span class="n">a</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">Sensor</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.0</span><span class="n">f</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>   <span class="c1">// copy: both a and b own the sensor</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">a</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span>  <span class="c1">// 2</span>
+
+<span class="p">{</span>
+    <span class="k">auto</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>  <span class="c1">// use_count = 3</span>
+<span class="p">}</span>   <span class="c1">// c destroyed: use_count = 2</span>
+
+<span class="n">a</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>   <span class="c1">// a released: use_count = 1</span>
+<span class="c1">// b still holds the sensor; it's alive</span>
+<span class="c1">// b goes out of scope: use_count = 0 → Sensor destroyed</span>
+</code></pre></div></div>
+
+<h3 id="shared-ownership-example">Shared Ownership Example</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="nc">EventBus</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Sensor</span><span class="o">&gt;&gt;</span> <span class="n">subscribers</span><span class="p">;</span>
+
+    <span class="kt">void</span> <span class="n">subscribe</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Sensor</span><span class="o">&gt;</span> <span class="n">s</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">subscribers</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">s</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="kt">void</span> <span class="n">broadcast</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">s</span> <span class="o">:</span> <span class="n">subscribers</span><span class="p">)</span>
+            <span class="n">s</span><span class="o">-&gt;</span><span class="n">activate</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">auto</span> <span class="n">s1</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">Sensor</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.0</span><span class="n">f</span><span class="p">);</span>
+<span class="n">EventBus</span> <span class="n">bus</span><span class="p">;</span>
+<span class="n">bus</span><span class="p">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">s1</span><span class="p">);</span>    <span class="c1">// bus and caller both own s1</span>
+
+<span class="c1">// s1 is still alive as long as bus holds a copy</span>
+</code></pre></div></div>
+
+<h3 id="shared_ptr-performance-considerations"><code class="language-plaintext highlighter-rouge">shared_ptr</code> Performance Considerations</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// make_shared: single allocation (object + control block)</span>
+<span class="k">auto</span> <span class="n">good</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">Sensor</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.0</span><span class="n">f</span><span class="p">);</span>  <span class="c1">// ✓</span>
+
+<span class="c1">// Direct constructor: two allocations</span>
+<span class="k">auto</span> <span class="n">bad</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Sensor</span><span class="o">&gt;</span><span class="p">(</span><span class="k">new</span> <span class="nf">Sensor</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.0</span><span class="n">f</span><span class="p">));</span>  <span class="c1">// ✗</span>
+
+<span class="c1">// Thread safety: ref-count operations are atomic, but the object itself is NOT</span>
+<span class="c1">// Use mutex to protect shared object data when accessed from multiple threads</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="stdweak_ptr"><code class="language-plaintext highlighter-rouge">std::weak_ptr</code></h2>
+
+<p><code class="language-plaintext highlighter-rouge">weak_ptr</code> holds a <strong>non-owning reference</strong> to a <code class="language-plaintext highlighter-rouge">shared_ptr</code>-managed object. It does not affect the reference count. Use it to <strong>break reference cycles</strong> and to observe objects without keeping them alive.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="nc">Node</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">value</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&gt;</span> <span class="n">next</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">weak_ptr</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&gt;</span>   <span class="n">parent</span><span class="p">;</span>  <span class="c1">// ← weak to break cycle</span>
+    <span class="n">Node</span><span class="p">(</span><span class="kt">int</span> <span class="n">v</span><span class="p">)</span> <span class="o">:</span> <span class="n">value</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="p">{}</span>
+<span class="p">};</span>
+
+<span class="k">auto</span> <span class="n">root</span>  <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">child</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+
+<span class="n">root</span><span class="o">-&gt;</span><span class="n">next</span>   <span class="o">=</span> <span class="n">child</span><span class="p">;</span>        <span class="c1">// root owns child (strong)</span>
+<span class="n">child</span><span class="o">-&gt;</span><span class="n">parent</span> <span class="o">=</span> <span class="n">root</span><span class="p">;</span>        <span class="c1">// child observes root (weak — no cycle!)</span>
+
+<span class="c1">// To use a weak_ptr, promote to shared_ptr (may return nullptr)</span>
+<span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">p</span> <span class="o">=</span> <span class="n">child</span><span class="o">-&gt;</span><span class="n">parent</span><span class="p">.</span><span class="n">lock</span><span class="p">())</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"parent value: "</span> <span class="o">&lt;&lt;</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">value</span> <span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span>  <span class="c1">// 1</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"parent is gone</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="cycle-without-weak_ptr--memory-leak">Cycle Without <code class="language-plaintext highlighter-rouge">weak_ptr</code> — Memory Leak</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="nc">BadNode</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">BadNode</span><span class="o">&gt;</span> <span class="n">next</span><span class="p">;</span>   <span class="c1">// shared both ways = cycle = leak!</span>
+<span class="p">};</span>
+<span class="k">auto</span> <span class="n">a</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">BadNode</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="k">auto</span> <span class="n">b</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">BadNode</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="n">a</span><span class="o">-&gt;</span><span class="n">next</span> <span class="o">=</span> <span class="n">b</span><span class="p">;</span>
+<span class="n">b</span><span class="o">-&gt;</span><span class="n">next</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>  <span class="c1">// a and b keep each other alive forever</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="ownership-guidelines">Ownership Guidelines</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1. Use unique_ptr by default.
+2. Use shared_ptr only when ownership is genuinely shared.
+3. Use weak_ptr to break shared_ptr cycles.
+4. Pass by raw pointer or reference when NOT transferring ownership.
+5. Never mix raw new/delete with smart pointers for the same object.
+</code></pre></div></div>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Function signatures that express ownership clearly:</span>
+
+<span class="c1">// Takes ownership (caller must pass owned pointer)</span>
+<span class="kt">void</span> <span class="nf">take_device</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">IDevice</span><span class="o">&gt;</span> <span class="n">dev</span><span class="p">);</span>
+
+<span class="c1">// Borrows (caller keeps ownership, function doesn't store it)</span>
+<span class="kt">void</span> <span class="nf">use_device</span><span class="p">(</span><span class="n">IDevice</span><span class="o">&amp;</span> <span class="n">dev</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">use_device</span><span class="p">(</span><span class="n">IDevice</span><span class="o">*</span> <span class="n">dev</span><span class="p">);</span>  <span class="c1">// nullable borrow</span>
+
+<span class="c1">// Shares ownership (function may outlive the call)</span>
+<span class="kt">void</span> <span class="nf">register_device</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">IDevice</span><span class="o">&gt;</span> <span class="n">dev</span><span class="p">);</span>
+
+<span class="c1">// Observes without owning</span>
+<span class="kt">void</span> <span class="nf">observe</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">weak_ptr</span><span class="o">&lt;</span><span class="n">IDevice</span><span class="o">&gt;</span> <span class="n">dev</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="enable_shared_from_this"><code class="language-plaintext highlighter-rouge">enable_shared_from_this</code></h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// When an object needs to create a shared_ptr to itself:</span>
+<span class="k">class</span> <span class="nc">Server</span> <span class="o">:</span> <span class="k">public</span> <span class="n">std</span><span class="o">::</span><span class="n">enable_shared_from_this</span><span class="o">&lt;</span><span class="n">Server</span><span class="o">&gt;</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="kt">void</span> <span class="n">start_session</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">auto</span> <span class="n">self</span> <span class="o">=</span> <span class="n">shared_from_this</span><span class="p">();</span>  <span class="c1">// safe — returns shared_ptr&lt;Server&gt;</span>
+        <span class="c1">// pass self to async callback; keeps Server alive</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="c1">// Only valid when Server is already managed by a shared_ptr:</span>
+<span class="k">auto</span> <span class="n">srv</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">Server</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="n">srv</span><span class="o">-&gt;</span><span class="n">start_session</span><span class="p">();</span>  <span class="c1">// OK</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: When do you use <code class="language-plaintext highlighter-rouge">unique_ptr</code> vs <code class="language-plaintext highlighter-rouge">shared_ptr</code>?</strong></p>
+
+<blockquote>
+  <p>Use <code class="language-plaintext highlighter-rouge">unique_ptr</code> when exactly one owner holds the resource — it has zero overhead and expresses exclusive ownership clearly. Use <code class="language-plaintext highlighter-rouge">shared_ptr</code> only when multiple independent owners genuinely need to share the resource and the last owner should destroy it. Shared ownership is a design smell in many cases — prefer restructuring code to use unique ownership. A good heuristic: start with <code class="language-plaintext highlighter-rouge">unique_ptr</code>; only promote to <code class="language-plaintext highlighter-rouge">shared_ptr</code> when you cannot avoid it.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: What does <code class="language-plaintext highlighter-rouge">make_unique</code> and <code class="language-plaintext highlighter-rouge">make_shared</code> do differently from <code class="language-plaintext highlighter-rouge">new</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">make_unique&lt;T&gt;(args)</code> constructs T with <code class="language-plaintext highlighter-rouge">new</code>, wraps it in <code class="language-plaintext highlighter-rouge">unique_ptr&lt;T&gt;</code>, and (critically) is exception-safe — if the constructor throws after the allocation, the pointer is correctly destroyed. <code class="language-plaintext highlighter-rouge">make_shared&lt;T&gt;(args)</code> additionally allocates the T object and its reference-count control block in a <strong>single allocation</strong>, which is more cache-friendly and efficient than <code class="language-plaintext highlighter-rouge">shared_ptr&lt;T&gt;(new T(args))</code> which requires two allocations.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: What is a <code class="language-plaintext highlighter-rouge">weak_ptr</code> cycle and how does <code class="language-plaintext highlighter-rouge">weak_ptr</code> fix it?</strong></p>
+
+<blockquote>
+  <p>When two objects hold <code class="language-plaintext highlighter-rouge">shared_ptr</code> to each other, their reference counts never reach zero — a memory leak. <code class="language-plaintext highlighter-rouge">weak_ptr</code> holds a reference to the object without incrementing its reference count. The object can be destroyed while <code class="language-plaintext highlighter-rouge">weak_ptr</code> remains; calling <code class="language-plaintext highlighter-rouge">lock()</code> returns a <code class="language-plaintext highlighter-rouge">shared_ptr</code> or <code class="language-plaintext highlighter-rouge">nullptr</code> if the object is gone. By replacing one of the <code class="language-plaintext highlighter-rouge">shared_ptr</code> members with <code class="language-plaintext highlighter-rouge">weak_ptr</code> (e.g. parent→child is strong, child→parent is weak), the cycle is broken and normal destruction occurs.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: Is <code class="language-plaintext highlighter-rouge">shared_ptr</code> thread-safe?</strong></p>
+
+<blockquote>
+  <p>The <strong>reference-count operations</strong> (copy, destroy) are thread-safe — they use atomic increments/decrements. However, the <strong>managed object itself</strong> is not protected by <code class="language-plaintext highlighter-rouge">shared_ptr</code>. Two threads accessing the same object through different <code class="language-plaintext highlighter-rouge">shared_ptr</code> copies must synchronise access to the object’s data themselves (mutex, atomics, etc.). Also, concurrent read-and-write access to the same <code class="language-plaintext highlighter-rouge">shared_ptr</code> variable (not the managed object) is not safe — you need a mutex or <code class="language-plaintext highlighter-rouge">atomic&lt;shared_ptr&gt;</code> (C++20).</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>cppreference — unique_ptr</td>
+      <td><a href="https://en.cppreference.com/w/cpp/memory/unique_ptr">en.cppreference.com/w/cpp/memory/unique_ptr</a></td>
+    </tr>
+    <tr>
+      <td>cppreference — shared_ptr</td>
+      <td><a href="https://en.cppreference.com/w/cpp/memory/shared_ptr">en.cppreference.com/w/cpp/memory/shared_ptr</a></td>
+    </tr>
+    <tr>
+      <td>C++ Core Guidelines — Resource management</td>
+      <td><a href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-resource">isocpp.github.io/CppCoreGuidelines#S-resource</a></td>
+    </tr>
+    <tr>
+      <td>Herb Sutter — GotW #89: Smart Pointers</td>
+      <td><a href="https://herbsutter.com/2013/05/29/gotw-89-solution-smart-pointers/">herbsutter.com/2013/05/29/gotw-89-solution-smart-pointers</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-code"></i>
+        <span>C++ Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/cpp/oop-raii/" class="gtn-link ">
+          <i class="fas fa-object-group"></i> OOP &amp; RAII
+        </a>
+        <a href="/linux-developer/cpp/templates-stl/" class="gtn-link ">
+          <i class="fas fa-shapes"></i> Templates &amp; STL
+        </a>
+        <a href="/linux-developer/cpp/smart-pointers/" class="gtn-link gts-active">
+          <i class="fas fa-wand-magic-sparkles"></i> Smart Pointers
+        </a>
+        <a href="/linux-developer/cpp/move-semantics/" class="gtn-link ">
+          <i class="fas fa-right-left"></i> Move Semantics
+        </a>
+        <a href="/linux-developer/cpp/cmake/" class="gtn-link ">
+          <i class="fas fa-hammer"></i> CMake
+        </a>
+        <a href="/linux-developer/cpp/qt/" class="gtn-link ">
+          <i class="fas fa-window-maximize"></i> Qt Framework
+        </a>
+        <a href="/linux-developer/cpp/cpp17-cpp20/" class="gtn-link ">
+          <i class="fas fa-star"></i> C++17 / C++20
+        </a>
+      </nav>
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/cpp/templates-stl/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Templates & STL</span>
+      </a>
+      
+      
+      <a href="/linux-developer/cpp/move-semantics/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Move Semantics</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

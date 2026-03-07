@@ -1,0 +1,328 @@
+---
+layout: default
+---
+
+<div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="{{ '/' | relative_url }}">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{{ page.phase_index | default: '/linux-user/' | relative_url }}">{{ page.phase_name | default: 'Linux User Guide' }}</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{{ page.title }}</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">{{ page.phase_label | default: 'Phase 01 — Linux User' }}</span>
+        <span class="guide-stage-pill">{{ page.stage }}</span>
+      </div>
+      <h1 class="guide-title">{{ page.title }}</h1>
+      <p class="guide-subtitle">{{ page.description }}</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      {{ content }}
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      {% if page.phase == 'linux-user' or page.phase == nil %}
+      <div class="gts-header">
+        <i class="fas fa-terminal"></i>
+        <span>Linux User Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="{{ '/linux-user/filesystem-navigation/' | relative_url }}" class="gtn-link {% if page.url contains 'filesystem' %}gts-active{% endif %}">
+          <i class="fas fa-folder-open"></i> Filesystem Navigation
+        </a>
+        <a href="{{ '/linux-user/users-permissions/' | relative_url }}" class="gtn-link {% if page.url contains 'users' %}gts-active{% endif %}">
+          <i class="fas fa-user-lock"></i> Users &amp; Permissions
+        </a>
+        <a href="{{ '/linux-user/process-management/' | relative_url }}" class="gtn-link {% if page.url contains 'process' %}gts-active{% endif %}">
+          <i class="fas fa-microchip"></i> Process Management
+        </a>
+        <a href="{{ '/linux-user/package-management/' | relative_url }}" class="gtn-link {% if page.url contains 'package' %}gts-active{% endif %}">
+          <i class="fas fa-box"></i> Package Management
+        </a>
+        <a href="{{ '/linux-user/networking/' | relative_url }}" class="gtn-link {% if page.url contains 'network' %}gts-active{% endif %}">
+          <i class="fas fa-network-wired"></i> Networking Basics
+        </a>
+        <a href="{{ '/linux-user/ssh/' | relative_url }}" class="gtn-link {% if page.url contains '/ssh/' %}gts-active{% endif %}">
+          <i class="fas fa-lock"></i> SSH &amp; Remote Access
+        </a>
+        <a href="{{ '/linux-user/cron/' | relative_url }}" class="gtn-link {% if page.url contains 'cron' %}gts-active{% endif %}">
+          <i class="fas fa-clock"></i> Cron &amp; Scheduling
+        </a>
+        <a href="{{ '/linux-user/bash-scripting/' | relative_url }}" class="gtn-link {% if page.url contains 'bash' %}gts-active{% endif %}">
+          <i class="fas fa-terminal"></i> Bash Scripting
+        </a>
+        <a href="{{ '/linux-user/git/' | relative_url }}" class="gtn-link {% if page.url contains '/git/' %}gts-active{% endif %}">
+          <i class="fab fa-git-alt"></i> Git Basics
+        </a>
+      </nav>
+      {% endif %}
+
+      <!-- ── C Programming Topics ── -->
+      {% if page.phase == 'linux-developer-c' %}
+      <div class="gts-header">
+        <i class="fas fa-file-code"></i>
+        <span>C Programming Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="{{ '/linux-developer/c-programming/pointers-memory/' | relative_url }}" class="gtn-link {% if page.url contains 'pointers' %}gts-active{% endif %}">
+          <i class="fas fa-memory"></i> Pointers &amp; Memory
+        </a>
+        <a href="{{ '/linux-developer/c-programming/structs-unions/' | relative_url }}" class="gtn-link {% if page.url contains 'structs' %}gts-active{% endif %}">
+          <i class="fas fa-cube"></i> Structs &amp; Unions
+        </a>
+        <a href="{{ '/linux-developer/c-programming/file-io/' | relative_url }}" class="gtn-link {% if page.url contains 'file-io' %}gts-active{% endif %}">
+          <i class="fas fa-file-code"></i> File I/O
+        </a>
+        <a href="{{ '/linux-developer/c-programming/dynamic-allocation/' | relative_url }}" class="gtn-link {% if page.url contains 'dynamic' %}gts-active{% endif %}">
+          <i class="fas fa-layer-group"></i> Dynamic Allocation
+        </a>
+        <a href="{{ '/linux-developer/c-programming/makefiles/' | relative_url }}" class="gtn-link {% if page.url contains 'makefile' %}gts-active{% endif %}">
+          <i class="fas fa-hammer"></i> Makefiles
+        </a>
+        <a href="{{ '/linux-developer/c-programming/gcc-optimization/' | relative_url }}" class="gtn-link {% if page.url contains 'gcc' %}gts-active{% endif %}">
+          <i class="fas fa-gears"></i> GCC Flags &amp; Optimization
+        </a>
+        <a href="{{ '/linux-developer/c-programming/gdb/' | relative_url }}" class="gtn-link {% if page.url contains '/gdb/' %}gts-active{% endif %}">
+          <i class="fas fa-bug"></i> GDB Debugging
+        </a>
+      </nav>
+      {% endif %}
+
+      <!-- ── C++ Programming Topics ── -->
+      {% if page.phase == 'linux-developer-cpp' %}
+      <div class="gts-header">
+        <i class="fas fa-code"></i>
+        <span>C++ Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="{{ '/linux-developer/cpp/oop-raii/' | relative_url }}" class="gtn-link {% if page.url contains 'oop' %}gts-active{% endif %}">
+          <i class="fas fa-object-group"></i> OOP &amp; RAII
+        </a>
+        <a href="{{ '/linux-developer/cpp/templates-stl/' | relative_url }}" class="gtn-link {% if page.url contains 'templates' %}gts-active{% endif %}">
+          <i class="fas fa-shapes"></i> Templates &amp; STL
+        </a>
+        <a href="{{ '/linux-developer/cpp/smart-pointers/' | relative_url }}" class="gtn-link {% if page.url contains 'smart' %}gts-active{% endif %}">
+          <i class="fas fa-wand-magic-sparkles"></i> Smart Pointers
+        </a>
+        <a href="{{ '/linux-developer/cpp/move-semantics/' | relative_url }}" class="gtn-link {% if page.url contains 'move' %}gts-active{% endif %}">
+          <i class="fas fa-right-left"></i> Move Semantics
+        </a>
+        <a href="{{ '/linux-developer/cpp/cmake/' | relative_url }}" class="gtn-link {% if page.url contains 'cmake' %}gts-active{% endif %}">
+          <i class="fas fa-hammer"></i> CMake
+        </a>
+        <a href="{{ '/linux-developer/cpp/qt/' | relative_url }}" class="gtn-link {% if page.url contains '/qt/' %}gts-active{% endif %}">
+          <i class="fas fa-window-maximize"></i> Qt Framework
+        </a>
+        <a href="{{ '/linux-developer/cpp/cpp17-cpp20/' | relative_url }}" class="gtn-link {% if page.url contains 'cpp17' %}gts-active{% endif %}">
+          <i class="fas fa-star"></i> C++17 / C++20
+        </a>
+      </nav>
+      {% endif %}
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      {% if page.phase == 'linux-developer-posix' %}
+      <div class="gts-header">
+        <i class="fas fa-network-wired"></i>
+        <span>POSIX &amp; Concurrency</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="{{ '/linux-developer/posix/file-io/' | relative_url }}" class="gtn-link {% if page.url contains 'file-io' %}gts-active{% endif %}">
+          <i class="fas fa-file-code"></i> POSIX File I/O
+        </a>
+        <a href="{{ '/linux-developer/posix/processes-fork/' | relative_url }}" class="gtn-link {% if page.url contains 'processes' %}gts-active{% endif %}">
+          <i class="fas fa-sitemap"></i> Processes &amp; fork()
+        </a>
+        <a href="{{ '/linux-developer/posix/signals/' | relative_url }}" class="gtn-link {% if page.url contains 'signals' %}gts-active{% endif %}">
+          <i class="fas fa-bolt"></i> Signals
+        </a>
+        <a href="{{ '/linux-developer/posix/unix-sockets/' | relative_url }}" class="gtn-link {% if page.url contains 'socket' %}gts-active{% endif %}">
+          <i class="fas fa-plug"></i> UNIX Sockets
+        </a>
+        <a href="{{ '/linux-developer/posix/pthreads/' | relative_url }}" class="gtn-link {% if page.url contains 'pthread' %}gts-active{% endif %}">
+          <i class="fas fa-microchip"></i> Pthreads
+        </a>
+        <a href="{{ '/linux-developer/posix/mutexes-semaphores/' | relative_url }}" class="gtn-link {% if page.url contains 'mutex' %}gts-active{% endif %}">
+          <i class="fas fa-lock"></i> Mutexes &amp; Semaphores
+        </a>
+        <a href="{{ '/linux-developer/posix/pipes-ipc/' | relative_url }}" class="gtn-link {% if page.url contains 'pipes' %}gts-active{% endif %}">
+          <i class="fas fa-arrows-left-right"></i> Pipes &amp; Shared Memory
+        </a>
+      </nav>
+      {% endif %}
+
+      <!-- ── Cross-Compilation Topics ── -->
+      {% if page.phase == 'embedded-linux-cross' %}
+      <div class="gts-header">
+        <i class="fas fa-gears"></i>
+        <span>Cross-Compilation Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="{{ '/embedded-linux/cross-compilation/gnu-toolchain/' | relative_url }}" class="gtn-link {% if page.url contains 'gnu-toolchain' %}gts-active{% endif %}">
+          <i class="fas fa-gears"></i> GNU Toolchain
+        </a>
+        <a href="{{ '/embedded-linux/cross-compilation/sysroot-libraries/' | relative_url }}" class="gtn-link {% if page.url contains 'sysroot' %}gts-active{% endif %}">
+          <i class="fas fa-folder-tree"></i> Sysroot &amp; Libraries
+        </a>
+        <a href="{{ '/embedded-linux/cross-compilation/static-dynamic-linking/' | relative_url }}" class="gtn-link {% if page.url contains 'static-dynamic' %}gts-active{% endif %}">
+          <i class="fas fa-link"></i> Static vs Dynamic Linking
+        </a>
+        <a href="{{ '/embedded-linux/cross-compilation/qemu-emulation/' | relative_url }}" class="gtn-link {% if page.url contains 'qemu' %}gts-active{% endif %}">
+          <i class="fas fa-computer"></i> QEMU Emulation
+        </a>
+        <a href="{{ '/embedded-linux/cross-compilation/binary-analysis/' | relative_url }}" class="gtn-link {% if page.url contains 'binary-analysis' %}gts-active{% endif %}">
+          <i class="fas fa-magnifying-glass-chart"></i> readelf / objdump / nm
+        </a>
+        <a href="{{ '/embedded-linux/cross-compilation/cross-compile-cmake/' | relative_url }}" class="gtn-link {% if page.url contains 'cross-compile-cmake' %}gts-active{% endif %}">
+          <i class="fas fa-hammer"></i> Cross-Compiling with CMake
+        </a>
+      </nav>
+      {% endif %}
+
+      <!-- ── U-Boot Topics ── -->
+      {% if page.phase == 'embedded-linux-uboot' %}
+      <div class="gts-header">
+        <i class="fas fa-wrench"></i>
+        <span>U-Boot Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="{{ '/embedded-linux/uboot/boot-sequence/' | relative_url }}" class="gtn-link {% if page.url contains 'boot-sequence' %}gts-active{% endif %}">
+          <i class="fas fa-play"></i> Boot Sequence
+        </a>
+        <a href="{{ '/embedded-linux/uboot/uboot-config-build/' | relative_url }}" class="gtn-link {% if page.url contains 'uboot-config' %}gts-active{% endif %}">
+          <i class="fas fa-wrench"></i> U-Boot Config &amp; Build
+        </a>
+        <a href="{{ '/embedded-linux/uboot/uboot-commands/' | relative_url }}" class="gtn-link {% if page.url contains 'uboot-commands' %}gts-active{% endif %}">
+          <i class="fas fa-terminal"></i> U-Boot Commands &amp; Scripting
+        </a>
+        <a href="{{ '/embedded-linux/uboot/device-tree/' | relative_url }}" class="gtn-link {% if page.url contains 'device-tree' %}gts-active{% endif %}">
+          <i class="fas fa-sitemap"></i> Device Tree (DTS)
+        </a>
+        <a href="{{ '/embedded-linux/uboot/board-porting/' | relative_url }}" class="gtn-link {% if page.url contains 'board-porting' %}gts-active{% endif %}">
+          <i class="fas fa-puzzle-piece"></i> Board Porting
+        </a>
+        <a href="{{ '/embedded-linux/uboot/tftp-boot/' | relative_url }}" class="gtn-link {% if page.url contains 'tftp-boot' %}gts-active{% endif %}">
+          <i class="fas fa-network-wired"></i> TFTP &amp; Network Boot
+        </a>
+      </nav>
+      {% endif %}
+
+      <!-- ── Linux Kernel Topics ── -->
+      {% if page.phase == 'embedded-linux-kernel' %}
+      <div class="gts-header">
+        <i class="fab fa-linux"></i>
+        <span>Linux Kernel Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="{{ '/embedded-linux/kernel/kconfig-menuconfig/' | relative_url }}" class="gtn-link {% if page.url contains 'kconfig' %}gts-active{% endif %}">
+          <i class="fas fa-sliders"></i> Kconfig &amp; menuconfig
+        </a>
+        <a href="{{ '/embedded-linux/kernel/kernel-compilation/' | relative_url }}" class="gtn-link {% if page.url contains 'kernel-compilation' %}gts-active{% endif %}">
+          <i class="fas fa-hammer"></i> Kernel Compilation
+        </a>
+        <a href="{{ '/embedded-linux/kernel/boot-parameters/' | relative_url }}" class="gtn-link {% if page.url contains 'boot-parameters' %}gts-active{% endif %}">
+          <i class="fas fa-list-check"></i> Boot Parameters
+        </a>
+        <a href="{{ '/embedded-linux/kernel/kernel-subsystems/' | relative_url }}" class="gtn-link {% if page.url contains 'kernel-subsystems' %}gts-active{% endif %}">
+          <i class="fab fa-linux"></i> Kernel Subsystems
+        </a>
+        <a href="{{ '/embedded-linux/kernel/printk-debug/' | relative_url }}" class="gtn-link {% if page.url contains 'printk' %}gts-active{% endif %}">
+          <i class="fas fa-bug"></i> printk &amp; Dynamic Debug
+        </a>
+        <a href="{{ '/embedded-linux/kernel/ftrace-kprobes/' | relative_url }}" class="gtn-link {% if page.url contains 'ftrace' %}gts-active{% endif %}">
+          <i class="fas fa-chart-line"></i> ftrace &amp; kprobes
+        </a>
+      </nav>
+      {% endif %}
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  {% if page.prev_topic or page.next_topic %}
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      {% if page.prev_topic %}
+      <a href="{{ page.prev_topic.url | relative_url }}" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">{{ page.prev_topic.title }}</span>
+      </a>
+      {% else %}<div></div>{% endif %}
+      {% if page.next_topic %}
+      <a href="{{ page.next_topic.url | relative_url }}" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">{{ page.next_topic.title }}</span>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>

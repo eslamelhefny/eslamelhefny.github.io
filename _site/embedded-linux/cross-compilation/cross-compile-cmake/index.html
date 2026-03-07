@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cross-Compiling with CMake · Eslam Mohamed</title>
+  <meta name="description" content="Using CMake toolchain files for embedded cross-compilation: sysroot configuration, pkg-config integration, dependency management, and Yocto SDK integration." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/embedded-linux/">Embedded Linux Developer</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Cross-Compiling with CMake</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 03 — Embedded Linux</span>
+        <span class="guide-stage-pill">Stage 05</span>
+      </div>
+      <h1 class="guide-title">Cross-Compiling with CMake</h1>
+      <p class="guide-subtitle">Using CMake toolchain files for embedded cross-compilation: sysroot configuration, pkg-config integration, dependency management, and Yocto SDK integration.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="cmake-toolchain-files-the-basics">CMake Toolchain Files: The Basics</h2>
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>CMake is a meta-build system that generates build files (Makefiles, Ninja files) from a high-level description. By default, CMake configures a build for the host machine — it finds the host’s <code class="language-plaintext highlighter-rouge">gcc</code>, the host’s <code class="language-plaintext highlighter-rouge">/usr/lib</code>, and generates code for the host architecture.</p>
+
+<p>For cross-compilation, CMake needs to know:</p>
+
+<ol>
+  <li>Which compiler to use (the cross-compiler)</li>
+  <li>Which sysroot to search for headers and libraries (the target sysroot)</li>
+  <li>What the target system name and processor are</li>
+</ol>
+
+<p>All of this is provided through a <strong>toolchain file</strong> — a CMake script you pass with <code class="language-plaintext highlighter-rouge">-DCMAKE_TOOLCHAIN_FILE=</code>.</p>
+
+<h3 id="minimal-toolchain-file">Minimal Toolchain File</h3>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># toolchain-arm-linux.cmake</span>
+
+<span class="c1"># Tell CMake the target OS and CPU</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_SYSTEM_NAME Linux<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_SYSTEM_PROCESSOR arm<span class="p">)</span>
+
+<span class="c1"># Specify the cross-compiler</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_C_COMPILER   arm-linux-gnueabihf-gcc<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++<span class="p">)</span>
+
+<span class="c1"># Specify the sysroot (where target headers and libraries live)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_SYSROOT /opt/rpi4-sysroot<span class="p">)</span>
+
+<span class="c1"># Search for libraries and headers only in the sysroot, not on the host</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY<span class="p">)</span>
+</code></pre></div></div>
+
+<p>The four <code class="language-plaintext highlighter-rouge">CMAKE_FIND_ROOT_PATH_MODE_*</code> variables are critical — they control where CMake searches for programs, libraries, headers, and CMake packages:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Setting</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">NEVER</code></td>
+      <td>Never search in sysroot — always use host paths (used for build tools like code generators)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">ONLY</code></td>
+      <td>Only search in sysroot — never use host paths (used for target libraries/headers)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">BOTH</code></td>
+      <td>Search sysroot first, then host paths (fallback)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="simple-hello-world-cross-compiled-with-cmake">Simple Hello World Cross-Compiled with CMake</h3>
+
+<p>Project structure:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hello/
+├── CMakeLists.txt
+├── toolchain-arm-linux.cmake
+└── src/
+    └── main.c
+</code></pre></div></div>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># CMakeLists.txt</span>
+<span class="nb">cmake_minimum_required</span><span class="p">(</span>VERSION 3.16<span class="p">)</span>
+<span class="nb">project</span><span class="p">(</span>hello C<span class="p">)</span>
+
+<span class="nb">add_executable</span><span class="p">(</span>hello src/main.c<span class="p">)</span>
+
+<span class="nb">install</span><span class="p">(</span>TARGETS hello DESTINATION bin<span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Configure: out-of-source build for the ARM target</span>
+<span class="nv">$ </span><span class="nb">mkdir </span>build-arm <span class="o">&amp;&amp;</span> <span class="nb">cd </span>build-arm
+
+<span class="nv">$ </span>cmake .. <span class="se">\</span>
+    <span class="nt">-DCMAKE_TOOLCHAIN_FILE</span><span class="o">=</span>../toolchain-arm-linux.cmake <span class="se">\</span>
+    <span class="nt">-DCMAKE_BUILD_TYPE</span><span class="o">=</span>Release <span class="se">\</span>
+    <span class="nt">-DCMAKE_INSTALL_PREFIX</span><span class="o">=</span>/usr
+
+<span class="nv">$ </span>cmake <span class="nt">--build</span> <span class="nb">.</span> <span class="nt">--</span> <span class="nt">-j</span><span class="si">$(</span><span class="nb">nproc</span><span class="si">)</span>
+
+<span class="nv">$ </span>file hello
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hello: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV),
+dynamically linked, interpreter /lib/ld-linux-armhf.so.3,
+for GNU/Linux 3.2.0, not stripped
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Build for host (native) in a separate directory</span>
+<span class="nv">$ </span><span class="nb">mkdir </span>build-host <span class="o">&amp;&amp;</span> <span class="nb">cd </span>build-host
+<span class="nv">$ </span>cmake .. <span class="nt">-DCMAKE_BUILD_TYPE</span><span class="o">=</span>Release
+<span class="nv">$ </span>cmake <span class="nt">--build</span> <span class="nb">.</span>
+
+<span class="nv">$ </span>file hello
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hello: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), ...
+</code></pre></div></div>
+
+<p>This shows the power of out-of-source builds: the same source tree produces both ARM and host binaries by using different build directories.</p>
+
+<h3 id="cmake_find_root_path-details">CMAKE_FIND_ROOT_PATH Details</h3>
+
+<p><code class="language-plaintext highlighter-rouge">CMAKE_FIND_ROOT_PATH</code> is a list of paths prepended to all <code class="language-plaintext highlighter-rouge">find_*</code> searches. When <code class="language-plaintext highlighter-rouge">CMAKE_SYSROOT</code> is set, CMake automatically adds it to <code class="language-plaintext highlighter-rouge">CMAKE_FIND_ROOT_PATH</code>. You can add additional paths:</p>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># toolchain-arm-linux.cmake</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_SYSROOT /opt/rpi4-sysroot<span class="p">)</span>
+
+<span class="c1"># Additional search paths (e.g., a staging directory with extra libraries)</span>
+<span class="nb">list</span><span class="p">(</span>APPEND CMAKE_FIND_ROOT_PATH /opt/rpi4-staging<span class="p">)</span>
+
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER<span class="p">)</span>
+</code></pre></div></div>
+
+<p>With <code class="language-plaintext highlighter-rouge">LIBRARY ONLY</code>, <code class="language-plaintext highlighter-rouge">find_library(SSL ssl)</code> will search:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">/opt/rpi4-sysroot/lib/</code></li>
+  <li><code class="language-plaintext highlighter-rouge">/opt/rpi4-sysroot/usr/lib/</code></li>
+  <li><code class="language-plaintext highlighter-rouge">/opt/rpi4-sysroot/lib/arm-linux-gnueabihf/</code></li>
+  <li><code class="language-plaintext highlighter-rouge">/opt/rpi4-staging/lib/</code></li>
+  <li>etc.</li>
+</ul>
+
+<p>…but will <strong>not</strong> search <code class="language-plaintext highlighter-rouge">/usr/lib</code> (the host’s library directory).</p>
+
+<hr />
+
+<h2 class="gc-mid" id="sysroot-dependencies-and-pkg-config-integration">Sysroot, Dependencies, and pkg-config Integration</h2>
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="cmake_sysroot-in-the-toolchain-file">CMAKE_SYSROOT in the Toolchain File</h3>
+
+<p>Setting <code class="language-plaintext highlighter-rouge">CMAKE_SYSROOT</code> in the toolchain file has the same effect as passing <code class="language-plaintext highlighter-rouge">--sysroot</code> to every compiler invocation. CMake automatically adds the <code class="language-plaintext highlighter-rouge">--sysroot</code> flag:</p>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># toolchain-arm-linux.cmake</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_SYSROOT /opt/rpi4-sysroot<span class="p">)</span>
+</code></pre></div></div>
+
+<p>Verify it was applied by checking the compile commands:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>cmake .. <span class="nt">-DCMAKE_TOOLCHAIN_FILE</span><span class="o">=</span>../toolchain-arm-linux.cmake <span class="se">\</span>
+    <span class="nt">-DCMAKE_EXPORT_COMPILE_COMMANDS</span><span class="o">=</span>ON
+
+<span class="nv">$ </span><span class="nb">cat </span>build-arm/compile_commands.json | python3 <span class="nt">-m</span> json.tool | <span class="nb">grep</span> <span class="nt">-A5</span> <span class="s2">"command"</span>
+</code></pre></div></div>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"arm-linux-gnueabihf-gcc
+    --sysroot=/opt/rpi4-sysroot
+    -I/opt/rpi4-sysroot/usr/include
+    -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard
+    -o CMakeFiles/hello.dir/src/main.c.o
+    -c /home/user/hello/src/main.c"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"file"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/home/user/hello/src/main.c"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="find_package-for-cross-compiled-dependencies">find_package for Cross-Compiled Dependencies</h3>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># CMakeLists.txt</span>
+<span class="nb">cmake_minimum_required</span><span class="p">(</span>VERSION 3.16<span class="p">)</span>
+<span class="nb">project</span><span class="p">(</span>tls_client C<span class="p">)</span>
+
+<span class="c1"># Find OpenSSL in the sysroot</span>
+<span class="nb">find_package</span><span class="p">(</span>OpenSSL REQUIRED<span class="p">)</span>
+
+<span class="nb">add_executable</span><span class="p">(</span>tls_client src/tls_client.c<span class="p">)</span>
+
+<span class="nb">target_link_libraries</span><span class="p">(</span>tls_client PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+<span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>cmake .. <span class="se">\</span>
+    <span class="nt">-DCMAKE_TOOLCHAIN_FILE</span><span class="o">=</span>../toolchain-arm-linux.cmake <span class="se">\</span>
+    <span class="nt">-DOPENSSL_ROOT_DIR</span><span class="o">=</span>/opt/rpi4-sysroot/usr
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-- Found OpenSSL: /opt/rpi4-sysroot/usr/lib/arm-linux-gnueabihf/libssl.so (found version "1.1.1n")
+-- Configuring done
+-- Build files have been written to: /home/user/tls_client/build-arm
+</code></pre></div></div>
+
+<p>If <code class="language-plaintext highlighter-rouge">find_package</code> cannot find the library automatically, provide the root directory hint:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>cmake .. <span class="se">\</span>
+    <span class="nt">-DCMAKE_TOOLCHAIN_FILE</span><span class="o">=</span>../toolchain-arm-linux.cmake <span class="se">\</span>
+    <span class="nt">-DCMAKE_PREFIX_PATH</span><span class="o">=</span>/opt/rpi4-sysroot/usr
+</code></pre></div></div>
+
+<h3 id="pkg-config-integration-in-cmake">pkg-config Integration in CMake</h3>
+
+<p>CMake’s <code class="language-plaintext highlighter-rouge">FindPkgConfig</code> module wraps <code class="language-plaintext highlighter-rouge">pkg-config</code>. For cross-compilation, you must point it to the correct pkg-config binary and search paths:</p>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># In toolchain file or CMakeLists.txt:</span>
+<span class="nb">set</span><span class="p">(</span>ENV{PKG_CONFIG_SYSROOT_DIR} <span class="si">${</span><span class="nv">CMAKE_SYSROOT</span><span class="si">}</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>ENV{PKG_CONFIG_LIBDIR}
+    <span class="s2">"</span><span class="si">${</span><span class="nv">CMAKE_SYSROOT</span><span class="si">}</span><span class="s2">/usr/lib/arm-linux-gnueabihf/pkgconfig:\
+</span><span class="si">${</span><span class="nv">CMAKE_SYSROOT</span><span class="si">}</span><span class="s2">/usr/lib/pkgconfig:\
+</span><span class="si">${</span><span class="nv">CMAKE_SYSROOT</span><span class="si">}</span><span class="s2">/usr/share/pkgconfig"</span><span class="p">)</span>
+
+<span class="c1"># Use the cross pkg-config if available</span>
+<span class="nb">find_program</span><span class="p">(</span>PKG_CONFIG_EXECUTABLE
+    NAMES arm-linux-gnueabihf-pkg-config pkg-config
+    PATHS /usr/bin
+    NO_DEFAULT_PATH
+<span class="p">)</span>
+</code></pre></div></div>
+
+<p>In <code class="language-plaintext highlighter-rouge">CMakeLists.txt</code>:</p>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cmake_minimum_required</span><span class="p">(</span>VERSION 3.16<span class="p">)</span>
+<span class="nb">project</span><span class="p">(</span>myapp C<span class="p">)</span>
+
+<span class="nb">find_package</span><span class="p">(</span>PkgConfig REQUIRED<span class="p">)</span>
+
+<span class="c1"># Find gpiod via pkg-config</span>
+<span class="nf">pkg_check_modules</span><span class="p">(</span>GPIOD REQUIRED libgpiod<span class="p">)</span>
+
+<span class="nb">add_executable</span><span class="p">(</span>myapp src/main.c<span class="p">)</span>
+
+<span class="nb">target_include_directories</span><span class="p">(</span>myapp PRIVATE <span class="si">${</span><span class="nv">GPIOD_INCLUDE_DIRS</span><span class="si">}</span><span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span>myapp PRIVATE <span class="si">${</span><span class="nv">GPIOD_LIBRARIES</span><span class="si">}</span><span class="p">)</span>
+<span class="nb">target_compile_options</span><span class="p">(</span>myapp PRIVATE <span class="si">${</span><span class="nv">GPIOD_CFLAGS_OTHER</span><span class="si">}</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>cmake .. <span class="nt">-DCMAKE_TOOLCHAIN_FILE</span><span class="o">=</span>../toolchain-arm-linux.cmake
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-- Found PkgConfig: /usr/bin/pkg-config (found version "0.29.2")
+-- Checking for module 'libgpiod'
+--   Found libgpiod, version 1.6.3
+-- Configuring done
+</code></pre></div></div>
+
+<h3 id="building-and-cross-compiling-a-project-with-libcurl">Building and Cross-Compiling a Project With libcurl</h3>
+
+<p>Complete example with external library dependency:</p>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># CMakeLists.txt</span>
+<span class="nb">cmake_minimum_required</span><span class="p">(</span>VERSION 3.16<span class="p">)</span>
+<span class="nb">project</span><span class="p">(</span>http_client C<span class="p">)</span>
+
+<span class="nb">set</span><span class="p">(</span>CMAKE_C_STANDARD 11<span class="p">)</span>
+
+<span class="nb">find_package</span><span class="p">(</span>CURL REQUIRED<span class="p">)</span>
+
+<span class="nb">add_executable</span><span class="p">(</span>http_client
+    src/main.c
+    src/request.c
+<span class="p">)</span>
+
+<span class="nb">target_link_libraries</span><span class="p">(</span>http_client PRIVATE CURL::libcurl<span class="p">)</span>
+
+<span class="nb">install</span><span class="p">(</span>TARGETS http_client
+    RUNTIME DESTINATION bin
+<span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># toolchain-arm-linux.cmake</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_SYSTEM_NAME Linux<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_SYSTEM_PROCESSOR arm<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_C_COMPILER   arm-linux-gnueabihf-gcc<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_SYSROOT      /opt/rpi4-sysroot<span class="p">)</span>
+
+<span class="c1"># Extra compiler flags for Cortex-A72 (RPi 4 uses A72, but 32-bit mode)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_C_FLAGS_INIT   <span class="s2">"-march=armv7-a -mfpu=vfpv4 -mfloat-abi=hard"</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_CXX_FLAGS_INIT <span class="s2">"-march=armv7-a -mfpu=vfpv4 -mfloat-abi=hard"</span><span class="p">)</span>
+
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY<span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">mkdir </span>build-arm <span class="o">&amp;&amp;</span> <span class="nb">cd </span>build-arm
+<span class="nv">$ </span>cmake .. <span class="se">\</span>
+    <span class="nt">-DCMAKE_TOOLCHAIN_FILE</span><span class="o">=</span>../toolchain-arm-linux.cmake <span class="se">\</span>
+    <span class="nt">-DCMAKE_BUILD_TYPE</span><span class="o">=</span>Release <span class="se">\</span>
+    <span class="nt">-DCMAKE_INSTALL_PREFIX</span><span class="o">=</span>/usr
+
+<span class="nv">$ </span>cmake <span class="nt">--build</span> <span class="nb">.</span> <span class="nt">-j</span><span class="si">$(</span><span class="nb">nproc</span><span class="si">)</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ 33%] Building C object CMakeFiles/http_client.dir/src/main.c.o
+[ 66%] Building C object CMakeFiles/http_client.dir/src/request.c.o
+[100%] Linking C executable http_client
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>cmake <span class="nt">--install</span> <span class="nb">.</span> <span class="nt">--prefix</span> /opt/rpi4-staging
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-- Install configuration: "Release"
+-- Installing: /opt/rpi4-staging/bin/http_client
+</code></pre></div></div>
+
+<h3 id="externalproject_add-for-cross-compiling-a-dependency">ExternalProject_Add for Cross-Compiling a Dependency</h3>
+
+<p>When a dependency is not available in the sysroot, build it from source using <code class="language-plaintext highlighter-rouge">ExternalProject_Add</code>:</p>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">include</span><span class="p">(</span>ExternalProject<span class="p">)</span>
+
+<span class="nf">ExternalProject_Add</span><span class="p">(</span>
+    libfoo_external
+    URL         https://example.com/libfoo-1.2.tar.gz
+    URL_HASH    SHA256=abc123...
+    CMAKE_ARGS
+        -DCMAKE_TOOLCHAIN_FILE=<span class="si">${</span><span class="nv">CMAKE_TOOLCHAIN_FILE</span><span class="si">}</span>
+        -DCMAKE_INSTALL_PREFIX=<span class="si">${</span><span class="nv">CMAKE_SYSROOT</span><span class="si">}</span>/usr
+        -DCMAKE_BUILD_TYPE=Release
+        -DBUILD_SHARED_LIBS=ON
+    BUILD_ALWAYS OFF
+<span class="p">)</span>
+
+<span class="c1"># Make our target depend on the external project being built first</span>
+<span class="nb">add_dependencies</span><span class="p">(</span>myapp libfoo_external<span class="p">)</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-cmake-qt-cross-compilation-presets-and-yocto-integration">Advanced CMake: Qt Cross-Compilation, Presets, and Yocto Integration</h2>
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="cross-compiling-qt5-for-embedded-linux">Cross-Compiling Qt5 for Embedded Linux</h3>
+
+<p>Qt cross-compilation requires configuring Qt with device-specific settings:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Step 1: Prepare the sysroot with Qt dependencies</span>
+<span class="nv">$ </span>rsync <span class="nt">-avz</span> pi@192.168.1.100:/usr/include/arm-linux-gnueabihf /opt/rpi-sysroot/usr/include/
+<span class="nv">$ </span>rsync <span class="nt">-avz</span> pi@192.168.1.100:/usr/lib/arm-linux-gnueabihf    /opt/rpi-sysroot/usr/lib/
+
+<span class="c"># Step 2: Configure Qt for cross-compilation</span>
+<span class="nv">$ </span><span class="nb">cd </span>qt5-src
+<span class="nv">$ </span>./configure <span class="se">\</span>
+    <span class="nt">-release</span> <span class="se">\</span>
+    <span class="nt">-opengl</span> es2 <span class="se">\</span>
+    <span class="nt">-device</span> linux-rasp-pi4-v3d-g++ <span class="se">\</span>
+    <span class="nt">-device-option</span> <span class="nv">CROSS_COMPILE</span><span class="o">=</span>arm-linux-gnueabihf- <span class="se">\</span>
+    <span class="nt">-sysroot</span> /opt/rpi-sysroot <span class="se">\</span>
+    <span class="nt">-prefix</span> /usr/local/qt5 <span class="se">\</span>
+    <span class="nt">-extprefix</span> /opt/qt5-arm <span class="se">\</span>
+    <span class="nt">-hostprefix</span> /opt/qt5-host <span class="se">\</span>
+    <span class="nt">-no-use-gold-linker</span> <span class="se">\</span>
+    <span class="nt">-v</span>
+
+<span class="nv">$ </span>make <span class="nt">-j</span><span class="si">$(</span><span class="nb">nproc</span><span class="si">)</span>
+<span class="nv">$ </span>make <span class="nb">install</span>
+</code></pre></div></div>
+
+<p>In a CMake project that uses cross-compiled Qt:</p>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># toolchain-arm-qt.cmake</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_SYSTEM_NAME Linux<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_SYSTEM_PROCESSOR arm<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_C_COMPILER   arm-linux-gnueabihf-gcc<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_SYSROOT      /opt/rpi-sysroot<span class="p">)</span>
+
+<span class="c1"># Point CMake to the cross-compiled Qt installation</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_PREFIX_PATH  /opt/qt5-arm<span class="p">)</span>
+
+<span class="c1"># Point to host Qt tools (moc, uic, rcc run on the build machine)</span>
+<span class="nb">set</span><span class="p">(</span>QT_HOST_PATH       /opt/qt5-host<span class="p">)</span>
+
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY<span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># CMakeLists.txt for a Qt project</span>
+<span class="nb">cmake_minimum_required</span><span class="p">(</span>VERSION 3.16<span class="p">)</span>
+<span class="nb">project</span><span class="p">(</span>myqtapp CXX<span class="p">)</span>
+
+<span class="nb">set</span><span class="p">(</span>CMAKE_AUTOMOC ON<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_AUTORCC ON<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_AUTOUIC ON<span class="p">)</span>
+
+<span class="nb">find_package</span><span class="p">(</span>Qt5 REQUIRED COMPONENTS Core Widgets Quick<span class="p">)</span>
+
+<span class="nb">add_executable</span><span class="p">(</span>myqtapp
+    main.cpp
+    mainwindow.cpp
+    mainwindow.h
+    resources.qrc
+<span class="p">)</span>
+
+<span class="nb">target_link_libraries</span><span class="p">(</span>myqtapp PRIVATE
+    Qt5::Core Qt5::Widgets Qt5::Quick
+<span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>cmake .. <span class="nt">-DCMAKE_TOOLCHAIN_FILE</span><span class="o">=</span>../toolchain-arm-qt.cmake
+<span class="nv">$ </span>cmake <span class="nt">--build</span> <span class="nb">.</span> <span class="nt">-j</span><span class="si">$(</span><span class="nb">nproc</span><span class="si">)</span>
+</code></pre></div></div>
+
+<h3 id="generating-compile_commandsjson-for-cross-compile-ide-support">Generating compile_commands.json for Cross-Compile IDE Support</h3>
+
+<p><code class="language-plaintext highlighter-rouge">compile_commands.json</code> is a compilation database that enables <code class="language-plaintext highlighter-rouge">clangd</code>, VS Code IntelliSense, and other tools to understand your cross-compiled project:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>cmake .. <span class="se">\</span>
+    <span class="nt">-DCMAKE_TOOLCHAIN_FILE</span><span class="o">=</span>../toolchain-arm-linux.cmake <span class="se">\</span>
+    <span class="nt">-DCMAKE_EXPORT_COMPILE_COMMANDS</span><span class="o">=</span>ON
+
+<span class="nv">$ </span><span class="nb">ls </span>build-arm/
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CMakeCache.txt  CMakeFiles/  compile_commands.json  Makefile
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Symlink to project root so editors/clangd find it</span>
+<span class="nv">$ </span><span class="nb">ln</span> <span class="nt">-s</span> build-arm/compile_commands.json compile_commands.json
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">compile_commands.json</code> contains the exact compiler invocations including all flags, include paths, and defines — allowing clangd to provide accurate cross-platform code completion and error checking.</p>
+
+<p>Configure clangd to use the cross-compiler’s headers by adding <code class="language-plaintext highlighter-rouge">.clangd</code> to your project root:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># .clangd</span>
+<span class="na">CompileFlags</span><span class="pi">:</span>
+  <span class="na">Add</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">--sysroot=/opt/rpi4-sysroot</span>
+    <span class="pi">-</span> <span class="s">--target=arm-linux-gnueabihf</span>
+</code></pre></div></div>
+
+<h3 id="multi-stage-builds-host-tools--target-code">Multi-Stage Builds: Host Tools + Target Code</h3>
+
+<p>Some projects need to build code generation tools natively (to run on the host) and the actual application code for the target. CMake handles this with separate configure stages:</p>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Top-level CMakeLists.txt</span>
+<span class="nb">cmake_minimum_required</span><span class="p">(</span>VERSION 3.16<span class="p">)</span>
+<span class="nb">project</span><span class="p">(</span>embedded_app<span class="p">)</span>
+
+<span class="c1"># Check if we're doing a host build or cross build</span>
+<span class="nb">if</span><span class="p">(</span>CMAKE_CROSSCOMPILING<span class="p">)</span>
+    <span class="c1"># Cross-compilation: build the target application</span>
+    <span class="nb">add_subdirectory</span><span class="p">(</span>src<span class="p">)</span>
+    <span class="nb">add_subdirectory</span><span class="p">(</span>target_libs<span class="p">)</span>
+<span class="nb">else</span><span class="p">()</span>
+    <span class="c1"># Native build: build host tools only</span>
+    <span class="nb">add_subdirectory</span><span class="p">(</span>tools<span class="p">)</span>
+<span class="nb">endif</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>Build script:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+<span class="c"># build.sh</span>
+
+<span class="c"># Step 1: Build native host tools</span>
+<span class="nb">mkdir</span> <span class="nt">-p</span> build-host <span class="o">&amp;&amp;</span> <span class="nb">cd </span>build-host
+cmake .. <span class="nt">-DCMAKE_BUILD_TYPE</span><span class="o">=</span>Release
+cmake <span class="nt">--build</span> <span class="nb">.</span> <span class="nt">--</span> <span class="nt">-j</span><span class="si">$(</span><span class="nb">nproc</span><span class="si">)</span>
+<span class="nb">cd</span> ..
+
+<span class="c"># Step 2: Cross-compile target application</span>
+<span class="c"># Host tools are now in build-host/tools/</span>
+<span class="nb">mkdir</span> <span class="nt">-p</span> build-arm <span class="o">&amp;&amp;</span> <span class="nb">cd </span>build-arm
+cmake .. <span class="se">\</span>
+    <span class="nt">-DCMAKE_TOOLCHAIN_FILE</span><span class="o">=</span>../toolchain-arm-linux.cmake <span class="se">\</span>
+    <span class="nt">-DCMAKE_BUILD_TYPE</span><span class="o">=</span>Release <span class="se">\</span>
+    <span class="nt">-DHOST_TOOLS_DIR</span><span class="o">=</span><span class="si">$(</span><span class="nb">realpath</span> ../build-host/tools<span class="si">)</span>
+cmake <span class="nt">--build</span> <span class="nb">.</span> <span class="nt">--</span> <span class="nt">-j</span><span class="si">$(</span><span class="nb">nproc</span><span class="si">)</span>
+</code></pre></div></div>
+
+<h3 id="cmake-preset-files">CMake Preset Files</h3>
+
+<p>CMake 3.19+ supports preset files for managing multiple build configurations:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"configurePresets"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"host-debug"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"displayName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Host Debug Build"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"generator"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Ninja"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"binaryDir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"${sourceDir}/build-host-debug"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"cacheVariables"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"CMAKE_BUILD_TYPE"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Debug"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"arm-release"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"displayName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ARM Release Build"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"generator"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Ninja"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"binaryDir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"${sourceDir}/build-arm-release"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"toolchainFile"</span><span class="p">:</span><span class="w"> </span><span class="s2">"${sourceDir}/cmake/toolchain-arm-linux.cmake"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"cacheVariables"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"CMAKE_BUILD_TYPE"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Release"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"CMAKE_INSTALL_PREFIX"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/usr"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"aarch64-release"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"displayName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AArch64 Release Build"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"generator"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Ninja"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"binaryDir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"${sourceDir}/build-aarch64-release"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"toolchainFile"</span><span class="p">:</span><span class="w"> </span><span class="s2">"${sourceDir}/cmake/toolchain-aarch64-linux.cmake"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"cacheVariables"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"CMAKE_BUILD_TYPE"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Release"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="nl">"buildPresets"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"arm-release"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"configurePreset"</span><span class="p">:</span><span class="w"> </span><span class="s2">"arm-release"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"jobs"</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># List available presets</span>
+<span class="nv">$ </span>cmake <span class="nt">--list-presets</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Available configure presets:
+
+  "host-debug"       - Host Debug Build
+  "arm-release"      - ARM Release Build
+  "aarch64-release"  - AArch64 Release Build
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Configure and build using the ARM preset</span>
+<span class="nv">$ </span>cmake <span class="nt">--preset</span> arm-release
+<span class="nv">$ </span>cmake <span class="nt">--build</span> <span class="nt">--preset</span> arm-release
+</code></pre></div></div>
+
+<h3 id="yocto-sdk-integration">Yocto SDK Integration</h3>
+
+<p>When using a Yocto-built SDK, the SDK ships an environment setup script that configures all cross-compilation variables. You can generate a CMake toolchain file from it:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install the SDK (creates /opt/poky/5.0/)</span>
+<span class="nv">$ </span>./poky-glibc-x86_64-core-image-minimal-cortexa9t2hf-neon-toolchain-5.0.sh
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Poky (Yocto Project Reference Distro) SDK installer version 5.0
+================================================================
+Enter target directory for SDK (default: /opt/poky/5.0):
+Extracting SDK...............done
+Setting it up...done
+SDK has been successfully set up and is ready to be used.
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Source the environment script</span>
+<span class="nv">$ </span><span class="nb">source</span> /opt/poky/5.0/environment-setup-cortexa9t2hf-neon-poky-linux-gnueabi
+
+<span class="c"># Verify the environment is set</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="nv">$CC</span>
+arm-poky-linux-gnueabi-gcc  <span class="nt">-march</span><span class="o">=</span>armv7-a <span class="nt">-mthumb</span> <span class="nt">-mfpu</span><span class="o">=</span>neon <span class="nt">-mfloat-abi</span><span class="o">=</span>hard <span class="nt">--sysroot</span><span class="o">=</span>/opt/poky/5.0/sysroots/cortexa9t2hf-neon-poky-linux-gnueabi
+<span class="nv">$ </span><span class="nb">echo</span> <span class="nv">$SDKTARGETSYSROOT</span>
+/opt/poky/5.0/sysroots/cortexa9t2hf-neon-poky-linux-gnueabi
+</code></pre></div></div>
+
+<p>Generate a CMake toolchain file from the SDK environment:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Generate toolchain file from Yocto environment variables</span>
+<span class="nb">cat</span> <span class="o">&gt;</span> yocto-sdk-toolchain.cmake <span class="o">&lt;&lt;</span> <span class="no">EOF</span><span class="sh">
+# Auto-generated from Yocto SDK environment
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR arm)
+
+set(SDK_SYSROOT "</span><span class="nv">$ENV</span><span class="sh">{SDKTARGETSYSROOT}")
+
+set(CMAKE_C_COMPILER   "</span><span class="nv">$ENV</span><span class="sh">{CC}")
+set(CMAKE_CXX_COMPILER "</span><span class="nv">$ENV</span><span class="sh">{CXX}")
+set(CMAKE_LINKER       "</span><span class="nv">$ENV</span><span class="sh">{LD}")
+set(CMAKE_AR           "</span><span class="nv">$ENV</span><span class="sh">{AR}")
+set(CMAKE_RANLIB       "</span><span class="nv">$ENV</span><span class="sh">{RANLIB}")
+set(CMAKE_STRIP        "</span><span class="nv">$ENV</span><span class="sh">{STRIP}")
+
+set(CMAKE_SYSROOT </span><span class="k">${</span><span class="nv">SDK_SYSROOT</span><span class="k">}</span><span class="sh">)
+set(CMAKE_FIND_ROOT_PATH </span><span class="k">${</span><span class="nv">SDK_SYSROOT</span><span class="k">}</span><span class="sh">)
+
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+
+# pkg-config for cross-compilation
+set(ENV{PKG_CONFIG_SYSROOT_DIR} </span><span class="k">${</span><span class="nv">SDK_SYSROOT</span><span class="k">}</span><span class="sh">)
+set(ENV{PKG_CONFIG_LIBDIR}
+    "</span><span class="k">${</span><span class="nv">SDK_SYSROOT</span><span class="k">}</span><span class="sh">/usr/lib/pkgconfig:</span><span class="k">${</span><span class="nv">SDK_SYSROOT</span><span class="k">}</span><span class="sh">/usr/share/pkgconfig")
+</span><span class="no">EOF
+</span></code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>cmake .. <span class="se">\</span>
+    <span class="nt">-DCMAKE_TOOLCHAIN_FILE</span><span class="o">=</span>./yocto-sdk-toolchain.cmake <span class="se">\</span>
+    <span class="nt">-DCMAKE_BUILD_TYPE</span><span class="o">=</span>Release
+
+<span class="nv">$ </span>cmake <span class="nt">--build</span> <span class="nb">.</span> <span class="nt">-j</span><span class="si">$(</span><span class="nb">nproc</span><span class="si">)</span>
+
+<span class="nv">$ </span>file myapp
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>myapp: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV),
+dynamically linked, interpreter /lib/ld-linux-gnueabi.so.3,
+for GNU/Linux 3.2.0, not stripped
+</code></pre></div></div>
+
+<h3 id="testing-cross-compiled-binaries-with-qemu-via-ctest">Testing Cross-Compiled Binaries with QEMU via ctest</h3>
+
+<div class="language-cmake highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># CMakeLists.txt</span>
+<span class="nb">enable_testing</span><span class="p">()</span>
+
+<span class="c1"># Find qemu-arm for test execution</span>
+<span class="nb">find_program</span><span class="p">(</span>QEMU_ARM qemu-arm<span class="p">)</span>
+
+<span class="nb">add_test</span><span class="p">(</span>
+    NAME run_unit_tests
+    COMMAND <span class="si">${</span><span class="nv">QEMU_ARM</span><span class="si">}</span>
+        -L /opt/rpi4-sysroot
+        $&lt;TARGET_FILE:myapp_tests&gt;
+        --gtest_output=xml:test_results.xml
+<span class="p">)</span>
+
+<span class="nb">set_tests_properties</span><span class="p">(</span>run_unit_tests PROPERTIES
+    TIMEOUT 30
+    ENVIRONMENT <span class="s2">"QEMU_LD_PREFIX=/opt/rpi4-sysroot"</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ctest <span class="nt">--test-dir</span> build-arm <span class="nt">-V</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>UpdateCTestConfiguration  from :/home/user/project/build-arm/DartConfiguration.tcl
+Test project /home/user/project/build-arm
+    Start 1: run_unit_tests
+1/1 Test #1: run_unit_tests .....................   Passed    0.84 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.85 sec
+</code></pre></div></div>
+
+<p>This enables CI pipelines to run ARM unit tests without physical hardware by using QEMU user-mode emulation.</p>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-questions">Interview Questions</h2>
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q: What is a CMake toolchain file and what must it contain?</strong></p>
+
+<p>A CMake toolchain file is a CMake script passed to cmake with <code class="language-plaintext highlighter-rouge">-DCMAKE_TOOLCHAIN_FILE=path/to/toolchain.cmake</code>. CMake reads it before configuring the project, using it to configure the cross-compilation environment. At minimum it must contain: <code class="language-plaintext highlighter-rouge">CMAKE_SYSTEM_NAME</code> (e.g., <code class="language-plaintext highlighter-rouge">Linux</code>) to tell CMake the target OS, <code class="language-plaintext highlighter-rouge">CMAKE_SYSTEM_PROCESSOR</code> (e.g., <code class="language-plaintext highlighter-rouge">arm</code>) to set the target CPU, <code class="language-plaintext highlighter-rouge">CMAKE_C_COMPILER</code> pointing to the cross-compiler (e.g., <code class="language-plaintext highlighter-rouge">arm-linux-gnueabihf-gcc</code>), and the four <code class="language-plaintext highlighter-rouge">CMAKE_FIND_ROOT_PATH_MODE_*</code> variables to control where CMake searches for libraries, headers, and programs. <code class="language-plaintext highlighter-rouge">CMAKE_SYSROOT</code> is also strongly recommended to direct all library and header searches to the target sysroot instead of the host filesystem. Without proper <code class="language-plaintext highlighter-rouge">FIND_ROOT_PATH_MODE</code> settings, CMake may find the host’s x86-64 libraries instead of the target’s ARM libraries.</p>
+
+<p><strong>Q: How do you tell CMake to search for libraries in the sysroot instead of the host?</strong></p>
+
+<p>Set <code class="language-plaintext highlighter-rouge">CMAKE_SYSROOT</code> to the sysroot path in the toolchain file — this adds the sysroot to <code class="language-plaintext highlighter-rouge">CMAKE_FIND_ROOT_PATH</code> and passes <code class="language-plaintext highlighter-rouge">--sysroot</code> to every compiler invocation. Then set <code class="language-plaintext highlighter-rouge">CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY</code> (and similarly for <code class="language-plaintext highlighter-rouge">INCLUDE</code> and <code class="language-plaintext highlighter-rouge">PACKAGE</code>) to restrict library searches to the sysroot. With <code class="language-plaintext highlighter-rouge">ONLY</code>, <code class="language-plaintext highlighter-rouge">find_library(SSL ssl)</code> will only search paths within the sysroot like <code class="language-plaintext highlighter-rouge">/sysroot/usr/lib</code> and <code class="language-plaintext highlighter-rouge">/sysroot/lib</code>, never the host’s <code class="language-plaintext highlighter-rouge">/usr/lib</code>. Additionally, set <code class="language-plaintext highlighter-rouge">CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER</code> so that build tools like code generators run from the host PATH, not the sysroot.</p>
+
+<p><strong>Q: What does CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY mean?</strong></p>
+
+<p>It means that all <code class="language-plaintext highlighter-rouge">find_library()</code> calls will <strong>only</strong> search within paths that are prefixed by <code class="language-plaintext highlighter-rouge">CMAKE_FIND_ROOT_PATH</code> (which includes the sysroot). The host system library paths (<code class="language-plaintext highlighter-rouge">/usr/lib</code>, <code class="language-plaintext highlighter-rouge">/lib</code>, etc.) are <strong>never</strong> searched. This is the correct setting for cross-compilation because you want to link against the target architecture’s libraries (ARM), not the host’s libraries (x86-64). If this were set to <code class="language-plaintext highlighter-rouge">BOTH</code>, CMake would search the sysroot first and fall back to host paths — which could accidentally find an x86-64 library if the ARM version is not in the sysroot, causing a silent ABI mismatch that produces a broken binary.</p>
+
+<p><strong>Q: How do you cross-compile a project that uses pkg-config dependencies?</strong></p>
+
+<p>Set three environment variables in the toolchain file or before running cmake: <code class="language-plaintext highlighter-rouge">PKG_CONFIG_SYSROOT_DIR</code> to the sysroot path (pkg-config prepends this to all paths it returns), <code class="language-plaintext highlighter-rouge">PKG_CONFIG_LIBDIR</code> to a colon-separated list of directories inside the sysroot where <code class="language-plaintext highlighter-rouge">.pc</code> files are located (e.g., <code class="language-plaintext highlighter-rouge">${SYSROOT}/usr/lib/arm-linux-gnueabihf/pkgconfig:${SYSROOT}/usr/share/pkgconfig</code>), and unset <code class="language-plaintext highlighter-rouge">PKG_CONFIG_PATH</code> to prevent host paths from bleeding in. In <code class="language-plaintext highlighter-rouge">CMakeLists.txt</code>, use <code class="language-plaintext highlighter-rouge">find_package(PkgConfig)</code> then <code class="language-plaintext highlighter-rouge">pkg_check_modules(LIBNAME REQUIRED libname)</code>. Apply the results with <code class="language-plaintext highlighter-rouge">target_include_directories(myapp PRIVATE ${LIBNAME_INCLUDE_DIRS})</code> and <code class="language-plaintext highlighter-rouge">target_link_libraries(myapp PRIVATE ${LIBNAME_LIBRARIES})</code>. The <code class="language-plaintext highlighter-rouge">PKG_CONFIG_SYSROOT_DIR</code> variable ensures that paths returned by pkg-config (e.g., <code class="language-plaintext highlighter-rouge">-I/usr/include</code>) are automatically prefixed with the sysroot.</p>
+
+<p><strong>Q: How do you integrate a Yocto SDK with a CMake project?</strong></p>
+
+<p>First source the SDK’s environment-setup script: <code class="language-plaintext highlighter-rouge">source /opt/poky/VERSION/environment-setup-MACHINE-...-linux</code>. This sets environment variables including <code class="language-plaintext highlighter-rouge">CC</code>, <code class="language-plaintext highlighter-rouge">CXX</code>, <code class="language-plaintext highlighter-rouge">LD</code>, <code class="language-plaintext highlighter-rouge">SDKTARGETSYSROOT</code>, <code class="language-plaintext highlighter-rouge">PKG_CONFIG_SYSROOT_DIR</code>, etc. Then either: (1) use the <code class="language-plaintext highlighter-rouge">cmake</code> wrapper the SDK provides — it automatically injects the toolchain settings, or (2) write a CMake toolchain file that reads these environment variables using <code class="language-plaintext highlighter-rouge">$ENV{CC}</code>, <code class="language-plaintext highlighter-rouge">$ENV{SDKTARGETSYSROOT}</code>, etc. The generated toolchain file sets <code class="language-plaintext highlighter-rouge">CMAKE_C_COMPILER</code>, <code class="language-plaintext highlighter-rouge">CMAKE_SYSROOT</code>, <code class="language-plaintext highlighter-rouge">CMAKE_FIND_ROOT_PATH</code>, and pkg-config variables from the SDK environment. Run cmake with this toolchain file to produce ARM binaries that are compatible with the Yocto-built rootfs — same glibc version, same library versions, same kernel headers.</p>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<ul>
+  <li><strong>CMake Cross-Compilation Documentation</strong> — official CMake reference for toolchain files and cross-compilation (https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html)</li>
+  <li><strong>“Professional CMake: A Practical Guide”</strong> — Craig Scott — comprehensive coverage of CMake including cross-compilation patterns</li>
+  <li><strong>Yocto Project: Using the SDK with CMake</strong> — official guide for integrating Yocto SDK with CMake projects (https://docs.yoctoproject.org/sdk-manual/index.html)</li>
+  <li><strong>Qt Cross-Compilation Guide for Embedded Linux</strong> — official Qt documentation for embedded target builds (https://doc.qt.io/qt-6/configure-linux-device.html)</li>
+  <li><strong>CMake Presets Documentation</strong> — reference for CMakePresets.json format (https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html)</li>
+  <li><strong>“Mastering Embedded Linux Programming”</strong> — Chris Simmonds — covers the full build system context in which CMake is used for embedded targets</li>
+</ul>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-gears"></i>
+        <span>Cross-Compilation Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/embedded-linux/cross-compilation/gnu-toolchain/" class="gtn-link ">
+          <i class="fas fa-gears"></i> GNU Toolchain
+        </a>
+        <a href="/embedded-linux/cross-compilation/sysroot-libraries/" class="gtn-link ">
+          <i class="fas fa-folder-tree"></i> Sysroot &amp; Libraries
+        </a>
+        <a href="/embedded-linux/cross-compilation/static-dynamic-linking/" class="gtn-link ">
+          <i class="fas fa-link"></i> Static vs Dynamic Linking
+        </a>
+        <a href="/embedded-linux/cross-compilation/qemu-emulation/" class="gtn-link ">
+          <i class="fas fa-computer"></i> QEMU Emulation
+        </a>
+        <a href="/embedded-linux/cross-compilation/binary-analysis/" class="gtn-link ">
+          <i class="fas fa-magnifying-glass-chart"></i> readelf / objdump / nm
+        </a>
+        <a href="/embedded-linux/cross-compilation/cross-compile-cmake/" class="gtn-link gts-active">
+          <i class="fas fa-hammer"></i> Cross-Compiling with CMake
+        </a>
+      </nav>
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/embedded-linux/cross-compilation/binary-analysis/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">readelf / objdump / nm</span>
+      </a>
+      
+      
+      <a href="/embedded-linux/uboot/boot-sequence/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Boot Sequence</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

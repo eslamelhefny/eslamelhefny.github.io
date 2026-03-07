@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Makefiles · Eslam Mohamed</title>
+  <meta name="description" content="Write Makefiles from scratch — rules, variables, automatic variables, pattern rules, phony targets, dependency tracking, and multi-directory project structures." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/c-programming/">C Programming</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Makefiles</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 02</span>
+      </div>
+      <h1 class="guide-title">Makefiles</h1>
+      <p class="guide-subtitle">Write Makefiles from scratch — rules, variables, automatic variables, pattern rules, phony targets, dependency tracking, and multi-directory project structures.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="make-basics">Make Basics</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p><code class="language-plaintext highlighter-rouge">make</code> reads a <code class="language-plaintext highlighter-rouge">Makefile</code> and rebuilds only the files that are out of date, saving time on large projects.</p>
+
+<h3 id="anatomy-of-a-rule">Anatomy of a Rule</h3>
+
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">target</span><span class="o">:</span> <span class="nf">dependencies</span>
+	recipe          <span class="c"># MUST be indented with a TAB </span><span class="o">(</span>not spaces!<span class="o">)</span>
+</code></pre></div></div>
+
+<h3 id="a-minimal-makefile">A Minimal Makefile</h3>
+
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Build the 'app' binary from main.c and utils.c
+</span><span class="nl">app</span><span class="o">:</span> <span class="nf">main.o utils.o</span>
+	gcc <span class="nt">-o</span> app main.o utils.o
+
+<span class="nl">main.o</span><span class="o">:</span> <span class="nf">main.c utils.h</span>
+	gcc <span class="nt">-c</span> main.c
+
+<span class="nl">utils.o</span><span class="o">:</span> <span class="nf">utils.c utils.h</span>
+	gcc <span class="nt">-c</span> utils.c
+
+<span class="nl">clean</span><span class="o">:</span>
+	<span class="nb">rm</span> <span class="nt">-f</span> app <span class="k">*</span>.o
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>make          <span class="c"># builds 'app' (first target)</span>
+make clean    <span class="c"># removes build artifacts</span>
+make utils.o  <span class="c"># build a specific target</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="variables">Variables</h2>
+
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">CC</span>      <span class="o">=</span> gcc
+<span class="nv">CFLAGS</span>  <span class="o">=</span> <span class="nt">-Wall</span> <span class="nt">-Wextra</span> <span class="nt">-O2</span> <span class="nt">-g</span>
+<span class="nv">LDFLAGS</span> <span class="o">=</span> <span class="nt">-lm</span>
+<span class="nv">TARGET</span>  <span class="o">=</span> app
+<span class="nv">SRCS</span>    <span class="o">=</span> main.c utils.c sensor.c
+<span class="nv">OBJS</span>    <span class="o">=</span> <span class="nv">$(SRCS:.c=.o)</span>        <span class="c"># text substitution: replace .c with .o</span>
+
+<span class="nl">$(TARGET)</span><span class="o">:</span> <span class="nf">$(OBJS)</span>
+	<span class="nv">$(CC)</span> <span class="nv">$(LDFLAGS)</span> <span class="nt">-o</span> <span class="nv">$@</span> <span class="nv">$^</span>
+
+<span class="nl">%.o</span><span class="o">:</span> <span class="nf">%.c</span>
+	<span class="nv">$(CC)</span> <span class="nv">$(CFLAGS)</span> <span class="nt">-c</span> <span class="nt">-o</span> <span class="nv">$@</span> <span class="nv">$&lt;</span>
+
+<span class="nl">clean</span><span class="o">:</span>
+	<span class="nb">rm</span> <span class="nt">-f</span> <span class="nv">$(TARGET)</span> <span class="nv">$(OBJS)</span>
+</code></pre></div></div>
+
+<h3 id="automatic-variables">Automatic Variables</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Variable</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">$@</code></td>
+      <td>The <strong>target</strong> name</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">$&lt;</code></td>
+      <td>The <strong>first</strong> dependency</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">$^</code></td>
+      <td><strong>All</strong> dependencies (deduplicated)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">$?</code></td>
+      <td>All dependencies <strong>newer</strong> than target</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">$*</code></td>
+      <td>The stem matched by <code class="language-plaintext highlighter-rouge">%</code> in pattern rules</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">%.o</span><span class="o">:</span> <span class="nf">%.c</span>
+	<span class="nv">$(CC)</span> <span class="nv">$(CFLAGS)</span> <span class="nt">-c</span> <span class="nt">-o</span> <span class="nv">$@</span> <span class="nv">$&lt;</span>
+<span class="c">#                          ^^  target (e.g. main.o)
+#                             ^^ first dep (main.c)
+</span></code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="pattern-rules-and-phony-targets">Pattern Rules and Phony Targets</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="pattern-rules">Pattern Rules</h3>
+
+<p>Instead of a rule per <code class="language-plaintext highlighter-rouge">.c</code> file, one pattern rule handles all of them:</p>
+
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Compile any .c file into a .o file
+</span><span class="nl">%.o</span><span class="o">:</span> <span class="nf">%.c</span>
+	<span class="nv">$(CC)</span> <span class="nv">$(CFLAGS)</span> <span class="nt">-c</span> <span class="nt">-o</span> <span class="nv">$@</span> <span class="nv">$&lt;</span>
+</code></pre></div></div>
+
+<h3 id="phony-targets">Phony Targets</h3>
+
+<p>Targets that don’t produce a file — always run when requested:</p>
+
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">.PHONY</span><span class="o">:</span> <span class="nf">all clean install test</span>
+
+<span class="nl">all</span><span class="o">:</span> <span class="nf">$(TARGET)</span>
+
+<span class="nl">clean</span><span class="o">:</span>
+	<span class="nb">rm</span> <span class="nt">-f</span> <span class="nv">$(TARGET)</span> <span class="nv">$(OBJS)</span> <span class="nv">$(DEPS)</span>
+
+<span class="nl">install</span><span class="o">:</span> <span class="nf">$(TARGET)</span>
+	<span class="nb">install</span> <span class="nt">-m</span> 755 <span class="nv">$(TARGET)</span> /usr/local/bin/
+
+<span class="nl">test</span><span class="o">:</span> <span class="nf">$(TARGET)</span>
+	./run_tests.sh
+</code></pre></div></div>
+
+<p>Without <code class="language-plaintext highlighter-rouge">.PHONY</code>, if a file named <code class="language-plaintext highlighter-rouge">clean</code> exists, <code class="language-plaintext highlighter-rouge">make clean</code> would do nothing.</p>
+
+<hr />
+
+<h2 class="gc-mid" id="automatic-dependency-tracking">Automatic Dependency Tracking</h2>
+
+<p>When a header changes, only the <code class="language-plaintext highlighter-rouge">.c</code> files that include it should recompile. Generate <code class="language-plaintext highlighter-rouge">.d</code> dependency files automatically with GCC:</p>
+
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">CC</span>      <span class="o">=</span> gcc
+<span class="nv">CFLAGS</span>  <span class="o">=</span> <span class="nt">-Wall</span> <span class="nt">-O2</span> <span class="nt">-g</span>
+<span class="nv">DEPFLAGS</span> <span class="o">=</span> <span class="nt">-MMD</span> <span class="nt">-MP</span>            <span class="c"># generate .d files alongside .o files</span>
+
+<span class="nv">TARGET</span> <span class="o">=</span> app
+<span class="nv">SRCS</span>   <span class="o">=</span> <span class="nf">$(</span><span class="nb">wildcard</span> src/<span class="k">*</span>.c<span class="nf">)</span>
+<span class="nv">OBJS</span>   <span class="o">=</span> <span class="err">$</span><span class="o">(</span>SRCS:src/%.c<span class="o">=</span>build/%.o<span class="o">)</span>
+<span class="nv">DEPS</span>   <span class="o">=</span> <span class="nv">$(OBJS:.o=.d)</span>
+
+<span class="nl">$(TARGET)</span><span class="o">:</span> <span class="nf">$(OBJS)</span>
+	<span class="nv">$(CC)</span> <span class="nt">-o</span> <span class="nv">$@</span> <span class="nv">$^</span>
+
+<span class="nl">build/%.o</span><span class="o">:</span> <span class="nf">src/%.c | build</span>
+	<span class="nv">$(CC)</span> <span class="nv">$(CFLAGS)</span> <span class="nv">$(DEPFLAGS)</span> <span class="nt">-c</span> <span class="nt">-o</span> <span class="nv">$@</span> <span class="nv">$&lt;</span>
+
+<span class="nl">build</span><span class="o">:</span>
+	<span class="nb">mkdir</span> <span class="nt">-p</span> build
+
+<span class="k">-include</span><span class="sx"> $(DEPS)</span>               <span class="c"># include .d files; '-' suppresses error if missing
+</span>
+<span class="nl">.PHONY</span><span class="o">:</span> <span class="nf">clean</span>
+<span class="nl">clean</span><span class="o">:</span>
+	<span class="nb">rm</span> <span class="nt">-rf</span> build <span class="nv">$(TARGET)</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">-MMD -MP</code> flags make GCC output e.g. <code class="language-plaintext highlighter-rouge">build/utils.d</code>:</p>
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">build/utils.o</span><span class="o">:</span> <span class="nf">src/utils.c src/utils.h src/config.h</span>
+<span class="nl">src/utils.h</span><span class="o">:</span>
+<span class="nl">src/config.h</span><span class="o">:</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-multi-directory-projects">Advanced: Multi-Directory Projects</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<h3 id="recursive-make-traditional">Recursive Make (Traditional)</h3>
+
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Top-level Makefile
+</span><span class="nv">SUBDIRS</span> <span class="o">=</span> lib src tests
+
+<span class="nl">.PHONY</span><span class="o">:</span> <span class="nf">all clean $(SUBDIRS)</span>
+
+<span class="nl">all</span><span class="o">:</span> <span class="nf">$(SUBDIRS)</span>
+<span class="nl">src</span><span class="o">:</span> <span class="nf">lib        </span><span class="c">#</span><span class="nf"> src depends on lib being built first</span>
+
+<span class="nl">$(SUBDIRS)</span><span class="o">:</span>
+	<span class="nv">$(MAKE)</span> <span class="nt">-C</span> <span class="nv">$@</span>
+
+<span class="nl">clean</span><span class="o">:</span>
+	<span class="k">for </span>d <span class="k">in</span> <span class="nv">$(SUBDIRS)</span><span class="p">;</span> <span class="k">do</span> <span class="nv">$(MAKE)</span> <span class="nt">-C</span> <span class="nv">$$</span>d clean<span class="p">;</span> <span class="k">done</span>
+</code></pre></div></div>
+
+<h3 id="non-recursive-make-better-for-large-projects">Non-Recursive Make (Better for Large Projects)</h3>
+
+<p>One Makefile at the root that includes module fragments:</p>
+
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Makefile
+</span><span class="nv">CC</span>     <span class="o">=</span> gcc
+<span class="nv">CFLAGS</span> <span class="o">=</span> <span class="nt">-Wall</span> <span class="nt">-O2</span> <span class="nt">-Iinclude</span>
+
+<span class="k">include</span><span class="sx"> lib/module.mk</span>
+<span class="k">include</span><span class="sx"> src/module.mk</span>
+
+<span class="nv">TARGET</span> <span class="o">=</span> app
+<span class="nl">$(TARGET)</span><span class="o">:</span> <span class="nf">$(ALL_OBJS)</span>
+	<span class="nv">$(CC)</span> <span class="nt">-o</span> <span class="nv">$@</span> <span class="nv">$^</span>
+</code></pre></div></div>
+
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># lib/module.mk
+</span><span class="nv">LIB_SRCS</span> <span class="o">:=</span> <span class="nf">$(</span><span class="nb">wildcard</span> lib/<span class="k">*</span>.c<span class="nf">)</span>
+<span class="nv">LIB_OBJS</span> <span class="o">:=</span> <span class="nv">$(LIB_SRCS:.c=.o)</span>
+<span class="nv">ALL_OBJS</span>  <span class="o">+=</span> <span class="nv">$(LIB_OBJS)</span>
+</code></pre></div></div>
+
+<h3 id="cross-compilation-makefile">Cross-Compilation Makefile</h3>
+
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">ARCH</span>      <span class="o">?=</span> arm
+<span class="nv">CROSS</span>     <span class="o">?=</span> arm-linux-gnueabihf-
+<span class="nv">CC</span>         <span class="o">=</span> <span class="nv">$(CROSS)</span>gcc
+<span class="nv">STRIP</span>      <span class="o">=</span> <span class="nv">$(CROSS)</span>strip
+<span class="nv">SYSROOT</span>   <span class="o">?=</span> /opt/sysroot
+
+<span class="nv">CFLAGS</span>  <span class="o">=</span> <span class="nt">-Wall</span> <span class="nt">-O2</span> <span class="nt">-march</span><span class="o">=</span>armv7-a <span class="nt">-mfpu</span><span class="o">=</span>neon <span class="nt">--sysroot</span><span class="o">=</span><span class="nv">$(SYSROOT)</span>
+<span class="nv">LDFLAGS</span> <span class="o">=</span> <span class="nt">--sysroot</span><span class="o">=</span><span class="nv">$(SYSROOT)</span>
+
+<span class="nv">TARGET</span> <span class="o">=</span> sensor_daemon
+
+<span class="nl">$(TARGET)</span><span class="o">:</span> <span class="nf">main.o sensor.o</span>
+	<span class="nv">$(CC)</span> <span class="nv">$(LDFLAGS)</span> <span class="nt">-o</span> <span class="nv">$@</span> <span class="nv">$^</span>
+	<span class="nv">$(STRIP)</span> <span class="nv">$@</span>
+
+<span class="nl">deploy</span><span class="o">:</span> <span class="nf">$(TARGET)</span>
+	scp <span class="nv">$(TARGET)</span> root@192.168.1.100:/usr/local/bin/
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>make <span class="nv">ARCH</span><span class="o">=</span>arm <span class="nv">CROSS</span><span class="o">=</span>arm-linux-gnueabihf-
+make deploy
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: Why must Makefile recipe lines be indented with a tab, not spaces?</strong></p>
+
+<blockquote>
+  <p>This is a historical quirk from the original 1976 Make implementation. The parser uses the tab character as a signal that a line is a recipe (command) rather than a Makefile directive. Using spaces causes the cryptic error: <code class="language-plaintext highlighter-rouge">Makefile:5: *** missing separator. Stop.</code> Modern build systems (Meson, CMake, Ninja) don’t have this restriction.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: What does <code class="language-plaintext highlighter-rouge">.PHONY</code> do and why is it important?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">.PHONY</code> tells make that a target is not a real file. Without it, if a file named <code class="language-plaintext highlighter-rouge">clean</code> happens to exist, <code class="language-plaintext highlighter-rouge">make clean</code> would see the file as up-to-date and do nothing. <code class="language-plaintext highlighter-rouge">.PHONY</code> forces the recipe to run every time, regardless of any files with the same name.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: Explain the <code class="language-plaintext highlighter-rouge">-MMD -MP</code> GCC flags.</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">-MMD</code> generates a <code class="language-plaintext highlighter-rouge">.d</code> dependency file alongside the <code class="language-plaintext highlighter-rouge">.o</code> file containing the <code class="language-plaintext highlighter-rouge">make</code> rule for all headers the source includes. <code class="language-plaintext highlighter-rouge">-MP</code> adds an empty rule for each header to prevent errors if a header is deleted (without it, make would error because it can’t find the header listed in the <code class="language-plaintext highlighter-rouge">.d</code> file). Together they enable automatic header dependency tracking without manually listing headers.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: What is the difference between recursive and non-recursive make, and what are the trade-offs?</strong></p>
+
+<blockquote>
+  <p><strong>Recursive make</strong> runs <code class="language-plaintext highlighter-rouge">make</code> in subdirectories. It’s simple to understand but has serious problems: Make can’t see the full dependency graph across directories, so it may rebuild in the wrong order or fail to detect that a library changed. Miller’s paper “Recursive Make Considered Harmful” (1998) explains this. <strong>Non-recursive make</strong> uses a single top-level Makefile that includes fragment <code class="language-plaintext highlighter-rouge">.mk</code> files from subdirectories. It sees the full graph, enables correct parallel builds (<code class="language-plaintext highlighter-rouge">-j</code>), and is faster — but harder to organise in large projects.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GNU Make Manual</td>
+      <td><a href="https://www.gnu.org/software/make/manual/make.html">gnu.org/software/make/manual</a></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 1 make</code></td>
+      <td>make manual page</td>
+    </tr>
+    <tr>
+      <td>“Recursive Make Considered Harmful”</td>
+      <td>P. Miller, 1998</td>
+    </tr>
+    <tr>
+      <td>Makefile tutorial</td>
+      <td><a href="https://makefiletutorial.com">makefiletutorial.com</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-file-code"></i>
+        <span>C Programming Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/c-programming/pointers-memory/" class="gtn-link ">
+          <i class="fas fa-memory"></i> Pointers &amp; Memory
+        </a>
+        <a href="/linux-developer/c-programming/structs-unions/" class="gtn-link ">
+          <i class="fas fa-cube"></i> Structs &amp; Unions
+        </a>
+        <a href="/linux-developer/c-programming/file-io/" class="gtn-link ">
+          <i class="fas fa-file-code"></i> File I/O
+        </a>
+        <a href="/linux-developer/c-programming/dynamic-allocation/" class="gtn-link ">
+          <i class="fas fa-layer-group"></i> Dynamic Allocation
+        </a>
+        <a href="/linux-developer/c-programming/makefiles/" class="gtn-link gts-active">
+          <i class="fas fa-hammer"></i> Makefiles
+        </a>
+        <a href="/linux-developer/c-programming/gcc-optimization/" class="gtn-link ">
+          <i class="fas fa-gears"></i> GCC Flags &amp; Optimization
+        </a>
+        <a href="/linux-developer/c-programming/gdb/" class="gtn-link ">
+          <i class="fas fa-bug"></i> GDB Debugging
+        </a>
+      </nav>
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/c-programming/dynamic-allocation/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Dynamic Allocation</span>
+      </a>
+      
+      
+      <a href="/linux-developer/c-programming/gcc-optimization/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">GCC Flags & Optimization</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

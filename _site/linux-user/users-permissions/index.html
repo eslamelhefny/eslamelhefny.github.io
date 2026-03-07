@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Users & Permissions · Eslam Mohamed</title>
+  <meta name="description" content="Manage Linux users and groups, master file permission bits, set up sudo, work with ACLs, and understand Linux capabilities and PAM for production-level access control." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-user/">Linux User Guide</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Users & Permissions</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 01 — Linux User</span>
+        <span class="guide-stage-pill">Stage 02</span>
+      </div>
+      <h1 class="guide-title">Users & Permissions</h1>
+      <p class="guide-subtitle">Manage Linux users and groups, master file permission bits, set up sudo, work with ACLs, and understand Linux capabilities and PAM for production-level access control.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="user-and-group-fundamentals">User and Group Fundamentals</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>Linux is a <strong>multi-user</strong> OS. Every process runs as a user, every file is owned by a user+group pair, and the kernel enforces access through these identities.</p>
+
+<h3 id="key-files">Key Files</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/etc/passwd     <span class="c"># User accounts (username:x:UID:GID:GECOS:home:shell)</span>
+/etc/shadow     <span class="c"># Hashed passwords (root-readable only)</span>
+/etc/group      <span class="c"># Group definitions (groupname:x:GID:members)</span>
+/etc/gshadow    <span class="c"># Group passwords (rare)</span>
+</code></pre></div></div>
+
+<p><strong>Viewing the password file:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat</span> /etc/passwd | <span class="nb">head</span> <span class="nt">-4</span>
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+eslam:x:1000:1000:Eslam Mohamed,,,:/home/eslam:/bin/bash
+sshd:x:110:65534::/run/sshd:/usr/sbin/nologin
+<span class="c"># name:x:UID:GID:comment:home:shell</span>
+</code></pre></div></div>
+
+<h3 id="user-management-commands">User Management Commands</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Add a user (high-level, interactive)</span>
+<span class="nb">sudo </span>adduser eslam
+
+<span class="c"># Add a user (low-level, scriptable)</span>
+<span class="nb">sudo </span>useradd <span class="nt">-m</span> <span class="nt">-s</span> /bin/bash <span class="nt">-G</span> <span class="nb">sudo</span>,developers eslam
+
+<span class="c"># Set / change password</span>
+<span class="nb">sudo </span>passwd eslam
+
+<span class="c"># Modify user</span>
+<span class="nb">sudo </span>usermod <span class="nt">-aG</span> docker eslam      <span class="c"># add to docker group (append!)</span>
+<span class="nb">sudo </span>usermod <span class="nt">-s</span> /bin/zsh eslam     <span class="c"># change shell</span>
+<span class="nb">sudo </span>usermod <span class="nt">-l</span> newname eslam      <span class="c"># rename login</span>
+<span class="nb">sudo </span>usermod <span class="nt">-L</span> eslam              <span class="c"># lock account</span>
+<span class="nb">sudo </span>usermod <span class="nt">-U</span> eslam              <span class="c"># unlock account</span>
+
+<span class="c"># Delete user</span>
+<span class="nb">sudo </span>userdel eslam                 <span class="c"># keep home directory</span>
+<span class="nb">sudo </span>userdel <span class="nt">-r</span> eslam              <span class="c"># delete home + mail spool</span>
+
+<span class="c"># Get info about current user</span>
+<span class="nb">id
+whoami
+groups</span>
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">id</code> output:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">id
+</span><span class="nv">uid</span><span class="o">=</span>1000<span class="o">(</span>eslam<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>1000<span class="o">(</span>eslam<span class="o">)</span> <span class="nb">groups</span><span class="o">=</span>1000<span class="o">(</span>eslam<span class="o">)</span>,4<span class="o">(</span>adm<span class="o">)</span>,24<span class="o">(</span>cdrom<span class="o">)</span>,27<span class="o">(</span><span class="nb">sudo</span><span class="o">)</span>,1001<span class="o">(</span>docker<span class="o">)</span>
+</code></pre></div></div>
+
+<h3 id="group-management">Group Management</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>groupadd developers        <span class="c"># create group</span>
+<span class="nb">sudo </span>groupdel developers        <span class="c"># delete group</span>
+<span class="nb">sudo </span>gpasswd <span class="nt">-a</span> eslam devs      <span class="c"># add user to group</span>
+<span class="nb">sudo </span>gpasswd <span class="nt">-d</span> eslam devs      <span class="c"># remove user from group</span>
+getent group docker             <span class="c"># show group members</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="file-permissions">File Permissions</h2>
+
+<h3 id="reading-permission-bits">Reading Permission Bits</h3>
+
+<p>Every file has 9 permission bits (3 for owner, 3 for group, 3 for others):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-  rwx  r-x  r--
+│   │    │    └── other:  r=4, -=0, -=0  → 4
+│   │    └─────── group:  r=4, -=0, x=1  → 5
+│   └──────────── owner:  r=4, w=2, x=1  → 7
+└──────────────── type: - file, d dir, l link, c char, b block
+</code></pre></div></div>
+
+<h3 id="chmod--change-permissions"><code class="language-plaintext highlighter-rouge">chmod</code> — Change Permissions</h3>
+
+<p><strong>Symbolic mode:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">chmod </span>u+x script.sh          <span class="c"># add execute for owner</span>
+<span class="nb">chmod </span>g-w file.txt           <span class="c"># remove write from group</span>
+<span class="nb">chmod </span><span class="nv">o</span><span class="o">=</span>r file.txt           <span class="c"># set other to read-only</span>
+<span class="nb">chmod </span>a+x script.sh          <span class="c"># add execute for all (u+g+o)</span>
+<span class="nb">chmod </span><span class="nv">u</span><span class="o">=</span>rwx,g<span class="o">=</span>rx,o<span class="o">=</span> file     <span class="c"># set all at once</span>
+</code></pre></div></div>
+
+<p><strong>Octal mode:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">chmod </span>755 script.sh    <span class="c"># rwxr-xr-x — typical for executables</span>
+<span class="nb">chmod </span>644 file.txt     <span class="c"># rw-r--r-- — typical for data files</span>
+<span class="nb">chmod </span>600 id_rsa       <span class="c"># rw------- — SSH private keys</span>
+<span class="nb">chmod </span>700 ~/.ssh       <span class="c"># rwx------ — SSH directory</span>
+<span class="nb">chmod </span>777 /tmp/shared  <span class="c"># rwxrwxrwx — world-writable (avoid in prod!)</span>
+</code></pre></div></div>
+
+<h3 id="chown--change-owner"><code class="language-plaintext highlighter-rouge">chown</code> — Change Owner</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo chown </span>eslam file.txt               <span class="c"># change owner</span>
+<span class="nb">sudo chown </span>eslam:developers file.txt    <span class="c"># change owner and group</span>
+<span class="nb">sudo chown</span> :developers file.txt         <span class="c"># change group only</span>
+<span class="nb">sudo chown</span> <span class="nt">-R</span> eslam:eslam /home/eslam   <span class="c"># recursive</span>
+</code></pre></div></div>
+
+<h3 id="sudo-and-etcsudoers"><code class="language-plaintext highlighter-rouge">sudo</code> and <code class="language-plaintext highlighter-rouge">/etc/sudoers</code></h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Run command as root</span>
+<span class="nb">sudo </span>apt update
+
+<span class="c"># Run as specific user</span>
+<span class="nb">sudo</span> <span class="nt">-u</span> www-data nginx <span class="nt">-t</span>
+
+<span class="c"># Edit sudoers safely (validates syntax before saving)</span>
+<span class="nb">sudo </span>visudo
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">/etc/sudoers</code> syntax:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># user   host=(run_as)  commands
+eslam    ALL=(ALL:ALL)  ALL               # full sudo
+eslam    ALL=(ALL)      NOPASSWD: /bin/systemctl restart nginx
+%sudo    ALL=(ALL:ALL)  ALL               # group sudo (% = group)
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="special-permission-bits">Special Permission Bits</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<h3 id="suid-set-user-id--bit-4000">SUID (Set User ID) — bit 4000</h3>
+
+<p>When set on an <strong>executable</strong>, the process runs with the <strong>file owner’s</strong> UID, not the caller’s.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">chmod </span>u+s /usr/bin/passwd
+<span class="c"># or</span>
+<span class="nb">chmod </span>4755 /usr/bin/passwd
+
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-l</span> /usr/bin/passwd
+<span class="nt">-rwsr-xr-x</span> 1 root root 59640 Nov 24 2022 /usr/bin/passwd
+<span class="c">#    ^ 's' = SUID is set</span>
+</code></pre></div></div>
+
+<p><strong>Why it exists:</strong> <code class="language-plaintext highlighter-rouge">passwd</code> must write to <code class="language-plaintext highlighter-rouge">/etc/shadow</code> (owned by root). With SUID, any user can run <code class="language-plaintext highlighter-rouge">passwd</code> and it temporarily gets root UID to update the shadow file — but only for that specific task.</p>
+
+<p><strong>Security implication:</strong> SUID binaries with vulnerabilities become privilege escalation vectors. Audit them with:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>find / <span class="nt">-perm</span> /4000 <span class="nt">-type</span> f 2&gt;/dev/null
+</code></pre></div></div>
+
+<h3 id="sgid-set-group-id--bit-2000">SGID (Set Group ID) — bit 2000</h3>
+
+<p>On an <strong>executable</strong>: process runs with file’s <strong>group</strong> GID.
+On a <strong>directory</strong>: new files inherit the directory’s group (very useful for shared project dirs).</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">chmod </span>g+s /shared/project
+<span class="c"># or</span>
+<span class="nb">chmod </span>2755 /shared/project
+
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-ld</span> /shared/project
+drwxrwsr-x 2 root devteam 4096 Mar 5 10:00 /shared/project
+<span class="c">#      ^ 's' = SGID on directory</span>
+</code></pre></div></div>
+
+<h3 id="sticky-bit--bit-1000">Sticky Bit — bit 1000</h3>
+
+<p>On a <strong>directory</strong>: users can only delete/rename their <strong>own</strong> files, even if they have write permission on the directory. Essential for <code class="language-plaintext highlighter-rouge">/tmp</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">chmod</span> +t /tmp
+<span class="c"># or</span>
+<span class="nb">chmod </span>1777 /tmp
+
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-ld</span> /tmp
+drwxrwxrwt 12 root root 4096 Mar  7 08:00 /tmp
+<span class="c">#         ^ 't' = sticky bit</span>
+</code></pre></div></div>
+
+<h3 id="umask--default-permission-mask"><code class="language-plaintext highlighter-rouge">umask</code> — Default Permission Mask</h3>
+
+<p><code class="language-plaintext highlighter-rouge">umask</code> subtracts bits from the default permissions (666 for files, 777 for dirs).</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">umask
+</span>0022    <span class="c"># means new files = 666-022 = 644, new dirs = 777-022 = 755</span>
+
+<span class="nb">umask </span>027    <span class="c"># new files = 640, new dirs = 750 (no world access)</span>
+<span class="nb">umask </span>077    <span class="c"># files = 600, dirs = 700 (private, good for home dirs)</span>
+</code></pre></div></div>
+
+<p>Set it persistently in <code class="language-plaintext highlighter-rouge">~/.bashrc</code> or <code class="language-plaintext highlighter-rouge">/etc/profile</code>.</p>
+
+<hr />
+
+<h2 class="gc-mid" id="access-control-lists-acls">Access Control Lists (ACLs)</h2>
+
+<p>Standard Unix permissions only allow one owner and one group. <strong>ACLs</strong> let you grant fine-grained access to specific users or groups.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install</span>
+<span class="nb">sudo </span>apt <span class="nb">install </span>acl
+
+<span class="c"># View ACL</span>
+getfacl /shared/project
+
+<span class="c"># Give user bob read+write on a file</span>
+setfacl <span class="nt">-m</span> u:bob:rw file.txt
+
+<span class="c"># Give group qa read-only</span>
+setfacl <span class="nt">-m</span> g:qa:r-- /shared/reports/
+
+<span class="c"># Set default ACL on a directory (inherited by new files)</span>
+setfacl <span class="nt">-d</span> <span class="nt">-m</span> u:bob:rw /shared/project/
+
+<span class="c"># Remove specific ACL entry</span>
+setfacl <span class="nt">-x</span> u:bob file.txt
+
+<span class="c"># Remove all ACLs</span>
+setfacl <span class="nt">-b</span> file.txt
+</code></pre></div></div>
+
+<p><strong><code class="language-plaintext highlighter-rouge">getfacl</code> output:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>getfacl /shared/project
+<span class="c"># file: shared/project</span>
+<span class="c"># owner: eslam</span>
+<span class="c"># group: devteam</span>
+<span class="c"># flags: -s-</span>
+user::rwx
+user:bob:rw-
+group::r-x
+group:qa:r--
+mask::rwx
+other::---
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">mask</code> entry limits the effective permissions for named users/groups.</p>
+
+<hr />
+
+<h2 class="gc-adv" id="advanced-linux-capabilities">Advanced: Linux Capabilities</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p>Capabilities divide root’s omnipotence into <strong>distinct units</strong> that can be granted individually, reducing the attack surface of privileged programs.</p>
+
+<h3 id="common-capabilities">Common Capabilities</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Capability</th>
+      <th>What it grants</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CAP_NET_BIND_SERVICE</code></td>
+      <td>Bind ports &lt; 1024</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CAP_NET_ADMIN</code></td>
+      <td>Configure network interfaces</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CAP_SYS_ADMIN</code></td>
+      <td>Mount filesystems, many admin ops</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CAP_SYS_PTRACE</code></td>
+      <td>Attach to processes with ptrace</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CAP_DAC_OVERRIDE</code></td>
+      <td>Bypass file read/write/execute checks</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CAP_SETUID</code></td>
+      <td>Change process UID</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CAP_KILL</code></td>
+      <td>Send signals to any process</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># View capabilities on a file</span>
+getcap /usr/bin/ping
+
+<span class="c"># Grant capability (instead of SUID root)</span>
+<span class="nb">sudo </span>setcap cap_net_bind_service+ep /usr/local/bin/myserver
+<span class="c"># +ep = effective + permitted sets</span>
+
+<span class="c"># Remove capabilities</span>
+<span class="nb">sudo </span>setcap <span class="nt">-r</span> /usr/local/bin/myserver
+
+<span class="c"># View current process capabilities</span>
+<span class="nb">cat</span> /proc/self/status | <span class="nb">grep </span>Cap
+capsh <span class="nt">--decode</span><span class="o">=</span>0000000000000000   <span class="c"># decode hex capability mask</span>
+</code></pre></div></div>
+
+<p><strong>Real example:</strong> Give a Node.js app the ability to bind port 80 without running as root:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>setcap cap_net_bind_service+ep <span class="si">$(</span>which node<span class="si">)</span>
+</code></pre></div></div>
+
+<h3 id="pam--pluggable-authentication-modules">PAM — Pluggable Authentication Modules</h3>
+
+<p>PAM sits between applications and authentication backends, providing modular control over who can log in and how.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># PAM config lives in /etc/pam.d/</span>
+<span class="nb">ls</span> /etc/pam.d/
+<span class="c"># sshd, login, sudo, common-auth, common-password, …</span>
+
+<span class="nb">cat</span> /etc/pam.d/common-auth
+<span class="c"># auth  [success=1 default=ignore]  pam_unix.so nullok</span>
+<span class="c"># auth  requisite                    pam_deny.so</span>
+<span class="c"># auth  required                     pam_permit.so</span>
+</code></pre></div></div>
+
+<p><strong>Control flags:</strong> <code class="language-plaintext highlighter-rouge">required</code> (failure always fails), <code class="language-plaintext highlighter-rouge">requisite</code> (immediate failure), <code class="language-plaintext highlighter-rouge">sufficient</code> (success skips rest), <code class="language-plaintext highlighter-rouge">optional</code>.</p>
+
+<p><strong>Useful PAM modules:</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Module</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">pam_unix.so</code></td>
+      <td>Traditional UNIX password auth</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">pam_google_authenticator.so</code></td>
+      <td>TOTP two-factor auth</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">pam_limits.so</code></td>
+      <td>Enforce resource limits (ulimit)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">pam_faillock.so</code></td>
+      <td>Account lockout after N failed attempts</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">pam_env.so</code></td>
+      <td>Set environment variables on login</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="user-namespaces">User Namespaces</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Run a process in its own user namespace (appears as root inside, not outside)</span>
+unshare <span class="nt">--user</span> <span class="nt">--map-root-user</span> bash
+
+<span class="c"># Check — inside the namespace you're UID 0</span>
+<span class="nb">id</span>
+<span class="c"># uid=0(root) gid=0(root) groups=0(root),...</span>
+
+<span class="c"># From host, you're still your regular UID</span>
+</code></pre></div></div>
+
+<p>User namespaces are the foundation of rootless containers (Podman, rootless Docker).</p>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: What does <code class="language-plaintext highlighter-rouge">chmod 644</code> mean?</strong></p>
+
+<blockquote>
+  <p>Owner gets read+write (4+2=6), group gets read-only (4), others get read-only (4). Typical for config files and static web assets.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">adduser</code> and <code class="language-plaintext highlighter-rouge">useradd</code>?</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">useradd</code> is the low-level system binary — it does exactly what flags say and nothing more. <code class="language-plaintext highlighter-rouge">adduser</code> is a higher-level Perl/Python script (Debian/Ubuntu) that provides sensible defaults: creates home directory, copies <code class="language-plaintext highlighter-rouge">/etc/skel</code>, prompts for password and GECOS info. For scripts, use <code class="language-plaintext highlighter-rouge">useradd</code>; for interactive admin, use <code class="language-plaintext highlighter-rouge">adduser</code>.</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: Explain SUID on a directory. Does it have any effect?</strong></p>
+
+<blockquote>
+  <p>SUID on a directory has <strong>no defined effect</strong> on most Linux filesystems (it is ignored). SGID on a directory is the useful one — it makes newly created files inherit the directory’s group instead of the creator’s primary group.</p>
+</blockquote>
+
+<p><strong>Q4 — Intermediate: What does the <code class="language-plaintext highlighter-rouge">x</code> permission mean on a directory vs a file?</strong></p>
+
+<blockquote>
+  <p>On a <strong>file</strong>: permission to execute it as a program. On a <strong>directory</strong>: permission to <strong>enter</strong> it (traverse / <code class="language-plaintext highlighter-rouge">cd</code> into it) and access files within it if their names are known. Read (<code class="language-plaintext highlighter-rouge">r</code>) on a directory lets you list its contents; execute (<code class="language-plaintext highlighter-rouge">x</code>) lets you access contents by name. You need both <code class="language-plaintext highlighter-rouge">r</code> and <code class="language-plaintext highlighter-rouge">x</code> to do a useful <code class="language-plaintext highlighter-rouge">ls</code> and <code class="language-plaintext highlighter-rouge">cd</code>.</p>
+</blockquote>
+
+<p><strong>Q5 — Intermediate: How would you allow <code class="language-plaintext highlighter-rouge">www-data</code> to read a file owned by <code class="language-plaintext highlighter-rouge">eslam</code> without changing ownership or using ACLs?</strong></p>
+
+<blockquote>
+  <p>Add <code class="language-plaintext highlighter-rouge">www-data</code> to <code class="language-plaintext highlighter-rouge">eslam</code>’s group, then ensure the file has group-readable permissions (<code class="language-plaintext highlighter-rouge">chmod g+r</code>). Or use <code class="language-plaintext highlighter-rouge">setfacl -m u:www-data:r file.txt</code> for a more targeted ACL approach.</p>
+</blockquote>
+
+<p><strong>Q6 — Advanced: What is the difference between SUID and Linux capabilities, and which is preferred for new software?</strong></p>
+
+<blockquote>
+  <p>SUID grants the entire UID of the file owner (usually root) for the duration of the process. Linux capabilities grant only specific privileges (e.g., <code class="language-plaintext highlighter-rouge">CAP_NET_BIND_SERVICE</code> for binding low ports). Capabilities follow the <strong>principle of least privilege</strong> — if your daemon only needs to bind port 443, give it <code class="language-plaintext highlighter-rouge">cap_net_bind_service</code> instead of making it SUID root, drastically reducing the blast radius of a vulnerability.</p>
+</blockquote>
+
+<p><strong>Q7 — Advanced: How do containers implement user isolation without a hypervisor?</strong></p>
+
+<blockquote>
+  <p>Linux <strong>user namespaces</strong> map a range of host UIDs to a different range inside the namespace (commonly mapping host UID 100000-165535 to container UIDs 0-65535). Inside the container, the process appears to be root (UID 0), but the kernel sees it as UID 100000 on the host with no special privileges. Combined with mount, network, and PID namespaces, this provides strong isolation without a VM.</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 5 passwd</code></td>
+      <td>Format of <code class="language-plaintext highlighter-rouge">/etc/passwd</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 5 sudoers</code></td>
+      <td>Sudoers file syntax reference</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 1 setfacl</code> / <code class="language-plaintext highlighter-rouge">man 1 getfacl</code></td>
+      <td>ACL management</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 capabilities</code></td>
+      <td>Full Linux capabilities reference</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 8 pam</code></td>
+      <td>PAM overview</td>
+    </tr>
+    <tr>
+      <td>Linux PAM documentation</td>
+      <td><a href="http://www.linux-pam.org/Linux-PAM-html/">linux-pam.org</a></td>
+    </tr>
+    <tr>
+      <td>Linux Capabilities in Practice</td>
+      <td><a href="https://man7.org/linux/man-pages/man7/capabilities.7.html">man7.org/linux/man-pages/man7/capabilities.7.html</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-terminal"></i>
+        <span>Linux User Topics</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-user/filesystem-navigation/" class="gtn-link ">
+          <i class="fas fa-folder-open"></i> Filesystem Navigation
+        </a>
+        <a href="/linux-user/users-permissions/" class="gtn-link gts-active">
+          <i class="fas fa-user-lock"></i> Users &amp; Permissions
+        </a>
+        <a href="/linux-user/process-management/" class="gtn-link ">
+          <i class="fas fa-microchip"></i> Process Management
+        </a>
+        <a href="/linux-user/package-management/" class="gtn-link ">
+          <i class="fas fa-box"></i> Package Management
+        </a>
+        <a href="/linux-user/networking/" class="gtn-link ">
+          <i class="fas fa-network-wired"></i> Networking Basics
+        </a>
+        <a href="/linux-user/ssh/" class="gtn-link ">
+          <i class="fas fa-lock"></i> SSH &amp; Remote Access
+        </a>
+        <a href="/linux-user/cron/" class="gtn-link ">
+          <i class="fas fa-clock"></i> Cron &amp; Scheduling
+        </a>
+        <a href="/linux-user/bash-scripting/" class="gtn-link ">
+          <i class="fas fa-terminal"></i> Bash Scripting
+        </a>
+        <a href="/linux-user/git/" class="gtn-link ">
+          <i class="fab fa-git-alt"></i> Git Basics
+        </a>
+      </nav>
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-user/filesystem-navigation/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Filesystem Navigation</span>
+      </a>
+      
+      
+      <a href="/linux-user/process-management/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Process Management</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

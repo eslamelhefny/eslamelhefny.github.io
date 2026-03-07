@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UNIX Sockets · Eslam Mohamed</title>
+  <meta name="description" content="Master the POSIX socket API — TCP/UDP server and client patterns, non-blocking I/O, socket options, and UNIX domain sockets for high-performance local IPC." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    (function(){var t=localStorage.getItem('portfolio-theme')||'light';if(t!=='navy')document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">&lt;</span>
+        <span class="logo-name">Eslam El Hefny</span>
+        <span class="logo-bracket">/&gt;</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link ">home</a>
+        <a href="/about" class="nav-link ">about</a>
+        <a href="/roadmap" class="nav-link ">Embedded Linux Roadmap</a>
+        <a href="/reference" class="nav-link ">Embedded Linux Reference</a>
+        <a href="/research" class="nav-link ">Research</a>
+        <a href="/blog" class="nav-link ">blog</a>
+        <a href="/contact" class="nav-cta">contact</a>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-toggle-btn" id="themeBtn" title="Change theme" aria-label="Change theme">
+          <i class="fas fa-palette"></i>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Theme</div>
+          <div class="theme-options">
+            <button class="theme-opt" data-theme="navy"><span class="t-dot" style="background:#58a6ff"></span>Navy</button>
+            <button class="theme-opt" data-theme="dracula"><span class="t-dot" style="background:#bd93f9"></span>Dracula</button>
+            <button class="theme-opt" data-theme="tokyo"><span class="t-dot" style="background:#7aa2f7"></span>Tokyo</button>
+            <button class="theme-opt" data-theme="nord"><span class="t-dot" style="background:#88c0d0"></span>Nord</button>
+            <button class="theme-opt" data-theme="light"><span class="t-dot" style="background:#0969da;outline:1.5px solid #d0d7de;outline-offset:1px"></span>Light</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile">
+      <a href="/" class="nav-link">home</a>
+      <a href="/about" class="nav-link">about</a>
+      <a href="/roadmap" class="nav-link">Embedded Linux Roadmap</a>
+      <a href="/reference" class="nav-link">Embedded Linux Reference</a>
+      <a href="/research" class="nav-link">Research</a>
+      <a href="/blog" class="nav-link">blog</a>
+      <a href="/contact" class="nav-link">contact</a>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main>
+    <div class="guide-page">
+
+  <!-- ── Hero Header ── -->
+  <div class="guide-hero">
+    <div class="guide-hero-inner">
+      <div class="guide-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/linux-developer/posix/">POSIX APIs & Concurrency</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>UNIX Sockets</span>
+      </div>
+      <div class="guide-phase-label">
+        <span class="guide-phase-pill">Phase 02 — Linux Developer</span>
+        <span class="guide-stage-pill">Stage 04</span>
+      </div>
+      <h1 class="guide-title">UNIX Sockets</h1>
+      <p class="guide-subtitle">Master the POSIX socket API — TCP/UDP server and client patterns, non-blocking I/O, socket options, and UNIX domain sockets for high-performance local IPC.</p>
+      <div class="guide-chips">
+        <span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span>
+        <span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span>
+        <span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span>
+        <span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span>
+        <span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Left TOC | Content | Right Topics ── -->
+  <div class="guide-body">
+
+    <!-- ══════════════════════════════════
+         LEFT: On This Page (TOC)
+    ══════════════════════════════════ -->
+    <aside class="guide-sidebar" id="guideSidebar">
+      <div class="guide-sidebar-section">
+        <div class="guide-sidebar-label"><i class="fas fa-list-ul"></i> On This Page</div>
+        <nav id="guideTocNav" class="guide-toc-nav"></nav>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MIDDLE: Main Content
+    ══════════════════════════════════ -->
+    <div class="guide-content markdown-body">
+      <h2 class="gc-basic" id="socket-basics">Socket Basics</h2>
+
+<p><span class="guide-chip gc-basic"><i class="fas fa-seedling"></i> Basic</span></p>
+
+<p>A <strong>socket</strong> is a file descriptor for network or inter-process communication. The POSIX socket API is the same across TCP, UDP, and UNIX domain sockets — only the address family and creation parameters differ.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>socket() → bind() → listen() → accept() → read()/write() → close()
+              [server side]
+
+socket() → connect() → read()/write() → close()
+              [client side]
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="tcp-server">TCP Server</h2>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;sys/socket.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;netinet/in.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;arpa/inet.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// 1. Create socket</span>
+    <span class="kt">int</span> <span class="n">server_fd</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">server_fd</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="n">perror</span><span class="p">(</span><span class="s">"socket"</span><span class="p">);</span> <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="p">}</span>
+
+    <span class="c1">// 2. Set socket options (allow address reuse)</span>
+    <span class="kt">int</span> <span class="n">opt</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">setsockopt</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,</span> <span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">SO_REUSEADDR</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">opt</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">opt</span><span class="p">));</span>
+
+    <span class="c1">// 3. Bind to address and port</span>
+    <span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="n">addr</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">.</span><span class="n">sin_family</span>      <span class="o">=</span> <span class="n">AF_INET</span><span class="p">,</span>
+        <span class="p">.</span><span class="n">sin_addr</span><span class="p">.</span><span class="n">s_addr</span> <span class="o">=</span> <span class="n">INADDR_ANY</span><span class="p">,</span>   <span class="c1">// all interfaces</span>
+        <span class="p">.</span><span class="n">sin_port</span>        <span class="o">=</span> <span class="n">htons</span><span class="p">(</span><span class="mi">8080</span><span class="p">),</span>
+    <span class="p">};</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">bind</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,</span> <span class="p">(</span><span class="k">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">addr</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">addr</span><span class="p">))</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">perror</span><span class="p">(</span><span class="s">"bind"</span><span class="p">);</span> <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 4. Listen for connections</span>
+    <span class="n">listen</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,</span> <span class="mi">10</span><span class="p">);</span>   <span class="c1">// backlog = 10</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Listening on :8080</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// 5. Accept a client connection</span>
+        <span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="n">client_addr</span><span class="p">;</span>
+        <span class="n">socklen_t</span> <span class="n">len</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">client_addr</span><span class="p">);</span>
+        <span class="kt">int</span> <span class="n">client_fd</span> <span class="o">=</span> <span class="n">accept</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,</span>
+            <span class="p">(</span><span class="k">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">client_addr</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">len</span><span class="p">);</span>
+
+        <span class="kt">char</span> <span class="n">ip</span><span class="p">[</span><span class="n">INET_ADDRSTRLEN</span><span class="p">];</span>
+        <span class="n">inet_ntop</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">client_addr</span><span class="p">.</span><span class="n">sin_addr</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">ip</span><span class="p">));</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"Connection from %s:%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">ntohs</span><span class="p">(</span><span class="n">client_addr</span><span class="p">.</span><span class="n">sin_port</span><span class="p">));</span>
+
+        <span class="c1">// 6. Echo server</span>
+        <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">1024</span><span class="p">];</span>
+        <span class="kt">ssize_t</span> <span class="n">n</span><span class="p">;</span>
+        <span class="k">while</span> <span class="p">((</span><span class="n">n</span> <span class="o">=</span> <span class="n">recv</span><span class="p">(</span><span class="n">client_fd</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buf</span><span class="p">),</span> <span class="mi">0</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">send</span><span class="p">(</span><span class="n">client_fd</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+
+        <span class="n">close</span><span class="p">(</span><span class="n">client_fd</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">close</span><span class="p">(</span><span class="n">server_fd</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="tcp-client">TCP Client</h2>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;sys/socket.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;netinet/in.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;arpa/inet.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;netdb.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span>
+<span class="kt">int</span> <span class="nf">tcp_connect</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">host</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">port</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">struct</span> <span class="n">addrinfo</span> <span class="n">hints</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">.</span><span class="n">ai_family</span>   <span class="o">=</span> <span class="n">AF_UNSPEC</span><span class="p">,</span>     <span class="c1">// IPv4 or IPv6</span>
+        <span class="p">.</span><span class="n">ai_socktype</span> <span class="o">=</span> <span class="n">SOCK_STREAM</span><span class="p">,</span>
+    <span class="p">};</span>
+    <span class="k">struct</span> <span class="n">addrinfo</span><span class="o">*</span> <span class="n">res</span><span class="p">;</span>
+
+    <span class="kt">int</span> <span class="n">err</span> <span class="o">=</span> <span class="n">getaddrinfo</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">hints</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">res</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">"getaddrinfo: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">gai_strerror</span><span class="p">(</span><span class="n">err</span><span class="p">));</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">struct</span> <span class="n">addrinfo</span><span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="n">res</span><span class="p">;</span> <span class="n">p</span><span class="p">;</span> <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">ai_next</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">fd</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">ai_family</span><span class="p">,</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">ai_socktype</span><span class="p">,</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">ai_protocol</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">fd</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">connect</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">ai_addr</span><span class="p">,</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">ai_addrlen</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+
+        <span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+        <span class="n">fd</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">freeaddrinfo</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">fd</span><span class="p">;</span>   <span class="c1">// -1 on failure</span>
+<span class="p">}</span>
+
+<span class="c1">// Usage</span>
+<span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">tcp_connect</span><span class="p">(</span><span class="s">"192.168.1.100"</span><span class="p">,</span> <span class="s">"8080"</span><span class="p">);</span>
+<span class="n">send</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="s">"hello</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-basic" id="udp-socket">UDP Socket</h2>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// UDP sender</span>
+<span class="kt">int</span> <span class="n">sock</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_DGRAM</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+
+<span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="n">dest</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">sin_family</span>      <span class="o">=</span> <span class="n">AF_INET</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">sin_port</span>        <span class="o">=</span> <span class="n">htons</span><span class="p">(</span><span class="mi">9000</span><span class="p">),</span>
+    <span class="p">.</span><span class="n">sin_addr</span><span class="p">.</span><span class="n">s_addr</span> <span class="o">=</span> <span class="n">inet_addr</span><span class="p">(</span><span class="s">"192.168.1.255"</span><span class="p">),</span>  <span class="c1">// broadcast</span>
+<span class="p">};</span>
+
+<span class="c1">// Allow broadcast</span>
+<span class="kt">int</span> <span class="n">bc</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="n">setsockopt</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">SO_BROADCAST</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">bc</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">bc</span><span class="p">));</span>
+
+<span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">msg</span> <span class="o">=</span> <span class="s">"sensor:23.5"</span><span class="p">;</span>
+<span class="n">sendto</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">strlen</span><span class="p">(</span><span class="n">msg</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="p">(</span><span class="k">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">dest</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">dest</span><span class="p">));</span>
+
+<span class="c1">// UDP receiver</span>
+<span class="kt">int</span> <span class="n">server</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_DGRAM</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="n">addr</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">sin_family</span>      <span class="o">=</span> <span class="n">AF_INET</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">sin_addr</span><span class="p">.</span><span class="n">s_addr</span> <span class="o">=</span> <span class="n">INADDR_ANY</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">sin_port</span>        <span class="o">=</span> <span class="n">htons</span><span class="p">(</span><span class="mi">9000</span><span class="p">),</span>
+<span class="p">};</span>
+<span class="n">bind</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="p">(</span><span class="k">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">addr</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">addr</span><span class="p">));</span>
+
+<span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
+<span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="n">sender</span><span class="p">;</span>
+<span class="n">socklen_t</span> <span class="n">slen</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">sender</span><span class="p">);</span>
+<span class="n">recvfrom</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buf</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="p">(</span><span class="k">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">sender</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">slen</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-mid" id="non-blocking-sockets">Non-Blocking Sockets</h2>
+
+<p><span class="guide-chip gc-mid"><i class="fas fa-fire-flame-curved"></i> Intermediate</span></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+</span>
+<span class="c1">// Set socket to non-blocking</span>
+<span class="kt">int</span> <span class="n">flags</span> <span class="o">=</span> <span class="n">fcntl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">F_GETFL</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="n">fcntl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">F_SETFL</span><span class="p">,</span> <span class="n">flags</span> <span class="o">|</span> <span class="n">O_NONBLOCK</span><span class="p">);</span>
+
+<span class="c1">// Or at creation time (Linux)</span>
+<span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_STREAM</span> <span class="o">|</span> <span class="n">SOCK_NONBLOCK</span> <span class="o">|</span> <span class="n">SOCK_CLOEXEC</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+
+<span class="c1">// Non-blocking recv</span>
+<span class="kt">ssize_t</span> <span class="n">n</span> <span class="o">=</span> <span class="n">recv</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buf</span><span class="p">),</span> <span class="mi">0</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">errno</span> <span class="o">==</span> <span class="n">EAGAIN</span> <span class="o">||</span> <span class="n">errno</span> <span class="o">==</span> <span class="n">EWOULDBLOCK</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// No data ready — try again later</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">perror</span><span class="p">(</span><span class="s">"recv"</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Non-blocking connect</span>
+<span class="n">connect</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="p">(</span><span class="k">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">addr</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">addr</span><span class="p">));</span>
+<span class="c1">// Returns EINPROGRESS immediately</span>
+<span class="c1">// Use poll/epoll to wait for POLLOUT, then check SO_ERROR</span>
+<span class="kt">int</span> <span class="n">err</span><span class="p">;</span>
+<span class="n">socklen_t</span> <span class="n">errlen</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">err</span><span class="p">);</span>
+<span class="n">getsockopt</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">SO_ERROR</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">err</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">errlen</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">err</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="n">puts</span><span class="p">(</span><span class="s">"connected!"</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-adv" id="unix-domain-sockets">UNIX Domain Sockets</h2>
+
+<p><span class="guide-chip gc-adv"><i class="fas fa-bolt"></i> Advanced</span></p>
+
+<p>UNIX domain sockets use the filesystem namespace instead of IP addresses. They are <strong>faster than TCP</strong> for local IPC (no TCP/IP overhead) and support <strong>passing file descriptors</strong> between processes.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;sys/socket.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/un.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span>
+<span class="cp">#define SOCKET_PATH "/tmp/myapp.sock"
+</span>
+<span class="c1">// UNIX socket server</span>
+<span class="kt">int</span> <span class="n">server_fd</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_UNIX</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+
+<span class="k">struct</span> <span class="n">sockaddr_un</span> <span class="n">addr</span> <span class="o">=</span> <span class="p">{</span> <span class="p">.</span><span class="n">sun_family</span> <span class="o">=</span> <span class="n">AF_UNIX</span> <span class="p">};</span>
+<span class="n">strncpy</span><span class="p">(</span><span class="n">addr</span><span class="p">.</span><span class="n">sun_path</span><span class="p">,</span> <span class="n">SOCKET_PATH</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">addr</span><span class="p">.</span><span class="n">sun_path</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+
+<span class="n">unlink</span><span class="p">(</span><span class="n">SOCKET_PATH</span><span class="p">);</span>   <span class="c1">// remove stale socket file</span>
+<span class="n">bind</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,</span> <span class="p">(</span><span class="k">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">addr</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">addr</span><span class="p">));</span>
+<span class="n">listen</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="n">client_fd</span> <span class="o">=</span> <span class="n">accept</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+<span class="c1">// ... communicate ...</span>
+
+<span class="c1">// UNIX socket client</span>
+<span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_UNIX</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="n">connect</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="p">(</span><span class="k">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">addr</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">addr</span><span class="p">));</span>
+<span class="n">send</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="s">"hello"</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="passing-file-descriptors-between-processes">Passing File Descriptors Between Processes</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Send an fd over a UNIX socket (ancillary data via SCM_RIGHTS)</span>
+<span class="kt">void</span> <span class="nf">send_fd</span><span class="p">(</span><span class="kt">int</span> <span class="n">socket_fd</span><span class="p">,</span> <span class="kt">int</span> <span class="n">fd_to_send</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">struct</span> <span class="n">msghdr</span> <span class="n">msg</span> <span class="o">=</span> <span class="p">{};</span>
+    <span class="k">struct</span> <span class="n">iovec</span>  <span class="n">iov</span> <span class="o">=</span> <span class="p">{</span> <span class="p">.</span><span class="n">iov_base</span> <span class="o">=</span> <span class="s">"x"</span><span class="p">,</span> <span class="p">.</span><span class="n">iov_len</span> <span class="o">=</span> <span class="mi">1</span> <span class="p">};</span>
+
+    <span class="kt">char</span> <span class="n">cmsg_buf</span><span class="p">[</span><span class="n">CMSG_SPACE</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">))];</span>
+    <span class="n">msg</span><span class="p">.</span><span class="n">msg_iov</span>        <span class="o">=</span> <span class="o">&amp;</span><span class="n">iov</span><span class="p">;</span>
+    <span class="n">msg</span><span class="p">.</span><span class="n">msg_iovlen</span>     <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">msg</span><span class="p">.</span><span class="n">msg_control</span>    <span class="o">=</span> <span class="n">cmsg_buf</span><span class="p">;</span>
+    <span class="n">msg</span><span class="p">.</span><span class="n">msg_controllen</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">cmsg_buf</span><span class="p">);</span>
+
+    <span class="k">struct</span> <span class="n">cmsghdr</span><span class="o">*</span> <span class="n">cmsg</span> <span class="o">=</span> <span class="n">CMSG_FIRSTHDR</span><span class="p">(</span><span class="o">&amp;</span><span class="n">msg</span><span class="p">);</span>
+    <span class="n">cmsg</span><span class="o">-&gt;</span><span class="n">cmsg_level</span> <span class="o">=</span> <span class="n">SOL_SOCKET</span><span class="p">;</span>
+    <span class="n">cmsg</span><span class="o">-&gt;</span><span class="n">cmsg_type</span>  <span class="o">=</span> <span class="n">SCM_RIGHTS</span><span class="p">;</span>
+    <span class="n">cmsg</span><span class="o">-&gt;</span><span class="n">cmsg_len</span>   <span class="o">=</span> <span class="n">CMSG_LEN</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+    <span class="n">memcpy</span><span class="p">(</span><span class="n">CMSG_DATA</span><span class="p">(</span><span class="n">cmsg</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">fd_to_send</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+
+    <span class="n">sendmsg</span><span class="p">(</span><span class="n">socket_fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">msg</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="useful-socket-options">Useful Socket Options</h2>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// SO_REUSEADDR — allow binding to a recently used port</span>
+<span class="kt">int</span> <span class="n">opt</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="n">setsockopt</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">SO_REUSEADDR</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">opt</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">opt</span><span class="p">));</span>
+
+<span class="c1">// SO_KEEPALIVE — detect dead connections</span>
+<span class="n">setsockopt</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">SO_KEEPALIVE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">opt</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">opt</span><span class="p">));</span>
+
+<span class="c1">// TCP_NODELAY — disable Nagle's algorithm (reduce latency for small packets)</span>
+<span class="cp">#include</span> <span class="cpf">&lt;netinet/tcp.h&gt;</span><span class="cp">
+</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">IPPROTO_TCP</span><span class="p">,</span> <span class="n">TCP_NODELAY</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">opt</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">opt</span><span class="p">));</span>
+
+<span class="c1">// SO_RCVTIMEO / SO_SNDTIMEO — read/write timeout</span>
+<span class="k">struct</span> <span class="n">timeval</span> <span class="n">tv</span> <span class="o">=</span> <span class="p">{</span> <span class="p">.</span><span class="n">tv_sec</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="p">.</span><span class="n">tv_usec</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">};</span>
+<span class="n">setsockopt</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">SO_RCVTIMEO</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">tv</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">tv</span><span class="p">));</span>
+
+<span class="c1">// SO_SNDBUF / SO_RCVBUF — set socket buffer sizes</span>
+<span class="kt">int</span> <span class="n">bufsize</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">;</span>   <span class="c1">// 1MB</span>
+<span class="n">setsockopt</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">SO_SNDBUF</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">bufsize</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">bufsize</span><span class="p">));</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 class="gc-iq" id="interview-qa">Interview Q&amp;A</h2>
+
+<p><span class="guide-chip gc-iq"><i class="fas fa-circle-question"></i> Interview Q&amp;A</span></p>
+
+<p><strong>Q1 — Basic: Explain the TCP server lifecycle: socket → bind → listen → accept.</strong></p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">socket()</code> creates the endpoint (just an fd, no address yet). <code class="language-plaintext highlighter-rouge">bind()</code> assigns a local address and port — this is what clients connect to. <code class="language-plaintext highlighter-rouge">listen()</code> marks the socket as passive, creating a connection request queue with a given backlog (maximum pending connections). <code class="language-plaintext highlighter-rouge">accept()</code> dequeues the next completed connection from the kernel’s accept queue, returning a <strong>new fd</strong> for the individual client connection. The original listening socket remains open for more <code class="language-plaintext highlighter-rouge">accept()</code> calls.</p>
+</blockquote>
+
+<p><strong>Q2 — Basic: What is the difference between <code class="language-plaintext highlighter-rouge">TCP</code> (SOCK_STREAM) and <code class="language-plaintext highlighter-rouge">UDP</code> (SOCK_DGRAM)?</strong></p>
+
+<blockquote>
+  <p>TCP is connection-oriented, reliable, ordered, and flow-controlled — the kernel guarantees delivery and correct ordering. Suitable for applications needing data integrity (file transfer, HTTP). UDP is connectionless, unreliable, and has no ordering guarantee — each datagram is sent independently. Suitable for latency-sensitive applications that can tolerate some loss (real-time sensor data, video streaming, DNS). UDP has lower overhead (no connection setup, no ACKs).</p>
+</blockquote>
+
+<p><strong>Q3 — Intermediate: What is <code class="language-plaintext highlighter-rouge">SO_REUSEADDR</code> and why is it needed?</strong></p>
+
+<blockquote>
+  <p>When a TCP server restarts, the kernel keeps the old port in <code class="language-plaintext highlighter-rouge">TIME_WAIT</code> state for up to 2×MSL (typically 2–4 minutes) to absorb delayed packets. Without <code class="language-plaintext highlighter-rouge">SO_REUSEADDR</code>, <code class="language-plaintext highlighter-rouge">bind()</code> fails with <code class="language-plaintext highlighter-rouge">EADDRINUSE</code> during this period. <code class="language-plaintext highlighter-rouge">SO_REUSEADDR</code> allows the port to be reused immediately by a new socket, even while old connections are in <code class="language-plaintext highlighter-rouge">TIME_WAIT</code>. Always set this option on server sockets before <code class="language-plaintext highlighter-rouge">bind()</code>.</p>
+</blockquote>
+
+<p><strong>Q4 — Advanced: What are UNIX domain sockets and when do you prefer them over TCP for IPC?</strong></p>
+
+<blockquote>
+  <p>UNIX domain sockets are identified by filesystem paths instead of IP addresses. They only work between processes on the same machine. Advantages over TCP for local IPC: (1) <strong>Performance</strong> — no TCP/IP protocol overhead, no network stack, data stays in kernel memory; benchmarks show 2–5× higher throughput for local communication. (2) <strong>Security</strong> — permissions enforced by filesystem; you can authenticate the peer with <code class="language-plaintext highlighter-rouge">SCM_CREDENTIALS</code>. (3) <strong>File descriptor passing</strong> — <code class="language-plaintext highlighter-rouge">SCM_RIGHTS</code> ancillary data allows passing open fds between processes, impossible over TCP. Use UNIX sockets for daemon ↔ client communication on the same host (e.g. systemd, Docker, X11).</p>
+</blockquote>
+
+<hr />
+
+<h2 class="gc-ref" id="references">References</h2>
+
+<p><span class="guide-chip gc-ref"><i class="fas fa-book-open"></i> References</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Resource</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 socket</code></td>
+      <td>Socket API overview</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 ip</code></td>
+      <td>IPv4 socket options</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 unix</code></td>
+      <td>UNIX domain socket manual</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">man 7 tcp</code></td>
+      <td>TCP socket options</td>
+    </tr>
+    <tr>
+      <td>Beej’s Guide to Network Programming</td>
+      <td><a href="https://beej.us/guide/bgnet/">beej.us/guide/bgnet</a></td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <!-- ══════════════════════════════════
+         RIGHT: Topics Sidebar
+    ══════════════════════════════════ -->
+    <aside class="guide-topics-sidebar">
+
+      <!-- ── Linux User Topics ── -->
+      
+
+      <!-- ── C Programming Topics ── -->
+      
+
+      <!-- ── C++ Programming Topics ── -->
+      
+
+      <!-- ── POSIX & Concurrency Topics ── -->
+      
+      <div class="gts-header">
+        <i class="fas fa-network-wired"></i>
+        <span>POSIX &amp; Concurrency</span>
+      </div>
+      <nav class="gts-nav">
+        <a href="/linux-developer/posix/file-io/" class="gtn-link ">
+          <i class="fas fa-file-code"></i> POSIX File I/O
+        </a>
+        <a href="/linux-developer/posix/processes-fork/" class="gtn-link ">
+          <i class="fas fa-sitemap"></i> Processes &amp; fork()
+        </a>
+        <a href="/linux-developer/posix/signals/" class="gtn-link ">
+          <i class="fas fa-bolt"></i> Signals
+        </a>
+        <a href="/linux-developer/posix/unix-sockets/" class="gtn-link gts-active">
+          <i class="fas fa-plug"></i> UNIX Sockets
+        </a>
+        <a href="/linux-developer/posix/pthreads/" class="gtn-link ">
+          <i class="fas fa-microchip"></i> Pthreads
+        </a>
+        <a href="/linux-developer/posix/mutexes-semaphores/" class="gtn-link ">
+          <i class="fas fa-lock"></i> Mutexes &amp; Semaphores
+        </a>
+        <a href="/linux-developer/posix/pipes-ipc/" class="gtn-link ">
+          <i class="fas fa-arrows-left-right"></i> Pipes &amp; Shared Memory
+        </a>
+      </nav>
+      
+
+      <!-- ── Cross-Compilation Topics ── -->
+      
+
+      <!-- ── U-Boot Topics ── -->
+      
+
+      <!-- ── Linux Kernel Topics ── -->
+      
+
+    </aside><!-- /guide-topics-sidebar -->
+
+  </div><!-- /guide-body -->
+
+  <!-- ── Prev / Next ── -->
+  
+  <div class="guide-nav-bar">
+    <div class="guide-nav-inner">
+      
+      <a href="/linux-developer/posix/signals/" class="guide-nav-card guide-nav-prev">
+        <span class="gnc-label"><i class="fas fa-arrow-left"></i> Previous</span>
+        <span class="gnc-title">Signals</span>
+      </a>
+      
+      
+      <a href="/linux-developer/posix/pthreads/" class="guide-nav-card guide-nav-next">
+        <span class="gnc-label">Next <i class="fas fa-arrow-right"></i></span>
+        <span class="gnc-title">Pthreads</span>
+      </a>
+      
+    </div>
+  </div>
+  
+
+</div><!-- /guide-page -->
+
+<script>
+(function () {
+  const content = document.querySelector('.guide-content');
+  const nav = document.getElementById('guideTocNav');
+  if (!content || !nav) return;
+
+  const headings = content.querySelectorAll('h2, h3');
+  if (!headings.length) return;
+
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+    html += `<a href="#${h.id}" class="toc-link ${cls}">${h.textContent}</a>`;
+  });
+  nav.innerHTML = html;
+
+  const links = nav.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = nav.querySelector(`[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-logo"><span class="accent">&lt;</span>Eslam El Hefny <span class="accent">/&gt;</span></span>
+        <p>Research & Teaching Assistant · Embedded Linux Engineer</p>
+        <p class="footer-location"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt </p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/eslamelhefny" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://linkedin.com/in/eslamelhefny" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Eslam El Hefny · Built with ❤️</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

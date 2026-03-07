@@ -1,0 +1,259 @@
+---
+layout: default
+title: "Embedded Linux Developer Guide — Phase 03"
+description: "Master cross-compilation, bootloaders, and the Linux kernel — the bridge from software developer to embedded systems engineer."
+permalink: /embedded-linux/
+---
+
+<style>
+.el-hero {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(227,179,65,0.08) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 4rem 2rem 3rem;
+  text-align: center;
+}
+.el-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .75rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: #e3b341;
+  background: rgba(227,179,65,.1); border: 1px solid rgba(227,179,65,.25);
+  border-radius: 2rem; padding: .3rem 1rem; margin-bottom: 1.2rem;
+}
+.el-hero h1 { font-size: clamp(1.8rem,4vw,2.8rem); font-weight: 800; margin: 0 0 1rem; }
+.el-hero p  { font-size: 1.05rem; color: var(--text-muted); max-width: 680px; margin: 0 auto 2rem; }
+.el-hero-meta {
+  display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;
+  font-size: .85rem; color: var(--text-muted);
+}
+.el-hero-meta span { display: flex; align-items: center; gap: .4rem; }
+.el-hero-meta i { color: #e3b341; }
+
+.el-wrap { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+.el-stage-block { margin-bottom: 3.5rem; }
+.el-stage-header {
+  display: flex; align-items: center; gap: 1rem;
+  margin-bottom: 1.5rem; padding-bottom: .75rem;
+  border-bottom: 1px solid var(--border);
+}
+.el-stage-num {
+  font-size: .7rem; font-weight: 800; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--el-color);
+  background: color-mix(in srgb, var(--el-color) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--el-color) 30%, transparent);
+  border-radius: 20px; padding: .25rem .8rem;
+}
+.el-stage-title { font-size: 1.15rem; font-weight: 700; margin: 0; }
+.el-stage-sub   { font-size: .85rem; color: var(--text-muted); margin: .2rem 0 0; }
+.el-stage-link  {
+  margin-left: auto; font-size: .78rem; font-weight: 700;
+  color: var(--el-color); text-decoration: none;
+  display: flex; align-items: center; gap: .35rem;
+  padding: .3rem .8rem; border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--el-color) 30%, transparent);
+  background: color-mix(in srgb, var(--el-color) 8%, transparent);
+  transition: background .2s, transform .2s;
+}
+.el-stage-link:hover { background: color-mix(in srgb, var(--el-color) 18%, transparent); transform: translateX(3px); text-decoration: none; }
+
+.el-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
+  gap: 1rem;
+}
+.el-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.3rem;
+  text-decoration: none; color: inherit;
+  display: flex; flex-direction: column; gap: .6rem;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.el-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--el-color); border-radius: 12px 12px 0 0;
+}
+.el-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--el-color);
+  box-shadow: 0 6px 24px rgba(0,0,0,.25);
+  text-decoration: none;
+}
+.el-card-top { display: flex; align-items: center; gap: .75rem; }
+.el-card-icon {
+  width: 38px; height: 38px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
+  background: color-mix(in srgb, var(--el-color) 12%, transparent);
+  color: var(--el-color);
+}
+.el-card h3 { font-size: .95rem; font-weight: 700; margin: 0; }
+.el-card p  { font-size: .82rem; color: var(--text-muted); margin: 0; line-height: 1.55; }
+.el-card-arrow {
+  margin-top: auto; padding-top: .4rem;
+  font-size: .78rem; font-weight: 600;
+  color: var(--el-color); display: flex; align-items: center; gap: .3rem;
+}
+
+.el-c5  { --el-color: #e3b341; }
+.el-c6  { --el-color: #f97316; }
+.el-c7  { --el-color: #34d399; }
+
+@media (max-width: 600px) {
+  .el-grid { grid-template-columns: 1fr; }
+  .el-hero-meta { gap: 1rem; }
+  .el-stage-link { display: none; }
+}
+</style>
+
+<div class="el-hero">
+  <div class="el-hero-eyebrow"><i class="fas fa-microchip"></i> Phase 03</div>
+  <h1>Embedded Linux Developer Guide</h1>
+  <p>Master cross-compilation toolchains, bootloaders (U-Boot), and the Linux kernel — the core skills every embedded systems engineer needs.</p>
+  <div class="el-hero-meta">
+    <span><i class="fas fa-layer-group"></i> 3 Stages</span>
+    <span><i class="fas fa-book-open"></i> 18 Topics</span>
+    <span><i class="fas fa-seedling"></i> Intermediate → Advanced</span>
+    <span><i class="fas fa-circle-question"></i> Interview Q&amp;A Included</span>
+  </div>
+</div>
+
+<div class="el-wrap">
+
+  <!-- ── Stage 05: Cross-Compilation ── -->
+  <div class="el-stage-block el-c5">
+    <div class="el-stage-header">
+      <div>
+        <div class="el-stage-num">Stage 05</div>
+        <h2 class="el-stage-title">Cross-Compilation &amp; Toolchains</h2>
+        <p class="el-stage-sub">Build code for a target architecture from your host machine using the GNU toolchain and QEMU.</p>
+      </div>
+      <a href="{{ '/embedded-linux/cross-compilation/' | relative_url }}" class="el-stage-link">
+        All Topics <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+    <div class="el-grid">
+      <a href="{{ '/embedded-linux/cross-compilation/gnu-toolchain/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-gears"></i></div><h3>GNU Toolchain</h3></div>
+        <p>gcc, binutils, glibc — how the toolchain is structured, naming conventions, and building a cross-toolchain from scratch.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="{{ '/embedded-linux/cross-compilation/sysroot-libraries/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-folder-tree"></i></div><h3>Sysroot &amp; Libraries</h3></div>
+        <p>What a sysroot is, how to build one, staging directory layout, and dealing with library version mismatches on target.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="{{ '/embedded-linux/cross-compilation/static-dynamic-linking/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-link"></i></div><h3>Static vs Dynamic Linking</h3></div>
+        <p>Comparing static and dynamic linking, shared library deployment on target, rpath, ldconfig, and LD_LIBRARY_PATH.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="{{ '/embedded-linux/cross-compilation/qemu-emulation/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-computer"></i></div><h3>QEMU Emulation</h3></div>
+        <p>QEMU system vs user mode, emulating ARM/RISC-V boards, networking setup, and running your cross-compiled binaries.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="{{ '/embedded-linux/cross-compilation/binary-analysis/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-magnifying-glass-chart"></i></div><h3>readelf / objdump / nm</h3></div>
+        <p>Inspect ELF binaries, dump disassembly, list symbols, find undefined references, and diagnose linking problems.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="{{ '/embedded-linux/cross-compilation/cross-compile-cmake/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-hammer"></i></div><h3>Cross-Compiling with CMake</h3></div>
+        <p>CMake toolchain files, CMAKE_SYSROOT, find_package for cross targets, and building Qt/C++ apps for embedded boards.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Stage 06: U-Boot ── -->
+  <div class="el-stage-block el-c6">
+    <div class="el-stage-header">
+      <div>
+        <div class="el-stage-num">Stage 06</div>
+        <h2 class="el-stage-title">Bootloaders (U-Boot)</h2>
+        <p class="el-stage-sub">Understand system boot from power-on, master U-Boot configuration, Device Tree, and board porting.</p>
+      </div>
+      <a href="{{ '/embedded-linux/uboot/' | relative_url }}" class="el-stage-link">
+        All Topics <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+    <div class="el-grid">
+      <a href="{{ '/embedded-linux/uboot/boot-sequence/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-play"></i></div><h3>Boot Sequence</h3></div>
+        <p>ROM → SPL → U-Boot → Kernel: every stage explained, power-on reset, BootROM, and what happens before your code runs.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="{{ '/embedded-linux/uboot/uboot-config-build/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-wrench"></i></div><h3>U-Boot Config &amp; Build</h3></div>
+        <p>Selecting a defconfig, menuconfig, cross-compiling U-Boot, understanding the output images (MLO, u-boot.bin, u-boot.img).</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="{{ '/embedded-linux/uboot/uboot-commands/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-terminal"></i></div><h3>U-Boot Commands &amp; Scripting</h3></div>
+        <p>U-Boot shell, environment variables, memory commands, loading from MMC/NAND/TFTP, and bootscript automation.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="{{ '/embedded-linux/uboot/device-tree/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-sitemap"></i></div><h3>Device Tree (DTS)</h3></div>
+        <p>DTS syntax, phandles, overlays, binding documentation, dtc/fdtdump tools, and passing DTB from U-Boot to kernel.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="{{ '/embedded-linux/uboot/board-porting/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-puzzle-piece"></i></div><h3>Board Porting</h3></div>
+        <p>Add a new board to U-Boot — Kconfig entry, board header, SPL/TPL, DDR initialization, and console UART setup.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="{{ '/embedded-linux/uboot/tftp-boot/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-network-wired"></i></div><h3>TFTP &amp; Network Boot</h3></div>
+        <p>Configure TFTP server, U-Boot network settings, tftp/bootp commands, and booting kernel + rootfs over the network.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Stage 07: Linux Kernel ── -->
+  <div class="el-stage-block el-c7">
+    <div class="el-stage-header">
+      <div>
+        <div class="el-stage-num">Stage 07</div>
+        <h2 class="el-stage-title">Linux Kernel</h2>
+        <p class="el-stage-sub">Configure, build, and debug the kernel — understand subsystems, boot parameters, and tracing tools.</p>
+      </div>
+      <a href="{{ '/embedded-linux/kernel/' | relative_url }}" class="el-stage-link">
+        All Topics <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+    <div class="el-grid">
+      <a href="{{ '/embedded-linux/kernel/kconfig-menuconfig/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-sliders"></i></div><h3>Kconfig &amp; menuconfig</h3></div>
+        <p>Kconfig language, tristate options, menuconfig/xconfig/nconfig, defconfigs, .config fragments, and CONFIG_ macros in code.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="{{ '/embedded-linux/kernel/kernel-compilation/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-hammer"></i></div><h3>Kernel Compilation</h3></div>
+        <p>Cross-compiling the kernel, ARCH/CROSS_COMPILE variables, make targets (zImage, uImage, dtbs), and module installation.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="{{ '/embedded-linux/kernel/boot-parameters/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-list-check"></i></div><h3>Boot Parameters</h3></div>
+        <p>Kernel command line, root=, console=, init=, earlycon, passing parameters from U-Boot, and /proc/cmdline inspection.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="{{ '/embedded-linux/kernel/kernel-subsystems/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fab fa-linux"></i></div><h3>Kernel Subsystems</h3></div>
+        <p>Overview of major subsystems: VFS, memory management, scheduler, networking stack, and the driver model (bus/device/driver).</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="{{ '/embedded-linux/kernel/printk-debug/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-bug"></i></div><h3>printk &amp; Dynamic Debug</h3></div>
+        <p>printk log levels, dmesg, /proc/sys/kernel/printk, dynamic_debug, dev_dbg, and enabling debug at runtime without recompile.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+      <a href="{{ '/embedded-linux/kernel/ftrace-kprobes/' | relative_url }}" class="el-card">
+        <div class="el-card-top"><div class="el-card-icon"><i class="fas fa-chart-line"></i></div><h3>ftrace &amp; kprobes</h3></div>
+        <p>trace-cmd, function tracer, function_graph, event tracing, kprobes, uprobes, and perf integration for kernel profiling.</p>
+        <div class="el-card-arrow">Learn <i class="fas fa-arrow-right"></i></div>
+      </a>
+    </div>
+  </div>
+
+</div>
